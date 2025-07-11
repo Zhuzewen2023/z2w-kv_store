@@ -1,0 +1,3 @@
+/home/z2w/share/z2w-kv_store/build/CMakeFiles/kv.dir
+/home/z2w/share/z2w-kv_store/build/CMakeFiles/edit_cache.dir
+/home/z2w/share/z2w-kv_store/build/CMakeFiles/rebuild_cache.dir

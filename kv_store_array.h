@@ -1,6 +1,9 @@
 #ifndef __KV_STORE_ARRAY_H__
 #define __KV_STORE_ARRAY_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "kv_mem.h"
 
 #include <stdio.h>
@@ -19,4 +22,7 @@ typedef struct kvs_array_item_s {
 int kvs_array_set(char *key, char *value);
 char* kvs_array_get(char *key);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
