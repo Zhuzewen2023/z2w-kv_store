@@ -17,7 +17,9 @@
 #if ( ENABLE_NETWORK_SELECT == NETWORK_EPOLL )
 #include "kv_store_epoll.hpp"
 #elif ( ENABLE_NETWORK_SELECT == NETWORK_NTYCO )
+#include "kv_store_ntyco.hpp"
 #elif ( ENABLE_NETWORK_SELECT == NETWORK_IOURING )
+#include "kv_store_iouring.hpp"
 #endif
 
 #endif
