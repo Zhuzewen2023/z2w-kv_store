@@ -72,10 +72,10 @@ private:
                 printf("unknow command\n");
                 return -1;
         }
-        // if(strlen(w_buf) > 0){
+        if(strlen(w_buf) > 0){
 
-        //     Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
-        // }
+            Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
+        }
         return 0;
     }
 
@@ -108,28 +108,43 @@ private:
         }
     }
     void handle_write() {
-        if(strlen(w_buf) == 0){
+        static size_t sent_bytes = 0;
+        size_t total_len = strlen(w_buf);
+        if(total_len == 0 || sent_bytes >= total_len){
+            sent_bytes = 0;
             Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
             return;
         }
         
         while (true) {
-            int n = send(fd_, w_buf, strlen(w_buf), 0);
+            int n = send(fd_, w_buf + sent_bytes, total_len - sent_bytes, 0);
             if(n > 0){
-                printf("send: %s bytes: %d\n", w_buf, n);
-                memset(w_buf, 0, sizeof(w_buf));
-                Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
+                sent_bytes += n;
+                if ( sent_bytes >= total_len ) {
+                    /*全部发送完成*/
+                    printf("all send\n");
+                    memset(w_buf, 0, sizeof(w_buf));
+                    sent_bytes = 0;
+                    Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
+                    break;
+                }
+                printf("send: %s bytes: %d\n", w_buf + sent_bytes, n);
             } else if (n == 0) {
+                printf("n == 0\n");
                 Reactor::get_instance().unregister_handler(fd_);
+                close(fd_);
                 break;
             } else {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) {
                     /*缓冲区满，等待下次写事件*/
+                    printf("errno == EAGAIN || errno == EWOULDBLOCK\n");
+                    Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
                     // Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
                     break;
                 }
                 perror("send");
                 Reactor::get_instance().unregister_handler(fd_);
+                close(fd_);
                 break;
             }
         }
