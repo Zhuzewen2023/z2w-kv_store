@@ -1,4 +1,5 @@
 #include "kv_store_array.h"
+#include "kv_log.h"
 
 kvs_array_item_t array_table[KVS_ARRAY_SIZE] = {0};
 int array_idx = 0;
@@ -70,7 +71,7 @@ int kvs_array_modify(char *key, char *value) {
     int i = 0;
     for (i = 0; i < array_idx; i++) {
         if (strcmp(array_table[i].key, key) == 0) {
-            printf("kvs_array_modify get key %s\n", array_table[i].key);
+            KV_LOG("kvs_array_modify get key %s\n", array_table[i].key);
             kvs_free(array_table[i].value);
             array_table[i].value = NULL;
 
@@ -81,7 +82,7 @@ int kvs_array_modify(char *key, char *value) {
                 
                 strncpy(vcopy, value, strlen(value) + 1);
                 array_table[i].value = vcopy;
-                printf("kvs_array_modify set value %s\n", vcopy);
+                KV_LOG("kvs_array_modify set value %s\n", vcopy);
                 return 0;
             }
         }

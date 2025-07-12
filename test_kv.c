@@ -69,7 +69,7 @@ void equals(char *pattern, char *result, char *casename)
     if(strcmp(pattern, result) != 0){
         printf("==> FAILED --> %s\n : '%s' != '%s'\n", casename, pattern, result);
     } else {
-        printf("==> PASS --> %s\n", casename);
+        //printf("==> PASS --> %s\n", casename);
     }
 }
 
@@ -92,6 +92,13 @@ void array_test_case(int connfd)
     test_kv_case(connfd, "GET Name", "Linus", "GETCase");
     test_kv_case(connfd, "DEL Name", "SUCCESS", "DELCase");
     test_kv_case(connfd, "GET Name", "NO EXIST", "GETCase");
+}
+
+void array_test_case_1000k(int connfd)
+{
+    for(int i = 0; i < 1000000; i++){
+        array_test_case(connfd);
+    }
 }
 
 //array: 0x01, rbtree: 0x02, hashtable: 0x04, skiptable: 0x08
@@ -129,8 +136,16 @@ int main(int argc, char *argv[])
 
     int connfd = connect_tcpserver(ctx.serverip, ctx.port);
 
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     if (ctx.mode & 0x01) {
-        array_test_case(connfd);
+        for(int i = 0; i < 1000; i++){
+            array_test_case(connfd);
+        }
     }
+    gettimeofday(&end, NULL);
+
+    int time_used = TIME_SUB_MS(end, start);
+    printf("time: %dms, qps: %d\n", time_used, 1000 * 1000 / time_used);
 
 }

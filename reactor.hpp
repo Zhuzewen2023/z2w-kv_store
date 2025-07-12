@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
+#ifdef __cplusplus
 #include <cstdlib>
 #include <cstdio>
 #include <cerrno>
@@ -18,6 +19,7 @@
 #include <mutex>
 #include <deque>
 #include <sstream>
+#endif
 #include <arpa/inet.h>
 
 constexpr int MAX_EVENTS = 1024;

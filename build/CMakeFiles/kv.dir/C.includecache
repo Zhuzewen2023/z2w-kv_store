@@ -54,6 +54,8 @@ sys/cdefs.h
 
 ../NtyCo/core/nty_tree.h
 
+/home/zhuzewen/share/z2w-kv_store/kv_log.h
+
 /home/zhuzewen/share/z2w-kv_store/kv_mem.c
 kv_mem.h
 /home/zhuzewen/share/z2w-kv_store/kv_mem.h
@@ -69,6 +71,8 @@ stddef.h
 /home/zhuzewen/share/z2w-kv_store/kv_store_array.c
 kv_store_array.h
 /home/zhuzewen/share/z2w-kv_store/kv_store_array.h
+kv_log.h
+/home/zhuzewen/share/z2w-kv_store/kv_log.h
 
 /home/zhuzewen/share/z2w-kv_store/kv_store_array.h
 kv_mem.h
@@ -87,6 +91,8 @@ ntyco_server.h
 /home/zhuzewen/share/z2w-kv_store/ntyco_server.h
 kv_store_array.h
 /home/zhuzewen/share/z2w-kv_store/kv_store_array.h
+kv_log.h
+/home/zhuzewen/share/z2w-kv_store/kv_log.h
 arpa/inet.h
 -
 

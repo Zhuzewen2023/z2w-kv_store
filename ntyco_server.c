@@ -46,6 +46,7 @@
 #include "nty_coroutine.h"
 #include "ntyco_server.h"
 #include "kv_store_array.h"
+#include "kv_log.h"
 #include <arpa/inet.h>
 
 #define MAX_CLIENT_NUM			1000000
@@ -74,7 +75,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 	memset(item->wbuffer, 0, sizeof(item->wbuffer));
 	switch(cmd) {
 		case SET:
-			printf("SET\n");
+			KV_LOG("SET\n");
 			if(count < 3){
 				printf("invalid set command\n");
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "FAILED");
@@ -86,7 +87,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			}
 			break;
 		case GET:
-			printf("GET\n");
+			KV_LOG("GET\n");
 			value = kvs_array_get(tokens[1]);
 			if(value){
 				printf("GET success : %s\n", value);
@@ -96,11 +97,10 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			}
 			break;
 		case DEL:
-			printf("DEL\n");
+			KV_LOG("DEL\n");
 		 	res = kvs_array_delete(tokens[1]);
 			if (res < 0) {
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "ERROR");
-
 			} else if (res == 0) {
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "SUCCESS");
 			} else {
@@ -108,7 +108,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			}
 			break;
 		case MOD:
-			printf("MOD\n");
+			KV_LOG("MOD\n");
 			res = kvs_array_modify(tokens[1], tokens[2]);
 			if (res < 0) {
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "ERROR");
@@ -119,7 +119,8 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			}
 			break;
 		default:
-			printf("unknow command\n");
+			KV_LOG("unknow command\n");
+			snprintf(item->wbuffer, sizeof(item->wbuffer), "ERROR");
 			return -1;
 	}
 	return 0;
@@ -127,7 +128,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 
 int kv_store_split_token(char *msg, char** tokens)
 {
-	printf("kv_store_split_token\n");
+	KV_LOG("kv_store_split_token\n");
 	int idx = 0;
     char *token = strtok(msg, " ");
     while (token != NULL) {
@@ -139,16 +140,16 @@ int kv_store_split_token(char *msg, char** tokens)
 
 int kvstore_request(struct conn_item *item)
 {
-	printf("recv : %s\n", item->rbuffer);
+	KV_LOG("recv : %s\n", item->rbuffer);
 	char *msg = item->rbuffer;
 	char *tokens[KVSTORE_MAX_TOKENS];
 
 	int count = kv_store_split_token(msg, tokens);
-	printf("count = %d\n", count);
+	KV_LOG("count = %d\n", count);
 
 	int idx = 0;
 	for (idx = 0; idx < count; idx++) {
-		printf("idx: %d, content: %s\n",idx, tokens[idx]);
+		KV_LOG("idx: %d, content: %s\n",idx, tokens[idx]);
 	}
 
 	kvstore_parser_protocol(item, tokens, count);
@@ -190,7 +191,7 @@ void server_reader(void *arg) {
 		ret = nty_recv(fd, item.rbuffer, BUFFER_LENGTH, 0);
 		if (ret > 0) {
 			if(fd > MAX_CLIENT_NUM) {
-				printf("read from server: %.*s\n", ret, item.rbuffer);
+				KV_LOG("read from server: %.*s\n", ret, item.rbuffer);
 			}
 			
 			kvstore_request(&item);

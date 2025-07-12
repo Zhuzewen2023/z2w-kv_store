@@ -37,7 +37,7 @@ private:
         char *value = nullptr;
         switch(cmd) {
             case static_cast<int>(Command::SET):
-                printf("SET\n");
+                KV_LOG("SET\n");
                 if(count < 3){
                     printf("invalid set command\n");
                     return -1;
@@ -48,7 +48,7 @@ private:
                 }
                 break;
             case static_cast<int>(Command::GET):
-                printf("GET\n");
+                KV_LOG("GET\n");
                 value = kvs_array_get(tokens[1]);
                 if(value){
                     printf("GET success : %s\n", value);
@@ -58,7 +58,7 @@ private:
                 }
                 break;
             case static_cast<int>(Command::DEL):
-                printf("DEL\n");
+                KV_LOG("DEL\n");
                 res = kvs_array_delete(tokens[1]);
                 if (res == 0) {
                     snprintf(w_buf, sizeof(w_buf), "DEL %s OK\n", tokens[1]);
@@ -69,7 +69,7 @@ private:
                 }
                 break;
             case static_cast<int>(Command::MOD):
-                printf("MOD\n");
+                KV_LOG("MOD\n");
                 res = kvs_array_modify(tokens[1], tokens[2]);
                 if (res == 0) {
                     snprintf(w_buf, sizeof(w_buf), "MOD %s %s OK\n", tokens[1], tokens[2]);
@@ -80,7 +80,7 @@ private:
                 }
                 break;
             default:
-                printf("unknow command\n");
+                KV_LOG("unknow command\n");
                 return -1;
         }
         if(strlen(w_buf) > 0){

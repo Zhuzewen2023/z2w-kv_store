@@ -4,6 +4,7 @@
 CMakeFiles/kv.dir/kv_mem.c.o: ../kv_mem.c
 CMakeFiles/kv.dir/kv_mem.c.o: ../kv_mem.h
 
+CMakeFiles/kv.dir/kv_store_array.c.o: ../kv_log.h
 CMakeFiles/kv.dir/kv_store_array.c.o: ../kv_mem.h
 CMakeFiles/kv.dir/kv_store_array.c.o: ../kv_store_array.c
 CMakeFiles/kv.dir/kv_store_array.c.o: ../kv_store_array.h
@@ -11,11 +12,13 @@ CMakeFiles/kv.dir/kv_store_array.c.o: ../kv_store_array.h
 CMakeFiles/kv.dir/ntyco_server.c.o: ../NtyCo/core/nty_coroutine.h
 CMakeFiles/kv.dir/ntyco_server.c.o: ../NtyCo/core/nty_queue.h
 CMakeFiles/kv.dir/ntyco_server.c.o: ../NtyCo/core/nty_tree.h
+CMakeFiles/kv.dir/ntyco_server.c.o: ../kv_log.h
 CMakeFiles/kv.dir/ntyco_server.c.o: ../kv_mem.h
 CMakeFiles/kv.dir/ntyco_server.c.o: ../kv_store_array.h
 CMakeFiles/kv.dir/ntyco_server.c.o: ../ntyco_server.c
 CMakeFiles/kv.dir/ntyco_server.c.o: ../ntyco_server.h
 
+CMakeFiles/kv.dir/kv_store.cpp.o: ../kv_log.h
 CMakeFiles/kv.dir/kv_store.cpp.o: ../kv_mem.h
 CMakeFiles/kv.dir/kv_store.cpp.o: ../kv_store.cpp
 CMakeFiles/kv.dir/kv_store.cpp.o: ../kv_store.hpp

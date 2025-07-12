@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/home/zhuzewen/share/z2w-kv_store/kv_log.h
+
 /home/zhuzewen/share/z2w-kv_store/kv_mem.h
 stdlib.h
 -
@@ -43,6 +45,8 @@ string.h
 /home/zhuzewen/share/z2w-kv_store/kv_store_epoll.hpp
 kv_store.hpp
 /home/zhuzewen/share/z2w-kv_store/kv_store.hpp
+kv_log.h
+/home/zhuzewen/share/z2w-kv_store/kv_log.h
 
 /home/zhuzewen/share/z2w-kv_store/kv_store_iouring.hpp
 

@@ -2,6 +2,7 @@
 #define __KV_STORE_EPOLL_HPP__
 
 #include "kv_store.hpp"
+#include "kv_log.h"
 
 class KVStoreEpollConnection : public IConnection, public std::enable_shared_from_this<KVStoreEpollConnection> 
 {
@@ -36,9 +37,9 @@ private:
         char *value = nullptr;
         switch(cmd) {
             case static_cast<int>(Command::SET):
-                printf("SET\n");
+                KV_LOG("SET\n");
                 if(count < 3){
-                    printf("invalid set command\n");
+                    KV_LOG("invalid set command\n");
                     snprintf(w_buf, sizeof(w_buf), "FAILED");
                     return -1;
                 }
@@ -48,17 +49,17 @@ private:
                 }
                 break;
             case static_cast<int>(Command::GET):
-                printf("GET\n");
+                KV_LOG("GET\n");
                 value = kvs_array_get(tokens[1]);
                 if(value){
-                    printf("GET success : %s\n", value);
+                    KV_LOG("GET success : %s\n", value);
                     snprintf(w_buf, sizeof(w_buf), "%s", value);
                 }else{
                     snprintf(w_buf, sizeof(w_buf), "NO EXIST");
                 }
                 break;
             case static_cast<int>(Command::DEL):
-                printf("DEL\n");
+                KV_LOG("DEL\n");
                 res = kvs_array_delete(tokens[1]);
                 if (res < 0) {
                     snprintf(w_buf, sizeof(w_buf), "ERROR");
@@ -69,7 +70,7 @@ private:
                 }
                 break;
             case static_cast<int>(Command::MOD):
-                printf("MOD\n");
+                KV_LOG("MOD\n");
                 res = kvs_array_modify(tokens[1], tokens[2]);
                 if (res < 0) {
                     snprintf(w_buf, sizeof(w_buf), "ERROR");
@@ -80,7 +81,7 @@ private:
                 }
                 break;
             default:
-                printf("unknow command, echo...\n");
+                KV_LOG("unknow command, echo...\n");
                 snprintf(w_buf, sizeof(w_buf), r_buf);
                 break;
                 //return -1;
@@ -97,17 +98,17 @@ private:
             memset(r_buf, 0, sizeof(r_buf));
             int n = read(fd_, r_buf, sizeof(r_buf));
             if(n > 0){
-                std::cout << "read: " << r_buf << " bytes: " << n << std::endl;
+                KV_LOG("read: %s, bytes: %d\n", r_buf, n);
                 
                 int count = split_token();
-                std::cout << "tokens count: " << count << std::endl;
+                KV_LOG("tokens count: %d\n", count);
                 for(int i = 0; i < count; ++i){
-                    std::cout << "token: " << tokens[i] << std::endl;
+                    KV_LOG("token: %s\n", tokens[i]);;
                 }
                 parse_protocol(count);
                 // send(fd_, r_buf, n, 0);
             }else if(n == 0){
-                printf("client close\n");
+                KV_LOG("client close\n");
                 Reactor::get_instance().unregister_handler(fd_);
                 break;
             }else{
@@ -135,22 +136,22 @@ private:
                 sent_bytes += n;
                 if ( sent_bytes >= total_len ) {
                     /*全部发送完成*/
-                    printf("all send\n");
+                    KV_LOG("all send\n");
                     memset(w_buf, 0, sizeof(w_buf));
                     sent_bytes = 0;
                     Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
                     break;
                 }
-                printf("send: %s bytes: %d\n", w_buf + sent_bytes, n);
+                KV_LOG("send: %s bytes: %d\n", w_buf + sent_bytes, n);
             } else if (n == 0) {
-                printf("n == 0\n");
+                KV_LOG("n == 0\n");
                 Reactor::get_instance().unregister_handler(fd_);
                 close(fd_);
                 break;
             } else {
                 if (errno == EAGAIN || errno == EWOULDBLOCK) {
                     /*缓冲区满，等待下次写事件*/
-                    printf("errno == EAGAIN || errno == EWOULDBLOCK\n");
+                    KV_LOG("errno == EAGAIN || errno == EWOULDBLOCK\n");
                     Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
                     // Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
                     break;
