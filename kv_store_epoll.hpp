@@ -39,11 +39,12 @@ private:
                 printf("SET\n");
                 if(count < 3){
                     printf("invalid set command\n");
+                    snprintf(w_buf, sizeof(w_buf), "FAILED");
                     return -1;
                 }
                 res = kvs_array_set(tokens[1], tokens[2]);
                 if(res == 0){
-                    snprintf(w_buf, sizeof(w_buf), "SET %s %s OK\n", tokens[1], tokens[2]);
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
                 }
                 break;
             case static_cast<int>(Command::GET):
@@ -51,31 +52,31 @@ private:
                 value = kvs_array_get(tokens[1]);
                 if(value){
                     printf("GET success : %s\n", value);
-                    snprintf(w_buf, sizeof(w_buf), "GET %s %s\n", tokens[1], value);
+                    snprintf(w_buf, sizeof(w_buf), "%s", value);
                 }else{
-                    snprintf(w_buf, sizeof(w_buf), "GET FAILED\n");
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
                 }
                 break;
             case static_cast<int>(Command::DEL):
                 printf("DEL\n");
-                int res = kvs_array_delete(tokens[1]);
+                res = kvs_array_delete(tokens[1]);
                 if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "DEL %s FAILED\n", tokens[1]);
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
                 } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "DEL %s OK\n", tokens[1]);
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
                 } else {
-                    snprintf(w_buf, sizeof(w_buf), "DEL %s NOT FOUND\n", tokens[1]);
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
                 }
                 break;
             case static_cast<int>(Command::MOD):
                 printf("MOD\n");
-                int res = kvs_array_modify(tokens[1], tokens[2]);
+                res = kvs_array_modify(tokens[1], tokens[2]);
                 if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "MOD %s FAILED\n", tokens[1]);
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
                 } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "MOD %s OK\n", tokens[1]);
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
                 } else {
-                    snprintf(w_buf, sizeof(w_buf), "MOD %s NOT FOUND\n", tokens[1]);
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
                 }
                 break;
             default:

@@ -77,11 +77,12 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			printf("SET\n");
 			if(count < 3){
 				printf("invalid set command\n");
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "FAILED");
 				return -1;
 			}
 			res = kvs_array_set(tokens[1], tokens[2]);
 			if(res == 0){
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "SET %s %s OK\n", tokens[1], tokens[2]);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "SUCCESS");
 			}
 			break;
 		case GET:
@@ -89,32 +90,32 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			value = kvs_array_get(tokens[1]);
 			if(value){
 				printf("GET success : %s\n", value);
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "GET %s %s\n", tokens[1], value);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "%s", value);
 			}else{
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "GET FAILED\n");
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "NO EXIST");
 			}
 			break;
 		case DEL:
 			printf("DEL\n");
 		 	res = kvs_array_delete(tokens[1]);
 			if (res < 0) {
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "DEL %s\n", tokens[1]);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "ERROR");
 
 			} else if (res == 0) {
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "DEL %s OK\n", tokens[1]);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "SUCCESS");
 			} else {
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "DEL %s FAILED\n", tokens[1]);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "NO EXIST");
 			}
 			break;
 		case MOD:
 			printf("MOD\n");
 			res = kvs_array_modify(tokens[1], tokens[2]);
 			if (res < 0) {
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "MOD %s %s\n", tokens[1], tokens[2]);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "ERROR");
 			} else if (res == 0) {
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "MOD %s %s OK\n", tokens[1], tokens[2]);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "SUCCESS");
 			} else {
-				snprintf(item->wbuffer, sizeof(item->wbuffer), "MOD %s %s FAILED\n", tokens[1], tokens[2]);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "NO EXIST");
 			}
 			break;
 		default:
