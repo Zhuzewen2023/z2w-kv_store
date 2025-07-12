@@ -21,6 +21,8 @@ typedef struct kvs_array_item_s {
 
 int kvs_array_set(char *key, char *value);
 char* kvs_array_get(char *key);
+int kvs_array_delete(char *key);
+int kvs_array_modify(char *key, char *value);
 
 #ifdef __cplusplus
 }

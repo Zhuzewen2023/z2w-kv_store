@@ -71,6 +71,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 	}
 	int res = 0;
 	char *value = NULL;
+	memset(item->wbuffer, 0, sizeof(item->wbuffer));
 	switch(cmd) {
 		case SET:
 			printf("SET\n");
@@ -95,9 +96,26 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			break;
 		case DEL:
 			printf("DEL\n");
+		 	res = kvs_array_delete(tokens[1]);
+			if (res < 0) {
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "DEL %s\n", tokens[1]);
+
+			} else if (res == 0) {
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "DEL %s OK\n", tokens[1]);
+			} else {
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "DEL %s FAILED\n", tokens[1]);
+			}
 			break;
 		case MOD:
 			printf("MOD\n");
+			res = kvs_array_modify(tokens[1], tokens[2]);
+			if (res < 0) {
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "MOD %s %s\n", tokens[1], tokens[2]);
+			} else if (res == 0) {
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "MOD %s %s OK\n", tokens[1], tokens[2]);
+			} else {
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "MOD %s %s FAILED\n", tokens[1], tokens[2]);
+			}
 			break;
 		default:
 			printf("unknow command\n");
@@ -122,14 +140,14 @@ int kvstore_request(struct conn_item *item)
 {
 	printf("recv : %s\n", item->rbuffer);
 	char *msg = item->rbuffer;
-	static char *tokens[KVSTORE_MAX_TOKENS];
+	char *tokens[KVSTORE_MAX_TOKENS];
 
 	int count = kv_store_split_token(msg, tokens);
 	printf("count = %d\n", count);
 
 	int idx = 0;
 	for (idx = 0; idx < count; idx++) {
-		printf("idx : %s\n", tokens[idx]);
+		printf("idx: %d, content: %s\n",idx, tokens[idx]);
 	}
 
 	kvstore_parser_protocol(item, tokens, count);
@@ -167,17 +185,17 @@ void server_reader(void *arg) {
 		}
 
 #endif
-		static struct conn_item item = {0};
+		struct conn_item item = {0};
 		ret = nty_recv(fd, item.rbuffer, BUFFER_LENGTH, 0);
 		if (ret > 0) {
 			if(fd > MAX_CLIENT_NUM) {
 				printf("read from server: %.*s\n", ret, item.rbuffer);
 			}
-
+			
 			kvstore_request(&item);
 			item.wlen = strlen(item.wbuffer);
 
-			ret = nty_send(fd, item.rbuffer, BUFFER_LENGTH, 0);
+			ret = nty_send(fd, item.wbuffer, BUFFER_LENGTH, 0);
 			if (ret == -1) {
 				nty_close(fd);
 				break;

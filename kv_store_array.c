@@ -12,12 +12,14 @@ int kvs_array_set(char *key, char *value) {
     if(kcopy == NULL) {
         return -1;
     }
+    memset(kcopy, 0, strlen(key) + 1);
 
     char *vcopy = (char *)kvs_malloc(strlen(value) + 1);
     if(vcopy == NULL) {
         kvs_free(kcopy);
         return -1;
     }
+    memset(vcopy, 0, strlen(value) + 1);
 
     strncpy(kcopy, key, strlen(key) + 1);
     strncpy(vcopy, value, strlen(value) + 1);
@@ -36,4 +38,53 @@ char* kvs_array_get(char *key) {
         }
     }
     return NULL;
+}
+
+int kvs_array_delete(char *key) {
+    if (key == NULL) {
+        return -1;
+    }
+    int i = 0;
+    for (i = 0; i < array_idx; i++) {
+        if (strcmp(array_table[i].key, key) == 0) {
+            kvs_free(array_table[i].key);
+            kvs_free(array_table[i].value);
+            array_table[i].key = NULL;
+            array_table[i].value = NULL;
+
+            // Shift all elements down
+            for (int j = i; j < array_idx - 1; j++) {
+                array_table[j] = array_table[j + 1];
+            }
+            array_idx--;
+            return 0;
+        }
+    }
+    return i; // Return index of first empty slot
+}
+
+int kvs_array_modify(char *key, char *value) {
+    if (key == NULL || value == NULL || array_idx >= KVS_ARRAY_SIZE) {
+        return -1;
+    }
+    int i = 0;
+    for (i = 0; i < array_idx; i++) {
+        if (strcmp(array_table[i].key, key) == 0) {
+            printf("kvs_array_modify get key %s\n", array_table[i].key);
+            kvs_free(array_table[i].value);
+            array_table[i].value = NULL;
+
+            char *vcopy = kvs_malloc(strlen(value) + 1);
+            if (vcopy == NULL) {
+                return -2;
+            } else {
+                
+                strncpy(vcopy, value, strlen(value) + 1);
+                array_table[i].value = vcopy;
+                printf("kvs_array_modify set value %s\n", vcopy);
+                return 0;
+            }
+        }
+    }
+    return i;
 }

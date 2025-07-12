@@ -37,7 +37,10 @@ add_library(ntyco STATIC IMPORTED)
 #- `PROPERTIES`: 后面跟着要设置的属性列表。
 #- `IMPORTED_LOCATION`: 这是一个属性，用于指定预编译库文件的实际路径。
 #- `${CMAKE_SOURCE_DIR}`: 这是CMake变量，表示项目根目录的路径。
-set_target_properties(ntyco PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/NtyCo/libntyco.a)
+set_target_properties(ntyco PROPERTIES 
+    IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/NtyCo/libntyco.a
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/NtyCo/core"
+    )
 
 #### 3. 设置头文件包含目录
 #```cmake
@@ -51,7 +54,7 @@ set_target_properties(ntyco PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/Nty
 #即任何链接了这个库（`your_lib_precompiled`）的目标（比如你的可执行文件）都会自动添加这个包含目录。这样，你在使用这个库时，就可以直接包含它的头文件，而不需要手动添加头文件路径。
 #- `${CMAKE_SOURCE_DIR}/libs/your_lib/include`: 
 #这是头文件所在的目录路径。假设你的库的头文件都放在这个目录下。
-target_include_directories(ntyco INTERFACE ${CMAKE_SOURCE_DIR}/NtyCo/core)
+# target_include_directories(ntyco INTERFACE ${CMAKE_SOURCE_DIR}/NtyCo/core)
 
 add_executable(kv ${COMMON_SOURCES})
 
@@ -66,7 +69,7 @@ add_executable(kv ${COMMON_SOURCES})
 #而不会传播给其他可能依赖于`main_app`的目标。
 #如果这个库是`main_app`内部使用，并且不需要暴露给其他目标，使用`PRIVATE`是合适的。
 #- `your_lib_precompiled`: 这是之前导入的预编译库目标。
-target_link_libraries(kv PRIVATE ntyco)
+target_link_libraries(kv PRIVATE ntyco pthread dl)
 
 
 

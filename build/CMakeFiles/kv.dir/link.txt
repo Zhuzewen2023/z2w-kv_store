@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/kv.dir/kv_mem.c.o CMakeFiles/kv.dir/kv_store_array.c.o CMakeFiles/kv.dir/ntyco_server.c.o CMakeFiles/kv.dir/kv_store.cpp.o -o bin/kv  /home/z2w/share/z2w-kv_store/NtyCo/libntyco.a 
+/usr/bin/c++     CMakeFiles/kv.dir/kv_mem.c.o CMakeFiles/kv.dir/kv_store_array.c.o CMakeFiles/kv.dir/ntyco_server.c.o CMakeFiles/kv.dir/kv_store.cpp.o  -o bin/kv ../NtyCo/libntyco.a -lpthread -ldl 

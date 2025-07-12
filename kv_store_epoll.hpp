@@ -58,9 +58,25 @@ private:
                 break;
             case static_cast<int>(Command::DEL):
                 printf("DEL\n");
+                int res = kvs_array_delete(tokens[1]);
+                if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "DEL %s FAILED\n", tokens[1]);
+                } else if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "DEL %s OK\n", tokens[1]);
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "DEL %s NOT FOUND\n", tokens[1]);
+                }
                 break;
             case static_cast<int>(Command::MOD):
                 printf("MOD\n");
+                int res = kvs_array_modify(tokens[1], tokens[2]);
+                if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "MOD %s FAILED\n", tokens[1]);
+                } else if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "MOD %s OK\n", tokens[1]);
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "MOD %s NOT FOUND\n", tokens[1]);
+                }
                 break;
             default:
                 printf("unknow command\n");
