@@ -3,10 +3,10 @@
 
 #include "kv_store.hpp"
 
-class KVStoreConnection : public IConnection, public std::enable_shared_from_this<KVStoreConnection> 
+class KVStoreEpollConnection : public IConnection, public std::enable_shared_from_this<KVStoreEpollConnection> 
 {
 public:
-    KVStoreConnection(int fd) : IConnection(fd){}
+    KVStoreEpollConnection(int fd) : IConnection(fd){}
 
 private:
     constexpr static int MAX_TOKENS = 128;
@@ -172,18 +172,18 @@ private:
 
 };
 
-class KVStoreAcceptor : public IAcceptor, public std::enable_shared_from_this<KVStoreAcceptor> 
+class KVStoreEpollAcceptor : public IAcceptor, public std::enable_shared_from_this<KVStoreEpollAcceptor> 
 {
 public:
-    KVStoreAcceptor(int port) : IAcceptor(port){}
-    KVStoreAcceptor(const std::string &ip, int port) : IAcceptor(ip, port){}
+    KVStoreEpollAcceptor(int port) : IAcceptor(port){}
+    KVStoreEpollAcceptor(const std::string &ip, int port) : IAcceptor(ip, port){}
 
     void init(){
         Reactor::get_instance().register_handler(server_fd_, EPOLLIN, shared_from_this());
     }
 private:
     void on_new_connection(int new_fd) override{
-        auto client = std::make_shared<KVStoreConnection>(new_fd);
+        auto client = std::make_shared<KVStoreEpollConnection>(new_fd);
         // Reactor::get_instance().register_handler(new_fd, EPOLLIN | EPOLLET | EPOLLONESHOT, client);
         printf("new connection: %d\n", new_fd);
         Reactor::get_instance().register_handler(new_fd, EPOLLIN | EPOLLET, client);

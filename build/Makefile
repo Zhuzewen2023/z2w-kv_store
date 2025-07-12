@@ -201,6 +201,30 @@ kv_store_array.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_array.c.s
 .PHONY : kv_store_array.c.s
 
+ntyco_server.o: ntyco_server.c.o
+.PHONY : ntyco_server.o
+
+# target to build an object file
+ntyco_server.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/ntyco_server.c.o
+.PHONY : ntyco_server.c.o
+
+ntyco_server.i: ntyco_server.c.i
+.PHONY : ntyco_server.i
+
+# target to preprocess a source file
+ntyco_server.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/ntyco_server.c.i
+.PHONY : ntyco_server.c.i
+
+ntyco_server.s: ntyco_server.c.s
+.PHONY : ntyco_server.s
+
+# target to generate assembly for a file
+ntyco_server.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/ntyco_server.c.s
+.PHONY : ntyco_server.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -219,6 +243,9 @@ help:
 	@echo "... kv_store_array.o"
 	@echo "... kv_store_array.i"
 	@echo "... kv_store_array.s"
+	@echo "... ntyco_server.o"
+	@echo "... ntyco_server.i"
+	@echo "... ntyco_server.s"
 .PHONY : help
 
 

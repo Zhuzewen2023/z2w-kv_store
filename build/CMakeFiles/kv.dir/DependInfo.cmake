@@ -10,6 +10,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/z2w/share/z2w-kv_store/kv_mem.c" "CMakeFiles/kv.dir/kv_mem.c.o" "gcc" "CMakeFiles/kv.dir/kv_mem.c.o.d"
   "/home/z2w/share/z2w-kv_store/kv_store_array.c" "CMakeFiles/kv.dir/kv_store_array.c.o" "gcc" "CMakeFiles/kv.dir/kv_store_array.c.o.d"
+  "/home/z2w/share/z2w-kv_store/ntyco_server.c" "CMakeFiles/kv.dir/ntyco_server.c.o" "gcc" "CMakeFiles/kv.dir/ntyco_server.c.o.d"
   "/home/z2w/share/z2w-kv_store/kv_store.cpp" "CMakeFiles/kv.dir/kv_store.cpp.o" "gcc" "CMakeFiles/kv.dir/kv_store.cpp.o.d"
   )
 

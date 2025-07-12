@@ -44,11 +44,98 @@
  
 
 #include "nty_coroutine.h"
-
+#include "ntyco_server.h"
+#include "kv_store_array.h"
 #include <arpa/inet.h>
 
 #define MAX_CLIENT_NUM			1000000
 #define TIME_SUB_MS(tv1, tv2)  ((tv1.tv_sec - tv2.tv_sec) * 1000 + (tv1.tv_usec - tv2.tv_usec) / 1000)
+#define KVSTORE_MAX_TOKENS		128
+
+const char* commands[COUNT] = {
+    "SET", "GET", "DEL", "MOD",
+};
+
+int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
+{
+
+	if (count < 1) {
+		return -1;
+	}
+
+	int cmd = START;
+	for(cmd = START; cmd < COUNT; ++cmd){
+		if(strcmp(tokens[0], commands[cmd]) == 0){
+			break;
+		}
+	}
+	int res = 0;
+	char *value = NULL;
+	switch(cmd) {
+		case SET:
+			printf("SET\n");
+			if(count < 3){
+				printf("invalid set command\n");
+				return -1;
+			}
+			res = kvs_array_set(tokens[1], tokens[2]);
+			if(res == 0){
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "SET %s %s OK\n", tokens[1], tokens[2]);
+			}
+			break;
+		case GET:
+			printf("GET\n");
+			value = kvs_array_get(tokens[1]);
+			if(value){
+				printf("GET success : %s\n", value);
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "GET %s %s\n", tokens[1], value);
+			}else{
+				snprintf(item->wbuffer, sizeof(item->wbuffer), "GET FAILED\n");
+			}
+			break;
+		case DEL:
+			printf("DEL\n");
+			break;
+		case MOD:
+			printf("MOD\n");
+			break;
+		default:
+			printf("unknow command\n");
+			return -1;
+	}
+	return 0;
+}
+
+int kv_store_split_token(char *msg, char** tokens)
+{
+	printf("kv_store_split_token\n");
+	int idx = 0;
+    char *token = strtok(msg, " ");
+    while (token != NULL) {
+        tokens[idx++] = token;
+        token = strtok(NULL, " ");
+    }
+    return idx;
+}
+
+int kvstore_request(struct conn_item *item)
+{
+	printf("recv : %s\n", item->rbuffer);
+	char *msg = item->rbuffer;
+	static char *tokens[KVSTORE_MAX_TOKENS];
+
+	int count = kv_store_split_token(msg, tokens);
+	printf("count = %d\n", count);
+
+	int idx = 0;
+	for (idx = 0; idx < count; idx++) {
+		printf("idx : %s\n", tokens[idx]);
+	}
+
+	kvstore_parser_protocol(item, tokens, count);
+
+	return 0;
+}
 
 
 void server_reader(void *arg) {
@@ -62,7 +149,7 @@ void server_reader(void *arg) {
 	fds.events = POLLIN;
 
 	while (1) {
-		
+#if 0	
 		char buf[1024] = {0};
 		ret = nty_recv(fd, buf, 1024, 0);
 		if (ret > 0) {
@@ -79,7 +166,28 @@ void server_reader(void *arg) {
 			break;
 		}
 
+#endif
+		static struct conn_item item = {0};
+		ret = nty_recv(fd, item.rbuffer, BUFFER_LENGTH, 0);
+		if (ret > 0) {
+			if(fd > MAX_CLIENT_NUM) {
+				printf("read from server: %.*s\n", ret, item.rbuffer);
+			}
+
+			kvstore_request(&item);
+			item.wlen = strlen(item.wbuffer);
+
+			ret = nty_send(fd, item.rbuffer, BUFFER_LENGTH, 0);
+			if (ret == -1) {
+				nty_close(fd);
+				break;
+			}
+		} else if (ret == 0) {	
+			nty_close(fd);
+			break;
+		}
 	}
+	
 }
 
 
@@ -130,12 +238,13 @@ void server(void *arg) {
 
 
 
-int main(int argc, char *argv[]) {
+int ntyco_entry(int port) {
+	printf("ntyco_entry\n");
 	nty_coroutine *co = NULL;
 
 	int i = 0;
-	unsigned short base_port = 9096;
-	for (i = 0;i < 100;i ++) {
+	unsigned short base_port = port;
+	for (i = 0;i < 1;i ++) {
 		unsigned short *port = calloc(1, sizeof(unsigned short));
 		*port = base_port + i;
 		nty_coroutine_create(&co, server, port); ////////no run

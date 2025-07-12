@@ -13,6 +13,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(COMMON_SOURCES
     kv_mem.c
     kv_store_array.c
+    ntyco_server.c
     kv_store.cpp
 )
 
