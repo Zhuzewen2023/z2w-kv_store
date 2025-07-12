@@ -80,8 +80,10 @@ private:
                 }
                 break;
             default:
-                printf("unknow command\n");
-                return -1;
+                printf("unknow command, echo...\n");
+                snprintf(w_buf, sizeof(w_buf), r_buf);
+                break;
+                //return -1;
         }
         if(strlen(w_buf) > 0){
 
