@@ -1,4 +1,5 @@
 /home/zhuzewen/share/z2w-kv_store/build/CMakeFiles/rebuild_cache.dir
 /home/zhuzewen/share/z2w-kv_store/build/CMakeFiles/edit_cache.dir
+/home/zhuzewen/share/z2w-kv_store/build/CMakeFiles/rb_test.dir
 /home/zhuzewen/share/z2w-kv_store/build/CMakeFiles/kv.dir
 /home/zhuzewen/share/z2w-kv_store/build/CMakeFiles/kv_test.dir

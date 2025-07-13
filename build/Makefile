@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named rb_test
+
+# Build rule for target.
+rb_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 rb_test
+.PHONY : rb_test
+
+# fast build rule for target.
+rb_test/fast:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/build
+.PHONY : rb_test/fast
+
+#=============================================================================
 # Target rules for targets named kv
 
 # Build rule for target.
@@ -135,6 +148,60 @@ kv_test: cmake_check_build_system
 kv_test/fast:
 	$(MAKE) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/build
 .PHONY : kv_test/fast
+
+RB_Tree.o: RB_Tree.cpp.o
+
+.PHONY : RB_Tree.o
+
+# target to build an object file
+RB_Tree.cpp.o:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/RB_Tree.cpp.o
+.PHONY : RB_Tree.cpp.o
+
+RB_Tree.i: RB_Tree.cpp.i
+
+.PHONY : RB_Tree.i
+
+# target to preprocess a source file
+RB_Tree.cpp.i:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/RB_Tree.cpp.i
+.PHONY : RB_Tree.cpp.i
+
+RB_Tree.s: RB_Tree.cpp.s
+
+.PHONY : RB_Tree.s
+
+# target to generate assembly for a file
+RB_Tree.cpp.s:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/RB_Tree.cpp.s
+.PHONY : RB_Tree.cpp.s
+
+RB_Tree_Node.o: RB_Tree_Node.cpp.o
+
+.PHONY : RB_Tree_Node.o
+
+# target to build an object file
+RB_Tree_Node.cpp.o:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/RB_Tree_Node.cpp.o
+.PHONY : RB_Tree_Node.cpp.o
+
+RB_Tree_Node.i: RB_Tree_Node.cpp.i
+
+.PHONY : RB_Tree_Node.i
+
+# target to preprocess a source file
+RB_Tree_Node.cpp.i:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/RB_Tree_Node.cpp.i
+.PHONY : RB_Tree_Node.cpp.i
+
+RB_Tree_Node.s: RB_Tree_Node.cpp.s
+
+.PHONY : RB_Tree_Node.s
+
+# target to generate assembly for a file
+RB_Tree_Node.cpp.s:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/RB_Tree_Node.cpp.s
+.PHONY : RB_Tree_Node.cpp.s
 
 kv_mem.o: kv_mem.c.o
 
@@ -271,6 +338,33 @@ test_kv.c.s:
 	$(MAKE) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/test_kv.c.s
 .PHONY : test_kv.c.s
 
+test_rb.o: test_rb.cpp.o
+
+.PHONY : test_rb.o
+
+# target to build an object file
+test_rb.cpp.o:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/test_rb.cpp.o
+.PHONY : test_rb.cpp.o
+
+test_rb.i: test_rb.cpp.i
+
+.PHONY : test_rb.i
+
+# target to preprocess a source file
+test_rb.cpp.i:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/test_rb.cpp.i
+.PHONY : test_rb.cpp.i
+
+test_rb.s: test_rb.cpp.s
+
+.PHONY : test_rb.s
+
+# target to generate assembly for a file
+test_rb.cpp.s:
+	$(MAKE) -f CMakeFiles/rb_test.dir/build.make CMakeFiles/rb_test.dir/test_rb.cpp.s
+.PHONY : test_rb.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -279,8 +373,15 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... rb_test"
 	@echo "... kv"
 	@echo "... kv_test"
+	@echo "... RB_Tree.o"
+	@echo "... RB_Tree.i"
+	@echo "... RB_Tree.s"
+	@echo "... RB_Tree_Node.o"
+	@echo "... RB_Tree_Node.i"
+	@echo "... RB_Tree_Node.s"
 	@echo "... kv_mem.o"
 	@echo "... kv_mem.i"
 	@echo "... kv_mem.s"
@@ -296,6 +397,9 @@ help:
 	@echo "... test_kv.o"
 	@echo "... test_kv.i"
 	@echo "... test_kv.s"
+	@echo "... test_rb.o"
+	@echo "... test_rb.i"
+	@echo "... test_rb.s"
 .PHONY : help
 
 
