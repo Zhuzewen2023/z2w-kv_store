@@ -123,6 +123,19 @@ kv/fast:
 	$(MAKE) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/build
 .PHONY : kv/fast
 
+#=============================================================================
+# Target rules for targets named kv_test
+
+# Build rule for target.
+kv_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 kv_test
+.PHONY : kv_test
+
+# fast build rule for target.
+kv_test/fast:
+	$(MAKE) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/build
+.PHONY : kv_test/fast
+
 kv_mem.o: kv_mem.c.o
 
 .PHONY : kv_mem.o
@@ -231,6 +244,33 @@ ntyco_server.c.s:
 	$(MAKE) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/ntyco_server.c.s
 .PHONY : ntyco_server.c.s
 
+test_kv.o: test_kv.c.o
+
+.PHONY : test_kv.o
+
+# target to build an object file
+test_kv.c.o:
+	$(MAKE) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/test_kv.c.o
+.PHONY : test_kv.c.o
+
+test_kv.i: test_kv.c.i
+
+.PHONY : test_kv.i
+
+# target to preprocess a source file
+test_kv.c.i:
+	$(MAKE) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/test_kv.c.i
+.PHONY : test_kv.c.i
+
+test_kv.s: test_kv.c.s
+
+.PHONY : test_kv.s
+
+# target to generate assembly for a file
+test_kv.c.s:
+	$(MAKE) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/test_kv.c.s
+.PHONY : test_kv.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -238,8 +278,9 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
-	@echo "... kv"
 	@echo "... edit_cache"
+	@echo "... kv"
+	@echo "... kv_test"
 	@echo "... kv_mem.o"
 	@echo "... kv_mem.i"
 	@echo "... kv_mem.s"
@@ -252,6 +293,9 @@ help:
 	@echo "... ntyco_server.o"
 	@echo "... ntyco_server.i"
 	@echo "... ntyco_server.s"
+	@echo "... test_kv.o"
+	@echo "... test_kv.i"
+	@echo "... test_kv.s"
 .PHONY : help
 
 

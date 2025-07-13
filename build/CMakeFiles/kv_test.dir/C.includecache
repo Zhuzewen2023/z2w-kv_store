@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/zhuzewen/share/z2w-kv_store/test_kv.c
+stdio.h
+-
+sys/socket.h
+-
+string.h
+-
+stdlib.h
+-
+arpa/inet.h
+-
+unistd.h
+-
+pthread.h
+-
+sys/time.h
+-
+

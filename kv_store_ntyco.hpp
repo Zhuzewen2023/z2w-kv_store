@@ -3,6 +3,7 @@
 
 #include "kv_store.hpp"
 #include "ntyco_server.h"
+#include "kv_log.h"
 
 class KVStoreNtycoConnection : public IConnection, public std::enable_shared_from_this<KVStoreNtycoConnection> 
 {

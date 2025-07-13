@@ -16,6 +16,7 @@ set(COMMON_SOURCES
     ntyco_server.c
     kv_store.cpp
 )
+set(TEST_SOURCES test_kv.c)
 
 #```cmake
 #add_library(your_lib_precompiled STATIC IMPORTED)
@@ -58,6 +59,7 @@ set_target_properties(ntyco PROPERTIES
 
 add_executable(kv ${COMMON_SOURCES})
 
+add_executable(kv_test ${TEST_SOURCES})
 ### 4. 将预编译库链接到可执行文件
 #```cmake
 #target_link_libraries(main_app PRIVATE your_lib_precompiled)

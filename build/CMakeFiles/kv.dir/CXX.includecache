@@ -55,6 +55,8 @@ kv_store.hpp
 /home/zhuzewen/share/z2w-kv_store/kv_store.hpp
 ntyco_server.h
 /home/zhuzewen/share/z2w-kv_store/ntyco_server.h
+kv_log.h
+/home/zhuzewen/share/z2w-kv_store/kv_log.h
 
 /home/zhuzewen/share/z2w-kv_store/ntyco_server.h
 

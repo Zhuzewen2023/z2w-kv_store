@@ -77,7 +77,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 		case SET:
 			KV_LOG("SET\n");
 			if(count < 3){
-				printf("invalid set command\n");
+				KV_LOG("invalid set command\n");
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "FAILED");
 				return -1;
 			}
@@ -90,7 +90,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			KV_LOG("GET\n");
 			value = kvs_array_get(tokens[1]);
 			if(value){
-				printf("GET success : %s\n", value);
+				KV_LOG("GET success : %s\n", value);
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "%s", value);
 			}else{
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "NO EXIST");
