@@ -1,1 +1,1 @@
-/usr/bin/cc    CMakeFiles/kv_test.dir/test_kv.c.o  -o bin/kv_test 
+/usr/bin/cc CMakeFiles/kv_test.dir/test_kv.c.o -o bin/kv_test 
