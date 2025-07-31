@@ -22,6 +22,8 @@
 #endif
 #include <arpa/inet.h>
 
+#ifdef __cplusplus
+
 constexpr int MAX_EVENTS = 1024;
 constexpr int BUFFER_SIZE = 4096;
 constexpr size_t MAX_WRITE_BUFFER = 1024 * 1024;
@@ -1016,5 +1018,6 @@ private:
         Reactor::get_instance().register_handler(new_fd, EPOLLIN, client);
     }
 };
+#endif
 
 #endif

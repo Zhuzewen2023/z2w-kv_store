@@ -15,9 +15,10 @@ set(COMMON_SOURCES
     kv_store_array.c
     ntyco_server.c
     kv_store.cpp
+    kv_store_rbtree.c
 )
 set(KV_TEST_SOURCES test_kv.c)
-set(RB_TEST_SOURCES rbtree-tst.c rbtree.c)
+#set(RB_TEST_SOURCES rbtree-tst.c rbtree.c)
 set(BTREE_TEST_SOURCES btree.c btree_test.c)
 #```cmake
 #add_library(your_lib_precompiled STATIC IMPORTED)
@@ -62,7 +63,7 @@ add_executable(kv ${COMMON_SOURCES})
 
 add_executable(kv_test ${KV_TEST_SOURCES})
 
-add_executable(rb_test ${RB_TEST_SOURCES})
+#add_executable(rb_test ${RB_TEST_SOURCES})
 
 add_executable(btree_test ${BTREE_TEST_SOURCES})
 ### 4. 将预编译库链接到可执行文件

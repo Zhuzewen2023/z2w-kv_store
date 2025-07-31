@@ -4,6 +4,8 @@
 #include "kv_store.hpp"
 #include "kv_log.h"
 
+#ifdef __cplusplus
+
 class KVStoreEpollConnection : public IConnection, public std::enable_shared_from_this<KVStoreEpollConnection> 
 {
 public:
@@ -36,6 +38,8 @@ private:
         int res = 0;
         char *value = nullptr;
         switch(cmd) {
+            #if ENABLE_ARRAY_KV_ENGINE
+            /*array*/
             case static_cast<int>(Command::SET):
                 KV_LOG("SET\n");
                 if(count < 3){
@@ -43,14 +47,14 @@ private:
                     snprintf(w_buf, sizeof(w_buf), "FAILED");
                     return -1;
                 }
-                res = kvs_array_set(tokens[1], tokens[2]);
+                res = kvs_array_set(&global_array, tokens[1], tokens[2]);
                 if(res == 0){
                     snprintf(w_buf, sizeof(w_buf), "SUCCESS");
                 }
                 break;
             case static_cast<int>(Command::GET):
                 KV_LOG("GET\n");
-                value = kvs_array_get(tokens[1]);
+                value = kvs_array_get(&global_array, tokens[1]);
                 if(value){
                     KV_LOG("GET success : %s\n", value);
                     snprintf(w_buf, sizeof(w_buf), "%s", value);
@@ -60,7 +64,7 @@ private:
                 break;
             case static_cast<int>(Command::DEL):
                 KV_LOG("DEL\n");
-                res = kvs_array_delete(tokens[1]);
+                res = kvs_array_delete(&global_array, tokens[1]);
                 if (res < 0) {
                     snprintf(w_buf, sizeof(w_buf), "ERROR");
                 } else if (res == 0) {
@@ -71,7 +75,7 @@ private:
                 break;
             case static_cast<int>(Command::MOD):
                 KV_LOG("MOD\n");
-                res = kvs_array_modify(tokens[1], tokens[2]);
+                res = kvs_array_modify(&global_array, tokens[1], tokens[2]);
                 if (res < 0) {
                     snprintf(w_buf, sizeof(w_buf), "ERROR");
                 } else if (res == 0) {
@@ -80,6 +84,72 @@ private:
                     snprintf(w_buf, sizeof(w_buf), "NO EXIST");
                 }
                 break;
+            case static_cast<int>(Command::EXIST):
+                KV_LOG("EXIST\n");
+                res = kvs_array_exist(&global_array, tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "EXIST");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            #endif
+            #if ENABLE_RBTREE_KV_ENGINE
+            /*rbtree*/
+                case static_cast<int>(Command::RSET):
+                KV_LOG("RSET\n");
+                if(count < 3){
+                    KV_LOG("invalid set command\n");
+                    snprintf(w_buf, sizeof(w_buf), "FAILED");
+                    return -1;
+                }
+                res = kvs_rbtree_set(&global_rbtree, tokens[1], tokens[2]);
+                if(res == 0){
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                }
+                break;
+            case static_cast<int>(Command::RGET):
+                KV_LOG("GET\n");
+                value = kvs_rbtree_get(&global_rbtree, tokens[1]);
+                if(value){
+                    KV_LOG("RGET success : %s\n", value);
+                    snprintf(w_buf, sizeof(w_buf), "%s", value);
+                }else{
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::RDEL):
+                KV_LOG("RDEL\n");
+                res = kvs_rbtree_delete(&global_rbtree, tokens[1]);
+                if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::RMOD):
+                KV_LOG("RMOD\n");
+                res = kvs_rbtree_modify(&global_rbtree, tokens[1], tokens[2]);
+                if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::REXIST):
+                KV_LOG("REXIST\n");
+                res = kvs_rbtree_exist(&global_rbtree, tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "EXIST");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            #endif
             default:
                 KV_LOG("unknow command, echo...\n");
                 snprintf(w_buf, sizeof(w_buf), r_buf);
@@ -178,6 +248,12 @@ private:
         GET, 
         DEL, 
         MOD,
+        EXIST,
+        RSET,
+        RGET,
+        RDEL,
+        RMOD,
+        REXIST,
         COUNT,
     };
 
@@ -187,7 +263,8 @@ private:
     char r_buf[1024] = {0};
     char w_buf[1024] = {0};
     const char* commands[static_cast<int>(Command::COUNT)] = {
-        "SET", "GET", "DEL", "MOD",
+        "SET", "GET", "DEL", "MOD","EXIST",
+        "RSET", "RGET", "RDEL", "RMOD","REXIST"
     };
 
 };
@@ -209,5 +286,7 @@ private:
         Reactor::get_instance().register_handler(new_fd, EPOLLIN | EPOLLET, client);
     }
 };
+
+#endif
 
 #endif

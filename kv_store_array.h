@@ -10,19 +10,41 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
-#define KVS_ARRAY_SIZE   1024
-
 typedef struct kvs_array_item_s {
-    char *key;
-    char *value;
+	char *key;
+	char *value;
 } kvs_array_item_t;
 
+#define KVS_ARRAY_SIZE		1024
 
+typedef struct kvs_array_s {
+	kvs_array_item_t *table;
+	int idx;
+	int total;
+} kvs_array_t;
 
-int kvs_array_set(char *key, char *value);
-char* kvs_array_get(char *key);
-int kvs_array_delete(char *key);
-int kvs_array_modify(char *key, char *value);
+extern kvs_array_t global_array;
+
+int 
+kvs_array_create(kvs_array_t *inst);
+
+int 
+kvs_array_destroy(kvs_array_t *inst);
+
+int 
+kvs_array_set(kvs_array_t *inst, char *key, char *value);
+
+char* 
+kvs_array_get(kvs_array_t *inst, char *key);
+
+int 
+kvs_array_delete(kvs_array_t *inst, char *key);
+
+int 
+kvs_array_modify(kvs_array_t *inst, char *key, char *value);
+
+int 
+kvs_array_exist(kvs_array_t *inst, char *key);
 
 #ifdef __cplusplus
 }

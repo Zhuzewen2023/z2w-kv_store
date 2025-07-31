@@ -1,1 +1,1 @@
-/usr/bin/cc "CMakeFiles/rb_test.dir/rbtree-tst.c.o" CMakeFiles/rb_test.dir/rbtree.c.o -o bin/rb_test 
+/usr/bin/cc CMakeFiles/rb_test.dir/rbtree-tst.c.o CMakeFiles/rb_test.dir/rbtree.c.o -o bin/rb_test 

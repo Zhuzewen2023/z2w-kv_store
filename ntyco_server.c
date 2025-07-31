@@ -81,14 +81,14 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "FAILED");
 				return -1;
 			}
-			res = kvs_array_set(tokens[1], tokens[2]);
+			res = kvs_array_set(&global_array, tokens[1], tokens[2]);
 			if(res == 0){
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "SUCCESS");
 			}
 			break;
 		case GET:
 			KV_LOG("GET\n");
-			value = kvs_array_get(tokens[1]);
+			value = kvs_array_get(&global_array,tokens[1]);
 			if(value){
 				KV_LOG("GET success : %s\n", value);
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "%s", value);
@@ -98,7 +98,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			break;
 		case DEL:
 			KV_LOG("DEL\n");
-		 	res = kvs_array_delete(tokens[1]);
+		 	res = kvs_array_delete(&global_array,tokens[1]);
 			if (res < 0) {
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "ERROR");
 			} else if (res == 0) {
@@ -109,7 +109,7 @@ int kvstore_parser_protocol(struct conn_item *item, char **tokens, int count)
 			break;
 		case MOD:
 			KV_LOG("MOD\n");
-			res = kvs_array_modify(tokens[1], tokens[2]);
+			res = kvs_array_modify(&global_array,tokens[1], tokens[2]);
 			if (res < 0) {
 				snprintf(item->wbuffer, sizeof(item->wbuffer), "ERROR");
 			} else if (res == 0) {

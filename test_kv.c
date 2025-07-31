@@ -1,3 +1,5 @@
+#include "kv_store.hpp"
+
 #include <stdio.h>
 #include <sys/socket.h>
 #include <string.h>
@@ -84,14 +86,39 @@ void test_kv_case(int connfd, char *msg, char *pattern, char *casename)
     equals(pattern, result, casename);
 }
 
+void test_rb_case(int connfd, char *msg, char *pattern, char *casename)
+{
+    if (!msg || !pattern || !casename) {
+        return;
+    }
+    send_msg(connfd, msg, strlen(msg));
+    char result[MAX_MSG_LENGTH] = {0};
+    recv_msg(connfd, result, MAX_MSG_LENGTH);
+    equals(pattern, result, casename);
+}
+
 void array_test_case(int connfd)
 {
     test_kv_case(connfd, "SET Name ZZW", "SUCCESS", "SETCase");
     test_kv_case(connfd, "GET Name", "ZZW", "GETCase");
     test_kv_case(connfd, "MOD Name Linus", "SUCCESS", "MODCase");
+    test_kv_case(connfd, "EXIST Name", "EXIST", "EXISTCase");
     test_kv_case(connfd, "GET Name", "Linus", "GETCase");
     test_kv_case(connfd, "DEL Name", "SUCCESS", "DELCase");
     test_kv_case(connfd, "GET Name", "NO EXIST", "GETCase");
+    test_kv_case(connfd, "EXIST Name", "NO EXIST", "EXISTCase");
+}
+
+void rbtree_test_case(int connfd)
+{
+    test_rb_case(connfd, "RSET Name ZZW", "SUCCESS", "RSETCase");
+    test_rb_case(connfd, "RGET Name", "ZZW", "RGETCase");
+    test_rb_case(connfd, "RMOD Name Linus", "SUCCESS", "RMODCase");
+    test_rb_case(connfd, "REXIST Name", "EXIST", "REXISTCase");
+    test_rb_case(connfd, "RGET Name", "Linus", "RGETCase");
+    test_rb_case(connfd, "RDEL Name", "SUCCESS", "RDELCase");
+    test_rb_case(connfd, "RGET Name", "NO EXIST", "RGETCase");
+    test_rb_case(connfd, "REXIST Name", "NO EXIST", "REXISTCase");
 }
 
 void array_test_case_1000k(int connfd)
@@ -139,8 +166,19 @@ int main(int argc, char *argv[])
     struct timeval start, end;
     gettimeofday(&start, NULL);
     if (ctx.mode & 0x01) {
+        printf("array test case\n");
         for(int i = 0; i < 1000; i++){
+        #if ENABLE_ARRAY_KV_ENGINE
             array_test_case(connfd);
+        #endif
+        }
+    }
+    if (ctx.mode & 0x02) {
+        printf("rbtree test case\n");
+        for(int i = 0; i < 1000; i++){
+        #if ENABLE_RBTREE_KV_ENGINE
+            rbtree_test_case(connfd);
+        #endif
         }
     }
     gettimeofday(&end, NULL);
