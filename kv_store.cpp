@@ -13,6 +13,10 @@ init_kv_engine(void)
     ret = kvs_rbtree_create(&global_rbtree);
 #endif
 
+#if ENABLE_HASH_KV_ENGINE
+    ret = kvs_hash_create(&global_hash);
+#endif
+
     return ret;
 }
 
@@ -25,6 +29,10 @@ destroy_kv_engine(void)
 
 #if ENABLE_RBTREE_KV_ENGINE
     kvs_rbtree_destroy(&global_rbtree);
+#endif
+
+#if ENABLE_HASH_KV_ENGINE
+    kvs_hash_destroy(&global_hash);
 #endif
 
 }

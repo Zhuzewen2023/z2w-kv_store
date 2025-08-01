@@ -102,6 +102,7 @@ CMakeFiles/kv_test.dir/test_kv.c.o: ../test_kv.c \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/strings.h \
   ../kv_store_rbtree.h \
+  ../kv_store_hash.h \
   ../kv_store_epoll.hpp \
   ../kv_log.h \
   /usr/include/pthread.h \
@@ -235,6 +236,8 @@ CMakeFiles/kv_test.dir/test_kv.c.o: ../test_kv.c \
 /usr/include/x86_64-linux-gnu/bits/typesizes.h:
 
 /usr/include/asm-generic/posix_types.h:
+
+../kv_store_hash.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
 

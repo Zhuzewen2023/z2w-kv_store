@@ -97,28 +97,234 @@ void test_rb_case(int connfd, char *msg, char *pattern, char *casename)
     equals(pattern, result, casename);
 }
 
+void test_hash_case(int connfd, char *msg, char *pattern, char *casename)
+{
+    if (!msg || !pattern || !casename) {
+        return;
+    }
+    send_msg(connfd, msg, strlen(msg));
+    char result[MAX_MSG_LENGTH] = {0};
+    recv_msg(connfd, result, MAX_MSG_LENGTH);
+    equals(pattern, result, casename);
+}
+
 void array_test_case(int connfd)
 {
     test_kv_case(connfd, "SET Name ZZW", "SUCCESS", "SETCase");
     test_kv_case(connfd, "GET Name", "ZZW", "GETCase");
+    test_kv_case(connfd, "SET Name Linus", "EXIST", "SETCase");
     test_kv_case(connfd, "MOD Name Linus", "SUCCESS", "MODCase");
     test_kv_case(connfd, "EXIST Name", "EXIST", "EXISTCase");
     test_kv_case(connfd, "GET Name", "Linus", "GETCase");
     test_kv_case(connfd, "DEL Name", "SUCCESS", "DELCase");
     test_kv_case(connfd, "GET Name", "NO EXIST", "GETCase");
+    test_kv_case(connfd, "MOD Name Linus", "ERROR", "MODCase");
     test_kv_case(connfd, "EXIST Name", "NO EXIST", "EXISTCase");
+}
+
+void array_test_case_huge_keys(int connfd)
+{
+    int i = 0;
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS", "SETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        test_kv_case(connfd, cmd, pattern, "GETCase");
+    }
+    for (i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SET Name_%d", i);
+        test_kv_case(connfd, cmd, "EXIST", "SETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS", "MODCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "EXIST Name_%d", i);
+        test_kv_case(connfd, cmd, "EXIST", "EXISTCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "Linus_%d", i);
+        test_kv_case(connfd, cmd, pattern, "GETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "DEL Name_%d", i);
+        test_kv_case(connfd, cmd, "SUCCESS", "DELCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        test_kv_case(connfd, cmd, "NO EXIST", "GETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d", i, i);
+        test_kv_case(connfd, cmd, "ERROR", "MODCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "EXIST Name_%d", i);
+        test_kv_case(connfd, cmd, "NO EXIST", "EXISTCase");
+    }
 }
 
 void rbtree_test_case(int connfd)
 {
     test_rb_case(connfd, "RSET Name ZZW", "SUCCESS", "RSETCase");
     test_rb_case(connfd, "RGET Name", "ZZW", "RGETCase");
+    test_rb_case(connfd, "RSET Name Linus", "EXIST", "RSETCase");
     test_rb_case(connfd, "RMOD Name Linus", "SUCCESS", "RMODCase");
     test_rb_case(connfd, "REXIST Name", "EXIST", "REXISTCase");
     test_rb_case(connfd, "RGET Name", "Linus", "RGETCase");
     test_rb_case(connfd, "RDEL Name", "SUCCESS", "RDELCase");
     test_rb_case(connfd, "RGET Name", "NO EXIST", "RGETCase");
+    test_rb_case(connfd, "RMOD Name Linus", "ERROR", "RMODCase");
     test_rb_case(connfd, "REXIST Name", "NO EXIST", "REXISTCase");
+}
+
+void rbtree_test_case_huge_keys(int connfd)
+{
+    int i = 0;
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d", i, i);
+        test_rb_case(connfd, cmd, "SUCCESS", "RSETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        test_rb_case(connfd, cmd, pattern, "RGETCase");
+    }
+    for (i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d", i);
+        test_rb_case(connfd, cmd, "EXIST", "RSETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d", i, i);
+        test_rb_case(connfd, cmd, "SUCCESS", "RMODCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "REXIST Name_%d", i);
+        test_rb_case(connfd, cmd, "EXIST", "REXISTCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "Linus_%d", i);
+        test_rb_case(connfd, cmd, pattern, "RGETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RDEL Name_%d", i);
+        test_rb_case(connfd, cmd, "SUCCESS", "RDELCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
+        test_rb_case(connfd, cmd, "NO EXIST", "RGETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d", i, i);
+        test_rb_case(connfd, cmd, "ERROR", "RMODCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "REXIST Name_%d", i);
+        test_rb_case(connfd, cmd, "NO EXIST", "REXISTCase");
+    }
+}
+
+void hash_test_case(int connfd)
+{
+    test_hash_case(connfd, "HSET Name ZZW", "SUCCESS", "HSETCase");
+    test_hash_case(connfd, "HGET Name", "ZZW", "HGETCase");
+    test_hash_case(connfd, "HSET Name Linus", "EXIST", "HSETCase");
+    test_hash_case(connfd, "HMOD Name Linus", "SUCCESS", "HMODCase");
+    test_hash_case(connfd, "HEXIST Name", "EXIST", "HEXISTCase");
+    test_hash_case(connfd, "HGET Name", "Linus", "HGETCase");
+    test_hash_case(connfd, "HDEL Name", "SUCCESS", "HDELCase");
+    test_hash_case(connfd, "HGET Name", "NO EXIST", "HGETCase");
+    test_hash_case(connfd, "HMOD Name Linus", "ERROR", "HMODCase");
+    test_hash_case(connfd, "HEXIST Name", "NO EXIST", "HEXISTCase");
+}
+
+void hash_test_case_huge_keys(int connfd)
+{
+    int i = 0;
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d", i, i);
+        test_rb_case(connfd, cmd, "SUCCESS", "HSETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        test_rb_case(connfd, cmd, pattern, "HGETCase");
+    }
+    for (i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d", i);
+        test_rb_case(connfd, cmd, "EXIST", "HSETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d", i, i);
+        test_rb_case(connfd, cmd, "SUCCESS", "HMODCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HEXIST Name_%d", i);
+        test_rb_case(connfd, cmd, "EXIST", "HEXISTCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "Linus_%d", i);
+        test_rb_case(connfd, cmd, pattern, "HGETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HDEL Name_%d", i);
+        test_rb_case(connfd, cmd, "SUCCESS", "HDELCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
+        test_rb_case(connfd, cmd, "NO EXIST", "HGETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d", i, i);
+        test_rb_case(connfd, cmd, "ERROR", "HMODCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HEXIST Name_%d", i);
+        test_rb_case(connfd, cmd, "NO EXIST", "HEXISTCase");
+    }
 }
 
 void array_test_case_1000k(int connfd)
@@ -128,14 +334,15 @@ void array_test_case_1000k(int connfd)
     }
 }
 
-//array: 0x01, rbtree: 0x02, hashtable: 0x04, skiptable: 0x08
+//array: 1, rbtree: 2, hashtable: 3, skiptable: 4
+//array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, skiptable_huge_keys: 8
 //test_qps_tcpclient -s 127.0.0.1 -p 2048 -m 
 int main(int argc, char *argv[])
 {
     if (argc < 7) {
         printf("Usage: %s -s <server_ip> -p <port> -m <mode>\n", argv[0]);
         printf("mode: \n");
-        printf("\tarray: 0x01, rbtree: 0x02, hashtable: 0x04, skiptable: 0x08\n");
+        printf("\tarray: 1, rbtree: 2, hashtable: 3, skiptable: 4, array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, skiptable_huge_keys: 8\n");
         return -1;
     }
     int ret = 0;
@@ -165,25 +372,51 @@ int main(int argc, char *argv[])
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
-    if (ctx.mode & 0x01) {
+    if (1 == ctx.mode) {
         printf("array test case\n");
-        for(int i = 0; i < 1000; i++){
+        for(int i = 0; i < 100000; i++){
         #if ENABLE_ARRAY_KV_ENGINE
             array_test_case(connfd);
         #endif
         }
     }
-    if (ctx.mode & 0x02) {
+    if (2 == ctx.mode) {
         printf("rbtree test case\n");
-        for(int i = 0; i < 1000; i++){
+        for(int i = 0; i < 100000; i++){
         #if ENABLE_RBTREE_KV_ENGINE
             rbtree_test_case(connfd);
         #endif
         }
     }
+    if (3 == ctx.mode) {
+        printf("hashtable test case\n");
+        for(int i = 0; i < 100000; i++){
+        #if ENABLE_HASH_KV_ENGINE
+            hash_test_case(connfd);
+        #endif
+        }
+    }
+    if (5 == ctx.mode) {
+        printf("array huge keys test case\n");
+    #if ENABLE_ARRAY_KV_ENGINE
+        array_test_case_huge_keys(connfd);
+    #endif
+    }
+    if (6 == ctx.mode) {
+        printf("rbtree huge keys test case\n");
+    #if ENABLE_RBTREE_KV_ENGINE
+        rbtree_test_case_huge_keys(connfd);
+    #endif
+    }
+    if (7 == ctx.mode) {
+        printf("hashtable huge keys test case\n");
+    #if ENABLE_HASH_KV_ENGINE
+        hash_test_case_huge_keys(connfd);
+    #endif
+    }
     gettimeofday(&end, NULL);
 
     int time_used = TIME_SUB_MS(end, start);
-    printf("time: %dms, qps: %d\n", time_used, 1000 * 1000 / time_used);
+    printf("time: %dms, qps: %d\n", time_used, 100000 * 1000 * 9 / time_used);
 
 }

@@ -376,6 +376,12 @@ kvs_rbtree_set(kvs_rbtree_t *inst, char *key, char *value)
         return -1;
     }
 
+	char* old_value = kvs_rbtree_get(inst, key);
+	if (old_value) {
+	    //printf("kvs_rbtree_set failed, key:%s already exist\n");
+	    return 1;
+	}
+
     rbtree_node *node = (rbtree_node*)kvs_malloc(sizeof(rbtree_node));
     node->key = kvs_malloc(strlen(key) + 1);
     if (!node->key) {

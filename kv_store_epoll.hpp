@@ -50,6 +50,10 @@ private:
                 res = kvs_array_set(&global_array, tokens[1], tokens[2]);
                 if(res == 0){
                     snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "EXIST");
                 }
                 break;
             case static_cast<int>(Command::GET):
@@ -106,6 +110,10 @@ private:
                 res = kvs_rbtree_set(&global_rbtree, tokens[1], tokens[2]);
                 if(res == 0){
                     snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "EXIST");
                 }
                 break;
             case static_cast<int>(Command::RGET):
@@ -143,6 +151,66 @@ private:
             case static_cast<int>(Command::REXIST):
                 KV_LOG("REXIST\n");
                 res = kvs_rbtree_exist(&global_rbtree, tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "EXIST");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            #endif
+            #if ENABLE_HASH_KV_ENGINE
+            /*hash*/
+            case static_cast<int>(Command::HSET):
+                KV_LOG("HSET\n");
+                if(count < 3){
+                    KV_LOG("invalid set command\n");
+                    snprintf(w_buf, sizeof(w_buf), "FAILED");
+                    return -1;
+                }
+                res = kvs_hash_set(&global_hash, tokens[1], tokens[2]);
+                if(res == 0){
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "EXIST");
+                }
+                break;
+            case static_cast<int>(Command::HGET):
+                KV_LOG("HGET\n");
+                value = kvs_hash_get(&global_hash, tokens[1]);
+                if(value){
+                    KV_LOG("HGET success : %s\n", value);
+                    snprintf(w_buf, sizeof(w_buf), "%s", value);
+                }else{
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::HDEL):
+                KV_LOG("HDEL\n");
+                res = kvs_hash_delete(&global_hash, tokens[1]);
+                if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::HMOD):
+                KV_LOG("HMOD\n");
+                res = kvs_hash_modify(&global_hash, tokens[1], tokens[2]);
+                if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::HEXIST):
+                KV_LOG("HEXIST\n");
+                res = kvs_hash_exist(&global_hash, tokens[1]);
                 if (res == 0) {
                     snprintf(w_buf, sizeof(w_buf), "EXIST");
                 } else {
@@ -254,6 +322,11 @@ private:
         RDEL,
         RMOD,
         REXIST,
+        HSET,
+        HGET,
+        HDEL,
+        HMOD,
+        HEXIST,
         COUNT,
     };
 
@@ -264,7 +337,8 @@ private:
     char w_buf[1024] = {0};
     const char* commands[static_cast<int>(Command::COUNT)] = {
         "SET", "GET", "DEL", "MOD","EXIST",
-        "RSET", "RGET", "RDEL", "RMOD","REXIST"
+        "RSET", "RGET", "RDEL", "RMOD","REXIST",
+        "HSET", "HGET", "HDEL", "HMOD","HEXIST"
     };
 
 };

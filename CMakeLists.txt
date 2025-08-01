@@ -16,6 +16,7 @@ set(COMMON_SOURCES
     ntyco_server.c
     kv_store.cpp
     kv_store_rbtree.c
+    kv_store_hash.c
 )
 set(KV_TEST_SOURCES test_kv.c)
 #set(RB_TEST_SOURCES rbtree-tst.c rbtree.c)

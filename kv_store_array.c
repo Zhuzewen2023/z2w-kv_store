@@ -52,8 +52,8 @@ kvs_array_set(kvs_array_t *inst, char *key, char *value)
 
     char* str = kvs_array_get(inst, key);
     if (str != NULL) {
-        printf("set failed, Key %s already exists\n");
-        return -1;
+        //printf("set failed, Key %s already exists\n");
+        return 1;
     }
 
     char *kcopy = (char *)kvs_malloc(strlen(key) + 1);
@@ -143,7 +143,7 @@ kvs_array_modify(kvs_array_t *inst, char *key, char *value)
     }
 
     if (inst->total == 0) {
-        printf("kvs_array_modify failed, Table is empty\n");
+        //printf("kvs_array_modify failed, Table is empty\n");
         return -2;
     }
 

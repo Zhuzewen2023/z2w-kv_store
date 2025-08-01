@@ -275,6 +275,30 @@ kv_store_array.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_array.c.s
 .PHONY : kv_store_array.c.s
 
+kv_store_hash.o: kv_store_hash.c.o
+.PHONY : kv_store_hash.o
+
+# target to build an object file
+kv_store_hash.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_hash.c.o
+.PHONY : kv_store_hash.c.o
+
+kv_store_hash.i: kv_store_hash.c.i
+.PHONY : kv_store_hash.i
+
+# target to preprocess a source file
+kv_store_hash.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_hash.c.i
+.PHONY : kv_store_hash.c.i
+
+kv_store_hash.s: kv_store_hash.c.s
+.PHONY : kv_store_hash.s
+
+# target to generate assembly for a file
+kv_store_hash.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_hash.c.s
+.PHONY : kv_store_hash.c.s
+
 kv_store_rbtree.o: kv_store_rbtree.c.o
 .PHONY : kv_store_rbtree.o
 
@@ -373,6 +397,9 @@ help:
 	@echo "... kv_store_array.o"
 	@echo "... kv_store_array.i"
 	@echo "... kv_store_array.s"
+	@echo "... kv_store_hash.o"
+	@echo "... kv_store_hash.i"
+	@echo "... kv_store_hash.s"
 	@echo "... kv_store_rbtree.o"
 	@echo "... kv_store_rbtree.i"
 	@echo "... kv_store_rbtree.s"
