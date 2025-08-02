@@ -8,7 +8,7 @@ kvs_array_create(kvs_array_t *inst)
 {
     if(!inst) return -1;
     if (inst->table) {
-        printf("kvs_array_create failed, Table already exists\n");
+        KV_LOG("kvs_array_create failed, Table already exists\n");
         return -1;
     }
     inst->table = kvs_malloc(KVS_ARRAY_SIZE * sizeof(kvs_array_item_t));
@@ -52,7 +52,7 @@ kvs_array_set(kvs_array_t *inst, char *key, char *value)
 
     char* str = kvs_array_get(inst, key);
     if (str != NULL) {
-        //printf("set failed, Key %s already exists\n");
+        //KV_LOG("set failed, Key %s already exists\n");
         return 1;
     }
 
@@ -94,7 +94,7 @@ char*
 kvs_array_get(kvs_array_t *inst, char *key) 
 {
     if (inst == NULL || key == NULL) {
-        printf("kvs_array_get failed, inst or key is NULL\n");
+        KV_LOG("kvs_array_get failed, inst or key is NULL\n");
         return NULL;
     }
     int i = 0;
@@ -138,12 +138,12 @@ int
 kvs_array_modify(kvs_array_t *inst, char *key, char *value) 
 {
     if (inst == NULL || key == NULL || value == NULL) {
-        printf("kvs_array_modify failed, inst or key or value is NULL\n");
+        KV_LOG("kvs_array_modify failed, inst or key or value is NULL\n");
         return -1;
     }
 
     if (inst->total == 0) {
-        //printf("kvs_array_modify failed, Table is empty\n");
+        //KV_LOG("kvs_array_modify failed, Table is empty\n");
         return -2;
     }
 
@@ -160,7 +160,7 @@ kvs_array_modify(kvs_array_t *inst, char *key, char *value)
 
             char *vcopy = kvs_malloc(strlen(value) + 1);
             if (vcopy == NULL) {
-                printf("kvs_array_modify failed, malloc failed\n");
+                KV_LOG("kvs_array_modify failed, malloc failed\n");
                 return -3;
             } else {
                 memset(vcopy, 0, strlen(value) + 1);
@@ -177,7 +177,7 @@ kvs_array_modify(kvs_array_t *inst, char *key, char *value)
 int 
 kvs_array_exist(kvs_array_t *inst, char *key) {
     if (inst == NULL || key == NULL) {
-        printf("kvs_array_exist failed, inst or key is NULL\n");
+        KV_LOG("kvs_array_exist failed, inst or key is NULL\n");
         return -1;
     }
 

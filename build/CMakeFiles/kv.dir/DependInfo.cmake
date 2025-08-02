@@ -12,6 +12,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/root/z2w-kv_store/kv_store_array.c" "CMakeFiles/kv.dir/kv_store_array.c.o" "gcc" "CMakeFiles/kv.dir/kv_store_array.c.o.d"
   "/root/z2w-kv_store/kv_store_hash.c" "CMakeFiles/kv.dir/kv_store_hash.c.o" "gcc" "CMakeFiles/kv.dir/kv_store_hash.c.o.d"
   "/root/z2w-kv_store/kv_store_rbtree.c" "CMakeFiles/kv.dir/kv_store_rbtree.c.o" "gcc" "CMakeFiles/kv.dir/kv_store_rbtree.c.o.d"
+  "/root/z2w-kv_store/kv_store_skiptable.c" "CMakeFiles/kv.dir/kv_store_skiptable.c.o" "gcc" "CMakeFiles/kv.dir/kv_store_skiptable.c.o.d"
   "/root/z2w-kv_store/ntyco_server.c" "CMakeFiles/kv.dir/ntyco_server.c.o" "gcc" "CMakeFiles/kv.dir/ntyco_server.c.o.d"
   "/root/z2w-kv_store/kv_store.cpp" "CMakeFiles/kv.dir/kv_store.cpp.o" "gcc" "CMakeFiles/kv.dir/kv_store.cpp.o.d"
   )

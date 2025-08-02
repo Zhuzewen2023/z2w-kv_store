@@ -17,6 +17,10 @@ init_kv_engine(void)
     ret = kvs_hash_create(&global_hash);
 #endif
 
+#if ENABLE_SKIPTABLE_KV_ENGINE
+    ret = kvs_skiptable_create(&global_skiptable);
+#endif
+
     return ret;
 }
 
@@ -33,6 +37,10 @@ destroy_kv_engine(void)
 
 #if ENABLE_HASH_KV_ENGINE
     kvs_hash_destroy(&global_hash);
+#endif
+
+#if ENABLE_SKIPTABLE_KV_ENGINE
+    kvs_skiptable_destroy(&global_skiptable);
 #endif
 
 }

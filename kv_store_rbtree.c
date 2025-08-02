@@ -1,5 +1,6 @@
 #include "kv_store_rbtree.h"
 #include "kv_mem.h"
+#include "kv_log.h"
 
 rbtree_node *rbtree_mini(rbtree *T, rbtree_node *x) {
 	while (x->left != T->nil) {
@@ -323,9 +324,9 @@ void rbtree_traversal(rbtree *T, rbtree_node *node) {
 	if (node != T->nil) {
 		rbtree_traversal(T, node->left);
 #if ENABLE_KEY_CHAR
-		printf("key:%s, value:%s\n", node->key, (char *)node->value);
+		KV_LOG("key:%s, value:%s\n", node->key, (char *)node->value);
 #else
-		printf("key:%d, color:%d\n", node->key, node->color);
+		KV_LOG("key:%d, color:%d\n", node->key, node->color);
 #endif
 		rbtree_traversal(T, node->right);
 	}
@@ -338,12 +339,12 @@ int
 kvs_rbtree_create(kvs_rbtree_t *inst)
 {
     if (inst == NULL) {
-        printf("kvs_rbtree_create failed, inst is NULL\n");
+        KV_LOG("kvs_rbtree_create failed, inst is NULL\n");
         return -1;
     }
     inst->nil = (rbtree_node *)kvs_malloc(sizeof(rbtree_node));
     if (inst->nil == NULL) {
-        printf("kvs_rbtree_create failed, kvs_malloc failed\n");
+        KV_LOG("kvs_rbtree_create failed, kvs_malloc failed\n");
         return -1;
     }
     inst->nil->color = BLACK;
@@ -372,20 +373,20 @@ int
 kvs_rbtree_set(kvs_rbtree_t *inst, char *key, char *value)
 {
     if (!inst || !key || !value) {
-        printf("kvs_rbtree_set failed, inst or key or value is NULL\n");
+        KV_LOG("kvs_rbtree_set failed, inst or key or value is NULL\n");
         return -1;
     }
 
 	char* old_value = kvs_rbtree_get(inst, key);
 	if (old_value) {
-	    //printf("kvs_rbtree_set failed, key:%s already exist\n");
+	    //KV_LOG("kvs_rbtree_set failed, key:%s already exist\n");
 	    return 1;
 	}
 
     rbtree_node *node = (rbtree_node*)kvs_malloc(sizeof(rbtree_node));
     node->key = kvs_malloc(strlen(key) + 1);
     if (!node->key) {
-        printf("kvs_rbtree_set failed, kvs_malloc failed\n");
+        KV_LOG("kvs_rbtree_set failed, kvs_malloc failed\n");
         return -2;
     }
 
@@ -394,7 +395,7 @@ kvs_rbtree_set(kvs_rbtree_t *inst, char *key, char *value)
 
     node->value = kvs_malloc(strlen(value) + 1);
     if (!node->value) {
-        printf("kvs_rbtree_set failed, kvs_malloc failed\n");
+        KV_LOG("kvs_rbtree_set failed, kvs_malloc failed\n");
         return -3;
     }
     memset(node->value, 0, strlen(value) + 1);

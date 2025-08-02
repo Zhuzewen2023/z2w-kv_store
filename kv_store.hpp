@@ -10,6 +10,7 @@
 #define ENABLE_ARRAY_KV_ENGINE 1
 #define ENABLE_RBTREE_KV_ENGINE 1
 #define ENABLE_HASH_KV_ENGINE 1
+#define ENABLE_SKIPTABLE_KV_ENGINE 1
 #define ENABLE_NETWORK_SELECT   NETWORK_EPOLL
 
 #if ENABLE_ARRAY_KV_ENGINE
@@ -20,6 +21,9 @@
 #endif
 #if ENABLE_HASH_KV_ENGINE
 #include "kv_store_hash.h"
+#endif
+#if ENABLE_SKIPTABLE_KV_ENGINE
+#include "kv_store_skiptable.h"
 #endif
 
 #if ( ENABLE_NETWORK_SELECT == NETWORK_EPOLL )

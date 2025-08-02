@@ -334,6 +334,89 @@ void array_test_case_1000k(int connfd)
     }
 }
 
+// 测试数组
+void skiptable_test_case(int connfd)
+{
+    // 测试SET命令
+    test_kv_case(connfd, "SSET Name ZZW", "SUCCESS", "SSETCase");
+    // 测试GET命令
+    test_kv_case(connfd, "SGET Name", "ZZW", "SGETCase");
+    // 测试SET命令，键已存在
+    test_kv_case(connfd, "SSET Name Linus", "EXIST", "SSETCase");
+    // 测试MOD命令
+    test_kv_case(connfd, "SMOD Name Linus", "SUCCESS", "SMODCase");
+    // 测试EXIST命令
+    test_kv_case(connfd, "SEXIST Name", "EXIST", "SEXISTCase");
+    // 测试GET命令
+    test_kv_case(connfd, "SGET Name", "Linus", "SGETCase");
+    // 测试DEL命令
+    test_kv_case(connfd, "SDEL Name", "SUCCESS", "SDELCase");
+    // 测试GET命令，键不存在
+    test_kv_case(connfd, "SGET Name", "NO EXIST", "SGETCase");
+    // 测试MOD命令，键不存在
+    test_kv_case(connfd, "SMOD Name Linus", "ERROR", "SMODCase");
+    test_kv_case(connfd, "SEXIST Name", "NO EXIST", "SEXISTCase");
+}
+
+void skiptable_test_case_huge_keys(int connfd)
+{
+    int i = 0;
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS", "SSETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        test_kv_case(connfd, cmd, pattern, "SGETCase");
+    }
+    for (i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d", i);
+        test_kv_case(connfd, cmd, "EXIST", "SSETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS", "SMODCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SEXIST Name_%d", i);
+        test_kv_case(connfd, cmd, "EXIST", "SEXISTCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "Linus_%d", i);
+        test_kv_case(connfd, cmd, pattern, "SGETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SDEL Name_%d", i);
+        test_kv_case(connfd, cmd, "SUCCESS", "SDELCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
+        test_kv_case(connfd, cmd, "NO EXIST", "SGETCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d", i, i);
+        test_kv_case(connfd, cmd, "ERROR", "SMODCase");
+    }
+    for(i = 0; i < 100000; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SEXIST Name_%d", i);
+        test_kv_case(connfd, cmd, "NO EXIST", "SEXISTCase");
+    }
+}
+
 //array: 1, rbtree: 2, hashtable: 3, skiptable: 4
 //array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, skiptable_huge_keys: 8
 //test_qps_tcpclient -s 127.0.0.1 -p 2048 -m 
@@ -396,6 +479,14 @@ int main(int argc, char *argv[])
         #endif
         }
     }
+    if (4 == ctx.mode) {
+        printf("skiptable test case\n");
+        for(int i = 0; i < 100000; i++){
+        #if ENABLE_SKIPTABLE_KV_ENGINE
+            skiptable_test_case(connfd);
+        #endif
+        }
+    }
     if (5 == ctx.mode) {
         printf("array huge keys test case\n");
     #if ENABLE_ARRAY_KV_ENGINE
@@ -412,6 +503,12 @@ int main(int argc, char *argv[])
         printf("hashtable huge keys test case\n");
     #if ENABLE_HASH_KV_ENGINE
         hash_test_case_huge_keys(connfd);
+    #endif
+    }
+    if (8 == ctx.mode) {
+        printf("skiptable huge keys test case\n");
+    #if ENABLE_SKIPTABLE_KV_ENGINE
+        skiptable_test_case_huge_keys(connfd);
     #endif
     }
     gettimeofday(&end, NULL);

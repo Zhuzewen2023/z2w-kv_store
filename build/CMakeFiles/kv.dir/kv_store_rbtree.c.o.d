@@ -50,4 +50,5 @@ CMakeFiles/kv.dir/kv_store_rbtree.c.o: \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h /usr/include/string.h \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
- /usr/include/strings.h /root/z2w-kv_store/kv_mem.h
+ /usr/include/strings.h /root/z2w-kv_store/kv_mem.h \
+ /root/z2w-kv_store/kv_log.h

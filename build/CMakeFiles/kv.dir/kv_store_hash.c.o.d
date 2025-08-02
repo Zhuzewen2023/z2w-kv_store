@@ -84,4 +84,5 @@ CMakeFiles/kv.dir/kv_store_hash.c.o: /root/z2w-kv_store/kv_store_hash.c \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/include/strings.h /root/z2w-kv_store/kv_store_rbtree.h \
+ /root/z2w-kv_store/kv_store_skiptable.h \
  /root/z2w-kv_store/kv_store_epoll.hpp /root/z2w-kv_store/kv_log.h

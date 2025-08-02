@@ -22,13 +22,13 @@ _create_node(char* key, char* value)
 {
     hashnode_t *node = (hashnode_t *)kvs_malloc(sizeof(hashnode_t));
     if (!node) {
-        printf("_create_node failed, malloc failed\n");
+        KV_LOG("_create_node failed, malloc failed\n");
         return NULL;
     }
 #if ENABLE_KEY_POINTER
     char *kcopy = (char *)kvs_malloc(strlen(key) + 1);
     if (!kcopy) {
-        printf("_create_node failed, malloc failed\n");
+        KV_LOG("_create_node failed, malloc failed\n");
         kvs_free(node);
         return NULL;
     }
@@ -37,7 +37,7 @@ _create_node(char* key, char* value)
     node->key = kcopy;
     char *vcopy = (char *)kvs_malloc(strlen(value) + 1);
     if (!vcopy) {
-        printf("_create_node failed, malloc failed\n");
+        KV_LOG("_create_node failed, malloc failed\n");
         kvs_free(node);
         kvs_free(kcopy);
         return NULL;
@@ -60,7 +60,7 @@ kvs_hash_create(kvs_hash_t *hash)
     if (!hash) return -1;
     hash->table = (hashnode_t **)kvs_malloc(sizeof(hashnode_t *) * MAX_TABLE_SIZE);
     if (!hash->table) {
-        printf("kvs_hash_create failed, malloc failed\n");
+        KV_LOG("kvs_hash_create failed, malloc failed\n");
         return -1;
     }
     memset(hash->table, 0, sizeof(hashnode_t *) * MAX_TABLE_SIZE);
@@ -98,21 +98,21 @@ int
 kvs_hash_set(kvs_hash_t *hash, char *key, char *value)
 {
     if (!hash || !key || !value) {
-        printf("kvs_hash_set failed, invalid param\n");
+        KV_LOG("kvs_hash_set failed, invalid param\n");
         return -1;
     }
     int slot = _hash(key, hash->max_slots);
     hashnode_t *node = hash->table[slot];
     while (node) {
         if (strcmp(node->key, key) == 0) {
-            //printf("kvs_hash_set failed, key already exist\n");
+            //KV_LOG("kvs_hash_set failed, key already exist\n");
             return 1;
         }
         node = node->next;
     }
     hashnode_t *new_node = _create_node(key, value);
     if (!new_node) {
-        printf("kvs_hash_set failed, _create_node failed\n");
+        KV_LOG("kvs_hash_set failed, _create_node failed\n");
         return -3;
     }
     new_node->next = hash->table[slot];
@@ -125,7 +125,7 @@ char*
 kvs_hash_get(kvs_hash_t *hash, char *key)
 {
     if (!hash || !key) {
-        printf("kvs_hash_get failed, invalid param\n");
+        KV_LOG("kvs_hash_get failed, invalid param\n");
         return NULL;
     }
 
@@ -144,7 +144,7 @@ int
 kvs_hash_modify(kvs_hash_t *hash, char *key, char *value)
 {
     if (!hash || !key || !value) {
-        printf("kvs_hash_mod failed, invalid param\n");
+        KV_LOG("kvs_hash_mod failed, invalid param\n");
         return -1;
     }
 
@@ -157,14 +157,14 @@ kvs_hash_modify(kvs_hash_t *hash, char *key, char *value)
         node = node->next;
     }
     if (!node) {
-        //printf("kvs_hash_mod failed, key not exist\n");
+        //KV_LOG("kvs_hash_mod failed, key not exist\n");
         return -2;
     }
 #if ENABLE_KEY_POINTER
     kvs_free(node->value);
     char *vcopy = (char *)kvs_malloc(strlen(value) + 1);
     if (!vcopy) {
-        printf("kvs_hash_mod failed, malloc failed\n");
+        KV_LOG("kvs_hash_mod failed, malloc failed\n");
         return -3;
     }
     memset(vcopy, 0, strlen(value) + 1);
@@ -188,14 +188,14 @@ int
 kvs_hash_delete(kvs_hash_t *hash, char *key)
 {
     if (!hash || !key) {
-        printf("kvs_hash_delete failed, invalid param\n");
+        KV_LOG("kvs_hash_delete failed, invalid param\n");
         return -1;
     }
 
     int slot = _hash(key, hash->max_slots);
     hashnode_t *node = hash->table[slot];
     if (node == NULL) {
-        printf("kvs_hash_delete failed, key not exist\n");
+        KV_LOG("kvs_hash_delete failed, key not exist\n");
         return -2;
     }
 

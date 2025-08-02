@@ -103,6 +103,7 @@ CMakeFiles/kv_test.dir/test_kv.c.o: ../test_kv.c \
   /usr/include/strings.h \
   ../kv_store_rbtree.h \
   ../kv_store_hash.h \
+  ../kv_store_skiptable.h \
   ../kv_store_epoll.hpp \
   ../kv_log.h \
   /usr/include/pthread.h \
@@ -138,6 +139,8 @@ CMakeFiles/kv_test.dir/test_kv.c.o: ../test_kv.c \
 /usr/include/pthread.h:
 
 ../kv_store_epoll.hpp:
+
+../kv_store_skiptable.h:
 
 ../kv_store_rbtree.h:
 

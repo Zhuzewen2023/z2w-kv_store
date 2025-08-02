@@ -218,6 +218,66 @@ private:
                 }
                 break;
             #endif
+             #if ENABLE_SKIPTABLE_KV_ENGINE
+            /*skiptable*/
+            case static_cast<int>(Command::SSET):
+                KV_LOG("SSET\n");
+                if(count < 3){
+                    KV_LOG("invalid set command\n");
+                    snprintf(w_buf, sizeof(w_buf), "FAILED");
+                    return -1;
+                }
+                res = kvs_skiptable_set(&global_skiptable, tokens[1], tokens[2]);
+                if(res == 0){
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "EXIST");
+                }
+                break;
+            case static_cast<int>(Command::SGET):
+                KV_LOG("SGET\n");
+                value = kvs_skiptable_get(&global_skiptable, tokens[1]);
+                if(value){
+                    KV_LOG("SGET success : %s\n", value);
+                    snprintf(w_buf, sizeof(w_buf), "%s", value);
+                }else{
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::SDEL):
+                KV_LOG("SDEL\n");
+                res = kvs_skiptable_delete(&global_skiptable, tokens[1]);
+                if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::SMOD):
+                KV_LOG("SMOD\n");
+                res = kvs_skiptable_modify(&global_skiptable, tokens[1], tokens[2]);
+                if (res < 0) {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                } else if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::SEXIST):
+                KV_LOG("SEXIST\n");
+                res = kvs_skiptable_exist(&global_skiptable, tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "EXIST");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            #endif
             default:
                 KV_LOG("unknow command, echo...\n");
                 snprintf(w_buf, sizeof(w_buf), r_buf);
@@ -327,6 +387,11 @@ private:
         HDEL,
         HMOD,
         HEXIST,
+        SSET,
+        SGET,
+        SDEL,
+        SMOD,
+        SEXIST,
         COUNT,
     };
 
@@ -338,7 +403,8 @@ private:
     const char* commands[static_cast<int>(Command::COUNT)] = {
         "SET", "GET", "DEL", "MOD","EXIST",
         "RSET", "RGET", "RDEL", "RMOD","REXIST",
-        "HSET", "HGET", "HDEL", "HMOD","HEXIST"
+        "HSET", "HGET", "HDEL", "HMOD","HEXIST",
+        "SSET", "SGET", "SDEL", "SMOD","SEXIST",
     };
 
 };

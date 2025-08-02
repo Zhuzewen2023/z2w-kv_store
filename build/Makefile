@@ -323,6 +323,30 @@ kv_store_rbtree.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_rbtree.c.s
 .PHONY : kv_store_rbtree.c.s
 
+kv_store_skiptable.o: kv_store_skiptable.c.o
+.PHONY : kv_store_skiptable.o
+
+# target to build an object file
+kv_store_skiptable.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_skiptable.c.o
+.PHONY : kv_store_skiptable.c.o
+
+kv_store_skiptable.i: kv_store_skiptable.c.i
+.PHONY : kv_store_skiptable.i
+
+# target to preprocess a source file
+kv_store_skiptable.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_skiptable.c.i
+.PHONY : kv_store_skiptable.c.i
+
+kv_store_skiptable.s: kv_store_skiptable.c.s
+.PHONY : kv_store_skiptable.s
+
+# target to generate assembly for a file
+kv_store_skiptable.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_skiptable.c.s
+.PHONY : kv_store_skiptable.c.s
+
 ntyco_server.o: ntyco_server.c.o
 .PHONY : ntyco_server.o
 
@@ -403,6 +427,9 @@ help:
 	@echo "... kv_store_rbtree.o"
 	@echo "... kv_store_rbtree.i"
 	@echo "... kv_store_rbtree.s"
+	@echo "... kv_store_skiptable.o"
+	@echo "... kv_store_skiptable.i"
+	@echo "... kv_store_skiptable.s"
 	@echo "... ntyco_server.o"
 	@echo "... ntyco_server.i"
 	@echo "... ntyco_server.s"

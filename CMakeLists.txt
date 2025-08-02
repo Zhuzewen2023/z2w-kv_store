@@ -17,6 +17,7 @@ set(COMMON_SOURCES
     kv_store.cpp
     kv_store_rbtree.c
     kv_store_hash.c
+    kv_store_skiptable.c
 )
 set(KV_TEST_SOURCES test_kv.c)
 #set(RB_TEST_SOURCES rbtree-tst.c rbtree.c)
