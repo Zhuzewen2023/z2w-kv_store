@@ -229,6 +229,7 @@ kvs_hash_delete(kvs_hash_t *hash, char *key)
             hash->count--;
             break;
         }
+        node = node->next;
     }
     return 0;
 }

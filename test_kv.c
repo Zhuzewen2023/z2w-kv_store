@@ -224,7 +224,7 @@ void rbtree_test_case_huge_keys(int connfd, int num)
     }
     for (i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RSET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d Linus_%d", i, i);
         test_rb_case(connfd, cmd, "EXIST", "RSETCase");
     }
     for(i = 0; i < num; i++){
@@ -297,7 +297,7 @@ void hash_test_case_huge_keys(int connfd, int num)
     }
     for (i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HSET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d Linus_%d", i, i);
         test_rb_case(connfd, cmd, "EXIST", "HSETCase");
     }
     for(i = 0; i < num; i++){
@@ -387,7 +387,7 @@ void skiptable_test_case_huge_keys(int connfd, int num)
     }
     for (i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SSET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d Linus_%d", i, i);
         test_kv_case(connfd, cmd, "EXIST", "SSETCase");
     }
     for(i = 0; i < num; i++){
