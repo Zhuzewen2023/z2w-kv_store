@@ -3,6 +3,7 @@
 
 #include "kv_store.hpp"
 #include "kv_log.h"
+#include "kv_save.h"
 
 #ifdef __cplusplus
 
@@ -96,6 +97,24 @@ private:
                     snprintf(w_buf, sizeof(w_buf), "EXIST");
                 } else {
                     snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::SAVE):
+                KV_LOG("SAVE\n");
+                res = kvs_array_save(tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                }
+                break;
+            case static_cast<int>(Command::LOAD):
+                KV_LOG("LOAD\n");
+                res = kvs_array_load(tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
                 }
                 break;
             #endif
@@ -378,6 +397,8 @@ private:
         DEL, 
         MOD,
         EXIST,
+        SAVE,
+        LOAD,
         RSET,
         RGET,
         RDEL,
@@ -402,7 +423,7 @@ private:
     char r_buf[1024] = {0};
     char w_buf[1024] = {0};
     const char* commands[static_cast<int>(Command::COUNT)] = {
-        "SET", "GET", "DEL", "MOD","EXIST",
+        "SET", "GET", "DEL", "MOD","EXIST","SAVE", "LOAD",
         "RSET", "RGET", "RDEL", "RMOD","REXIST",
         "HSET", "HGET", "HDEL", "HMOD","HEXIST",
         "SSET", "SGET", "SDEL", "SMOD","SEXIST",

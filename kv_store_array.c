@@ -200,3 +200,11 @@ kvs_array_exist(kvs_array_t *inst, char *key) {
     }
     return 0;
 }
+
+int
+kvs_array_count(kvs_array_t *inst) {
+    if (inst == NULL) {
+        return -1;
+    }
+    return inst->total;
+}

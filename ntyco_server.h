@@ -4,6 +4,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "kv_store.hpp"
+
+#if (ENABLE_NETWORK_SELECT == NETWORK_NTYCO)
 
 #define BUFFER_LENGTH 1024
 
@@ -40,6 +43,9 @@ enum Command{
 int ntyco_entry(int port);
 int kvstore_request(struct conn_item *item);
 int kv_store_split_token(char *msg, char** tokens);
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif

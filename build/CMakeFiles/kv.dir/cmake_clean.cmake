@@ -1,6 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/kv.dir/kv_mem.c.o"
   "CMakeFiles/kv.dir/kv_mem.c.o.d"
+  "CMakeFiles/kv.dir/kv_save.c.o"
+  "CMakeFiles/kv.dir/kv_save.c.o.d"
   "CMakeFiles/kv.dir/kv_store.cpp.o"
   "CMakeFiles/kv.dir/kv_store.cpp.o.d"
   "CMakeFiles/kv.dir/kv_store_array.c.o"

@@ -34,4 +34,7 @@
 #include "kv_store_iouring.hpp"
 #endif
 
+int 
+kvs_save(const char* filename);
+
 #endif

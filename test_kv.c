@@ -14,6 +14,7 @@ typedef struct test_context_s{
     int port;
     int mode;
     int repeat_num;
+    char filename[128];
 #if 1
     int failed;
 #endif
@@ -193,6 +194,40 @@ void array_test_case_huge_keys(int connfd, int num)
     }
 }
 
+void array_save_test(int connfd, int num, char* filename)
+{
+    int i = 0;
+    for(i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d", i, i);
+        // printf("cmd = %s\n", cmd);
+        test_kv_case(connfd, cmd, "SUCCESS", "SETCase");
+    }
+    char cmd[128] = {0};
+    snprintf(cmd, sizeof(cmd), "SAVE %s", filename);
+    test_kv_case(connfd, cmd, "SUCCESS", "SAVECase");
+}
+
+void array_load_test(int connfd, int num, char* filename)
+{
+    char cmd[128] = {0};
+    for(int i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        test_kv_case(connfd, cmd, "NO EXIST", "GETCase");
+    }
+    snprintf(cmd, sizeof(cmd), "LOAD %s", filename);
+    test_kv_case(connfd, cmd, "SUCCESS", "LOADCase");
+    for(int i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        test_kv_case(connfd, cmd, pattern, "GETCase");
+    }
+
+}
+
 void rbtree_test_case(int connfd)
 {
     test_rb_case(connfd, "RSET Name ZZW", "SUCCESS", "RSETCase");
@@ -339,33 +374,16 @@ void hash_test_case_huge_keys(int connfd, int num)
     }
 }
 
-// void array_test_case_1000k(int connfd)
-// {
-//     for(int i = 0; i < 1000000; i++){
-//         array_test_case(connfd);
-//     }
-// }
-
-// 测试数组
 void skiptable_test_case(int connfd)
 {
-    // 测试SET命令
     test_kv_case(connfd, "SSET Name ZZW", "SUCCESS", "SSETCase");
-    // 测试GET命令
     test_kv_case(connfd, "SGET Name", "ZZW", "SGETCase");
-    // 测试SET命令，键已存在
     test_kv_case(connfd, "SSET Name Linus", "EXIST", "SSETCase");
-    // 测试MOD命令
     test_kv_case(connfd, "SMOD Name Linus", "SUCCESS", "SMODCase");
-    // 测试EXIST命令
     test_kv_case(connfd, "SEXIST Name", "EXIST", "SEXISTCase");
-    // 测试GET命令
     test_kv_case(connfd, "SGET Name", "Linus", "SGETCase");
-    // 测试DEL命令
     test_kv_case(connfd, "SDEL Name", "SUCCESS", "SDELCase");
-    // 测试GET命令，键不存在
     test_kv_case(connfd, "SGET Name", "NO EXIST", "SGETCase");
-    // 测试MOD命令，键不存在
     test_kv_case(connfd, "SMOD Name Linus", "ERROR", "SMODCase");
     test_kv_case(connfd, "SEXIST Name", "NO EXIST", "SEXISTCase");
 }
@@ -437,7 +455,12 @@ int main(int argc, char *argv[])
     if (argc < 8) {
         printf("Usage: %s -s <server_ip> -p <port> -m <mode> -n <repeat_num>\n", argv[0]);
         printf("mode: \n");
-        printf("\tarray: 1, rbtree: 2, hashtable: 3, skiptable: 4, array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, skiptable_huge_keys: 8\n");
+        printf("\tarray: 1, rbtree: 2, hashtable: 3, skiptable: 4,\ 
+            array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, \ 
+            skiptable_huge_keys: 8, save_array_to_harddisk: 9, save_rbtree_to_harddisk: 10, \
+            save_hashtable_to_harddisk: 11, save_skiptable_to_harddisk: 12, \
+            load_array_from_harddisk: 13, load_rbtree_from_harddisk: 14, \
+            load_hashtable_from_harddisk: 15, load_skiptable_from_harddisk: 16\n");
         return -1;
     }
     int ret = 0;
@@ -526,6 +549,20 @@ int main(int argc, char *argv[])
     #if ENABLE_SKIPTABLE_KV_ENGINE
         skiptable_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
+    }
+    if (9 == ctx.mode) {
+        printf("save array to harddisk test case\n");
+        printf("Please Enter filename: ");
+        scanf("%s", ctx.filename);
+        array_save_test(connfd, ctx.repeat_num, ctx.filename);
+        //kvs_array_save(ctx.filename);
+    }
+    if (13 == ctx.mode) {
+        printf("load array from harddisk test case\n");
+        printf("Please Enter filename: ");
+        scanf("%s", ctx.filename);
+        //kvs_array_load(ctx.filename);
+        array_load_test(connfd, ctx.repeat_num, ctx.filename);
     }
     gettimeofday(&end, NULL);
 

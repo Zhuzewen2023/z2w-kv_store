@@ -69,10 +69,24 @@ include CMakeFiles/kv.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/kv.dir/flags.make
 
+CMakeFiles/kv.dir/kv_store.cpp.o: CMakeFiles/kv.dir/flags.make
+CMakeFiles/kv.dir/kv_store.cpp.o: ../kv_store.cpp
+CMakeFiles/kv.dir/kv_store.cpp.o: CMakeFiles/kv.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/kv.dir/kv_store.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kv.dir/kv_store.cpp.o -MF CMakeFiles/kv.dir/kv_store.cpp.o.d -o CMakeFiles/kv.dir/kv_store.cpp.o -c /root/z2w-kv_store/kv_store.cpp
+
+CMakeFiles/kv.dir/kv_store.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/kv.dir/kv_store.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /root/z2w-kv_store/kv_store.cpp > CMakeFiles/kv.dir/kv_store.cpp.i
+
+CMakeFiles/kv.dir/kv_store.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/kv.dir/kv_store.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/z2w-kv_store/kv_store.cpp -o CMakeFiles/kv.dir/kv_store.cpp.s
+
 CMakeFiles/kv.dir/kv_mem.c.o: CMakeFiles/kv.dir/flags.make
 CMakeFiles/kv.dir/kv_mem.c.o: ../kv_mem.c
 CMakeFiles/kv.dir/kv_mem.c.o: CMakeFiles/kv.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/kv.dir/kv_mem.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/kv.dir/kv_mem.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/kv.dir/kv_mem.c.o -MF CMakeFiles/kv.dir/kv_mem.c.o.d -o CMakeFiles/kv.dir/kv_mem.c.o -c /root/z2w-kv_store/kv_mem.c
 
 CMakeFiles/kv.dir/kv_mem.c.i: cmake_force
@@ -86,7 +100,7 @@ CMakeFiles/kv.dir/kv_mem.c.s: cmake_force
 CMakeFiles/kv.dir/kv_store_array.c.o: CMakeFiles/kv.dir/flags.make
 CMakeFiles/kv.dir/kv_store_array.c.o: ../kv_store_array.c
 CMakeFiles/kv.dir/kv_store_array.c.o: CMakeFiles/kv.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/kv.dir/kv_store_array.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/kv.dir/kv_store_array.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/kv.dir/kv_store_array.c.o -MF CMakeFiles/kv.dir/kv_store_array.c.o.d -o CMakeFiles/kv.dir/kv_store_array.c.o -c /root/z2w-kv_store/kv_store_array.c
 
 CMakeFiles/kv.dir/kv_store_array.c.i: cmake_force
@@ -100,7 +114,7 @@ CMakeFiles/kv.dir/kv_store_array.c.s: cmake_force
 CMakeFiles/kv.dir/ntyco_server.c.o: CMakeFiles/kv.dir/flags.make
 CMakeFiles/kv.dir/ntyco_server.c.o: ../ntyco_server.c
 CMakeFiles/kv.dir/ntyco_server.c.o: CMakeFiles/kv.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/kv.dir/ntyco_server.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/kv.dir/ntyco_server.c.o"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/kv.dir/ntyco_server.c.o -MF CMakeFiles/kv.dir/ntyco_server.c.o.d -o CMakeFiles/kv.dir/ntyco_server.c.o -c /root/z2w-kv_store/ntyco_server.c
 
 CMakeFiles/kv.dir/ntyco_server.c.i: cmake_force
@@ -110,20 +124,6 @@ CMakeFiles/kv.dir/ntyco_server.c.i: cmake_force
 CMakeFiles/kv.dir/ntyco_server.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/kv.dir/ntyco_server.c.s"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /root/z2w-kv_store/ntyco_server.c -o CMakeFiles/kv.dir/ntyco_server.c.s
-
-CMakeFiles/kv.dir/kv_store.cpp.o: CMakeFiles/kv.dir/flags.make
-CMakeFiles/kv.dir/kv_store.cpp.o: ../kv_store.cpp
-CMakeFiles/kv.dir/kv_store.cpp.o: CMakeFiles/kv.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/kv.dir/kv_store.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/kv.dir/kv_store.cpp.o -MF CMakeFiles/kv.dir/kv_store.cpp.o.d -o CMakeFiles/kv.dir/kv_store.cpp.o -c /root/z2w-kv_store/kv_store.cpp
-
-CMakeFiles/kv.dir/kv_store.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/kv.dir/kv_store.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /root/z2w-kv_store/kv_store.cpp > CMakeFiles/kv.dir/kv_store.cpp.i
-
-CMakeFiles/kv.dir/kv_store.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/kv.dir/kv_store.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /root/z2w-kv_store/kv_store.cpp -o CMakeFiles/kv.dir/kv_store.cpp.s
 
 CMakeFiles/kv.dir/kv_store_rbtree.c.o: CMakeFiles/kv.dir/flags.make
 CMakeFiles/kv.dir/kv_store_rbtree.c.o: ../kv_store_rbtree.c
@@ -167,30 +167,46 @@ CMakeFiles/kv.dir/kv_store_skiptable.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/kv.dir/kv_store_skiptable.c.s"
 	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /root/z2w-kv_store/kv_store_skiptable.c -o CMakeFiles/kv.dir/kv_store_skiptable.c.s
 
+CMakeFiles/kv.dir/kv_save.c.o: CMakeFiles/kv.dir/flags.make
+CMakeFiles/kv.dir/kv_save.c.o: ../kv_save.c
+CMakeFiles/kv.dir/kv_save.c.o: CMakeFiles/kv.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/kv.dir/kv_save.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/kv.dir/kv_save.c.o -MF CMakeFiles/kv.dir/kv_save.c.o.d -o CMakeFiles/kv.dir/kv_save.c.o -c /root/z2w-kv_store/kv_save.c
+
+CMakeFiles/kv.dir/kv_save.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/kv.dir/kv_save.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /root/z2w-kv_store/kv_save.c > CMakeFiles/kv.dir/kv_save.c.i
+
+CMakeFiles/kv.dir/kv_save.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/kv.dir/kv_save.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /root/z2w-kv_store/kv_save.c -o CMakeFiles/kv.dir/kv_save.c.s
+
 # Object files for target kv
 kv_OBJECTS = \
+"CMakeFiles/kv.dir/kv_store.cpp.o" \
 "CMakeFiles/kv.dir/kv_mem.c.o" \
 "CMakeFiles/kv.dir/kv_store_array.c.o" \
 "CMakeFiles/kv.dir/ntyco_server.c.o" \
-"CMakeFiles/kv.dir/kv_store.cpp.o" \
 "CMakeFiles/kv.dir/kv_store_rbtree.c.o" \
 "CMakeFiles/kv.dir/kv_store_hash.c.o" \
-"CMakeFiles/kv.dir/kv_store_skiptable.c.o"
+"CMakeFiles/kv.dir/kv_store_skiptable.c.o" \
+"CMakeFiles/kv.dir/kv_save.c.o"
 
 # External object files for target kv
 kv_EXTERNAL_OBJECTS =
 
+bin/kv: CMakeFiles/kv.dir/kv_store.cpp.o
 bin/kv: CMakeFiles/kv.dir/kv_mem.c.o
 bin/kv: CMakeFiles/kv.dir/kv_store_array.c.o
 bin/kv: CMakeFiles/kv.dir/ntyco_server.c.o
-bin/kv: CMakeFiles/kv.dir/kv_store.cpp.o
 bin/kv: CMakeFiles/kv.dir/kv_store_rbtree.c.o
 bin/kv: CMakeFiles/kv.dir/kv_store_hash.c.o
 bin/kv: CMakeFiles/kv.dir/kv_store_skiptable.c.o
+bin/kv: CMakeFiles/kv.dir/kv_save.c.o
 bin/kv: CMakeFiles/kv.dir/build.make
 bin/kv: ../NtyCo/libntyco.a
 bin/kv: CMakeFiles/kv.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable bin/kv"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/root/z2w-kv_store/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable bin/kv"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/kv.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

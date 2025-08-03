@@ -46,6 +46,9 @@ kvs_array_modify(kvs_array_t *inst, char *key, char *value);
 int 
 kvs_array_exist(kvs_array_t *inst, char *key);
 
+int
+kvs_array_count(kvs_array_t *inst);
+
 #ifdef __cplusplus
 }
 #endif

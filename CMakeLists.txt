@@ -14,12 +14,14 @@ set(COMMON_SOURCES
     kv_mem.c
     kv_store_array.c
     ntyco_server.c
-    kv_store.cpp
     kv_store_rbtree.c
     kv_store_hash.c
     kv_store_skiptable.c
+    kv_save.c
 )
-set(KV_TEST_SOURCES test_kv.c)
+set(KV_SOURCES kv_store.cpp ${COMMON_SOURCES})
+
+set(KV_TEST_SOURCES test_kv.c ${COMMON_SOURCES})
 #set(RB_TEST_SOURCES rbtree-tst.c rbtree.c)
 set(BTREE_TEST_SOURCES btree.c btree_test.c)
 #```cmake
@@ -61,7 +63,7 @@ set_target_properties(ntyco PROPERTIES
 #这是头文件所在的目录路径。假设你的库的头文件都放在这个目录下。
 # target_include_directories(ntyco INTERFACE ${CMAKE_SOURCE_DIR}/NtyCo/core)
 
-add_executable(kv ${COMMON_SOURCES})
+add_executable(kv ${KV_SOURCES})
 
 add_executable(kv_test ${KV_TEST_SOURCES})
 

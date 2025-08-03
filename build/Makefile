@@ -209,6 +209,7 @@ kv_mem.o: kv_mem.c.o
 # target to build an object file
 kv_mem.c.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_mem.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_mem.c.o
 .PHONY : kv_mem.c.o
 
 kv_mem.i: kv_mem.c.i
@@ -217,6 +218,7 @@ kv_mem.i: kv_mem.c.i
 # target to preprocess a source file
 kv_mem.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_mem.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_mem.c.i
 .PHONY : kv_mem.c.i
 
 kv_mem.s: kv_mem.c.s
@@ -225,7 +227,35 @@ kv_mem.s: kv_mem.c.s
 # target to generate assembly for a file
 kv_mem.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_mem.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_mem.c.s
 .PHONY : kv_mem.c.s
+
+kv_save.o: kv_save.c.o
+.PHONY : kv_save.o
+
+# target to build an object file
+kv_save.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_save.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_save.c.o
+.PHONY : kv_save.c.o
+
+kv_save.i: kv_save.c.i
+.PHONY : kv_save.i
+
+# target to preprocess a source file
+kv_save.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_save.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_save.c.i
+.PHONY : kv_save.c.i
+
+kv_save.s: kv_save.c.s
+.PHONY : kv_save.s
+
+# target to generate assembly for a file
+kv_save.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_save.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_save.c.s
+.PHONY : kv_save.c.s
 
 kv_store.o: kv_store.cpp.o
 .PHONY : kv_store.o
@@ -257,6 +287,7 @@ kv_store_array.o: kv_store_array.c.o
 # target to build an object file
 kv_store_array.c.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_array.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_array.c.o
 .PHONY : kv_store_array.c.o
 
 kv_store_array.i: kv_store_array.c.i
@@ -265,6 +296,7 @@ kv_store_array.i: kv_store_array.c.i
 # target to preprocess a source file
 kv_store_array.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_array.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_array.c.i
 .PHONY : kv_store_array.c.i
 
 kv_store_array.s: kv_store_array.c.s
@@ -273,6 +305,7 @@ kv_store_array.s: kv_store_array.c.s
 # target to generate assembly for a file
 kv_store_array.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_array.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_array.c.s
 .PHONY : kv_store_array.c.s
 
 kv_store_hash.o: kv_store_hash.c.o
@@ -281,6 +314,7 @@ kv_store_hash.o: kv_store_hash.c.o
 # target to build an object file
 kv_store_hash.c.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_hash.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_hash.c.o
 .PHONY : kv_store_hash.c.o
 
 kv_store_hash.i: kv_store_hash.c.i
@@ -289,6 +323,7 @@ kv_store_hash.i: kv_store_hash.c.i
 # target to preprocess a source file
 kv_store_hash.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_hash.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_hash.c.i
 .PHONY : kv_store_hash.c.i
 
 kv_store_hash.s: kv_store_hash.c.s
@@ -297,6 +332,7 @@ kv_store_hash.s: kv_store_hash.c.s
 # target to generate assembly for a file
 kv_store_hash.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_hash.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_hash.c.s
 .PHONY : kv_store_hash.c.s
 
 kv_store_rbtree.o: kv_store_rbtree.c.o
@@ -305,6 +341,7 @@ kv_store_rbtree.o: kv_store_rbtree.c.o
 # target to build an object file
 kv_store_rbtree.c.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_rbtree.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_rbtree.c.o
 .PHONY : kv_store_rbtree.c.o
 
 kv_store_rbtree.i: kv_store_rbtree.c.i
@@ -313,6 +350,7 @@ kv_store_rbtree.i: kv_store_rbtree.c.i
 # target to preprocess a source file
 kv_store_rbtree.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_rbtree.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_rbtree.c.i
 .PHONY : kv_store_rbtree.c.i
 
 kv_store_rbtree.s: kv_store_rbtree.c.s
@@ -321,6 +359,7 @@ kv_store_rbtree.s: kv_store_rbtree.c.s
 # target to generate assembly for a file
 kv_store_rbtree.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_rbtree.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_rbtree.c.s
 .PHONY : kv_store_rbtree.c.s
 
 kv_store_skiptable.o: kv_store_skiptable.c.o
@@ -329,6 +368,7 @@ kv_store_skiptable.o: kv_store_skiptable.c.o
 # target to build an object file
 kv_store_skiptable.c.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_skiptable.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_skiptable.c.o
 .PHONY : kv_store_skiptable.c.o
 
 kv_store_skiptable.i: kv_store_skiptable.c.i
@@ -337,6 +377,7 @@ kv_store_skiptable.i: kv_store_skiptable.c.i
 # target to preprocess a source file
 kv_store_skiptable.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_skiptable.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_skiptable.c.i
 .PHONY : kv_store_skiptable.c.i
 
 kv_store_skiptable.s: kv_store_skiptable.c.s
@@ -345,6 +386,7 @@ kv_store_skiptable.s: kv_store_skiptable.c.s
 # target to generate assembly for a file
 kv_store_skiptable.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_skiptable.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_skiptable.c.s
 .PHONY : kv_store_skiptable.c.s
 
 ntyco_server.o: ntyco_server.c.o
@@ -353,6 +395,7 @@ ntyco_server.o: ntyco_server.c.o
 # target to build an object file
 ntyco_server.c.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/ntyco_server.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/ntyco_server.c.o
 .PHONY : ntyco_server.c.o
 
 ntyco_server.i: ntyco_server.c.i
@@ -361,6 +404,7 @@ ntyco_server.i: ntyco_server.c.i
 # target to preprocess a source file
 ntyco_server.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/ntyco_server.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/ntyco_server.c.i
 .PHONY : ntyco_server.c.i
 
 ntyco_server.s: ntyco_server.c.s
@@ -369,6 +413,7 @@ ntyco_server.s: ntyco_server.c.s
 # target to generate assembly for a file
 ntyco_server.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/ntyco_server.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/ntyco_server.c.s
 .PHONY : ntyco_server.c.s
 
 test_kv.o: test_kv.c.o
@@ -415,6 +460,9 @@ help:
 	@echo "... kv_mem.o"
 	@echo "... kv_mem.i"
 	@echo "... kv_mem.s"
+	@echo "... kv_save.o"
+	@echo "... kv_save.i"
+	@echo "... kv_save.s"
 	@echo "... kv_store.o"
 	@echo "... kv_store.i"
 	@echo "... kv_store.s"

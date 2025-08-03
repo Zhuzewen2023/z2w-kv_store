@@ -8,6 +8,13 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/root/z2w-kv_store/kv_mem.c" "CMakeFiles/kv_test.dir/kv_mem.c.o" "gcc" "CMakeFiles/kv_test.dir/kv_mem.c.o.d"
+  "/root/z2w-kv_store/kv_save.c" "CMakeFiles/kv_test.dir/kv_save.c.o" "gcc" "CMakeFiles/kv_test.dir/kv_save.c.o.d"
+  "/root/z2w-kv_store/kv_store_array.c" "CMakeFiles/kv_test.dir/kv_store_array.c.o" "gcc" "CMakeFiles/kv_test.dir/kv_store_array.c.o.d"
+  "/root/z2w-kv_store/kv_store_hash.c" "CMakeFiles/kv_test.dir/kv_store_hash.c.o" "gcc" "CMakeFiles/kv_test.dir/kv_store_hash.c.o.d"
+  "/root/z2w-kv_store/kv_store_rbtree.c" "CMakeFiles/kv_test.dir/kv_store_rbtree.c.o" "gcc" "CMakeFiles/kv_test.dir/kv_store_rbtree.c.o.d"
+  "/root/z2w-kv_store/kv_store_skiptable.c" "CMakeFiles/kv_test.dir/kv_store_skiptable.c.o" "gcc" "CMakeFiles/kv_test.dir/kv_store_skiptable.c.o.d"
+  "/root/z2w-kv_store/ntyco_server.c" "CMakeFiles/kv_test.dir/ntyco_server.c.o" "gcc" "CMakeFiles/kv_test.dir/ntyco_server.c.o.d"
   "/root/z2w-kv_store/test_kv.c" "CMakeFiles/kv_test.dir/test_kv.c.o" "gcc" "CMakeFiles/kv_test.dir/test_kv.c.o.d"
   )
 

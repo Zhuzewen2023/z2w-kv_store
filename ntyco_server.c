@@ -41,7 +41,8 @@
 
  *
  */
- 
+#include "ntyco_server.h"
+#if (ENABLE_NETWORK_SELECT == NETWORK_NTYCO)
 
 #include "nty_coroutine.h"
 #include "ntyco_server.h"
@@ -275,5 +276,5 @@ int ntyco_entry(int port) {
 	return 0;
 }
 
-
+#endif
 
