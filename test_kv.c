@@ -13,7 +13,7 @@ typedef struct test_context_s{
     char serverip[16];
     int port;
     int mode;
-
+    int repeat_num;
 #if 1
     int failed;
 #endif
@@ -69,7 +69,7 @@ int recv_msg(int connfd, char *msg, int length)
 void equals(char *pattern, char *result, char *casename)
 {
     if(strcmp(pattern, result) != 0){
-        printf("==> FAILED --> %s\n : '%s' != '%s'\n", casename, pattern, result);
+        printf("==> FAILED --> %s\n : SHOULD BE:'%s' != RESULT:'%s'\n", casename, pattern, result);
     } else {
         //printf("==> PASS --> %s\n", casename);
     }
@@ -122,61 +122,73 @@ void array_test_case(int connfd)
     test_kv_case(connfd, "EXIST Name", "NO EXIST", "EXISTCase");
 }
 
-void array_test_case_huge_keys(int connfd)
+void array_test_case_huge_keys(int connfd, int num)
 {
     int i = 0;
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d", i, i);
+        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "SUCCESS", "SETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        // printf("cmd = %s\n", cmd);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
         test_kv_case(connfd, cmd, pattern, "GETCase");
     }
-    for (i = 0; i < 100000; i++){
+    for (i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "SET Name_%d Linus_%d", i, i);
+        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "EXIST", "SETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d", i, i);
+        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "SUCCESS", "MODCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "EXIST Name_%d", i);
+        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "EXIST", "EXISTCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        // printf("cmd = %s\n", cmd);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "Linus_%d", i);
         test_kv_case(connfd, cmd, pattern, "GETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "DEL Name_%d", i);
+        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "SUCCESS", "DELCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "NO EXIST", "GETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d", i, i);
-        test_kv_case(connfd, cmd, "ERROR", "MODCase");
+        // printf("cmd = %s\n", cmd);
+        char case_str[128] = {0};
+        snprintf(case_str, sizeof(case_str), "MODCase_%d", i);
+        test_kv_case(connfd, cmd, "ERROR", case_str);
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "EXIST Name_%d", i);
+        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "NO EXIST", "EXISTCase");
     }
 }
@@ -195,59 +207,59 @@ void rbtree_test_case(int connfd)
     test_rb_case(connfd, "REXIST Name", "NO EXIST", "REXISTCase");
 }
 
-void rbtree_test_case_huge_keys(int connfd)
+void rbtree_test_case_huge_keys(int connfd, int num)
 {
     int i = 0;
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d", i, i);
         test_rb_case(connfd, cmd, "SUCCESS", "RSETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
         test_rb_case(connfd, cmd, pattern, "RGETCase");
     }
-    for (i = 0; i < 100000; i++){
+    for (i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RSET Name_%d", i);
         test_rb_case(connfd, cmd, "EXIST", "RSETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d", i, i);
         test_rb_case(connfd, cmd, "SUCCESS", "RMODCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "REXIST Name_%d", i);
         test_rb_case(connfd, cmd, "EXIST", "REXISTCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "Linus_%d", i);
         test_rb_case(connfd, cmd, pattern, "RGETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RDEL Name_%d", i);
         test_rb_case(connfd, cmd, "SUCCESS", "RDELCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
         test_rb_case(connfd, cmd, "NO EXIST", "RGETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d", i, i);
         test_rb_case(connfd, cmd, "ERROR", "RMODCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "REXIST Name_%d", i);
         test_rb_case(connfd, cmd, "NO EXIST", "REXISTCase");
@@ -268,71 +280,71 @@ void hash_test_case(int connfd)
     test_hash_case(connfd, "HEXIST Name", "NO EXIST", "HEXISTCase");
 }
 
-void hash_test_case_huge_keys(int connfd)
+void hash_test_case_huge_keys(int connfd, int num)
 {
     int i = 0;
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d", i, i);
         test_rb_case(connfd, cmd, "SUCCESS", "HSETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
         test_rb_case(connfd, cmd, pattern, "HGETCase");
     }
-    for (i = 0; i < 100000; i++){
+    for (i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HSET Name_%d", i);
         test_rb_case(connfd, cmd, "EXIST", "HSETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d", i, i);
         test_rb_case(connfd, cmd, "SUCCESS", "HMODCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HEXIST Name_%d", i);
         test_rb_case(connfd, cmd, "EXIST", "HEXISTCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "Linus_%d", i);
         test_rb_case(connfd, cmd, pattern, "HGETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HDEL Name_%d", i);
         test_rb_case(connfd, cmd, "SUCCESS", "HDELCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
         test_rb_case(connfd, cmd, "NO EXIST", "HGETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d", i, i);
         test_rb_case(connfd, cmd, "ERROR", "HMODCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HEXIST Name_%d", i);
         test_rb_case(connfd, cmd, "NO EXIST", "HEXISTCase");
     }
 }
 
-void array_test_case_1000k(int connfd)
-{
-    for(int i = 0; i < 1000000; i++){
-        array_test_case(connfd);
-    }
-}
+// void array_test_case_1000k(int connfd)
+// {
+//     for(int i = 0; i < 1000000; i++){
+//         array_test_case(connfd);
+//     }
+// }
 
 // 测试数组
 void skiptable_test_case(int connfd)
@@ -358,59 +370,59 @@ void skiptable_test_case(int connfd)
     test_kv_case(connfd, "SEXIST Name", "NO EXIST", "SEXISTCase");
 }
 
-void skiptable_test_case_huge_keys(int connfd)
+void skiptable_test_case_huge_keys(int connfd, int num)
 {
     int i = 0;
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d", i, i);
         test_kv_case(connfd, cmd, "SUCCESS", "SSETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
         test_kv_case(connfd, cmd, pattern, "SGETCase");
     }
-    for (i = 0; i < 100000; i++){
+    for (i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SSET Name_%d", i);
         test_kv_case(connfd, cmd, "EXIST", "SSETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d", i, i);
         test_kv_case(connfd, cmd, "SUCCESS", "SMODCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SEXIST Name_%d", i);
         test_kv_case(connfd, cmd, "EXIST", "SEXISTCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "Linus_%d", i);
         test_kv_case(connfd, cmd, pattern, "SGETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SDEL Name_%d", i);
         test_kv_case(connfd, cmd, "SUCCESS", "SDELCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
         test_kv_case(connfd, cmd, "NO EXIST", "SGETCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d", i, i);
         test_kv_case(connfd, cmd, "ERROR", "SMODCase");
     }
-    for(i = 0; i < 100000; i++){
+    for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SEXIST Name_%d", i);
         test_kv_case(connfd, cmd, "NO EXIST", "SEXISTCase");
@@ -422,8 +434,8 @@ void skiptable_test_case_huge_keys(int connfd)
 //test_qps_tcpclient -s 127.0.0.1 -p 2048 -m 
 int main(int argc, char *argv[])
 {
-    if (argc < 7) {
-        printf("Usage: %s -s <server_ip> -p <port> -m <mode>\n", argv[0]);
+    if (argc < 8) {
+        printf("Usage: %s -s <server_ip> -p <port> -m <mode> -n <repeat_num>\n", argv[0]);
         printf("mode: \n");
         printf("\tarray: 1, rbtree: 2, hashtable: 3, skiptable: 4, array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, skiptable_huge_keys: 8\n");
         return -1;
@@ -431,7 +443,7 @@ int main(int argc, char *argv[])
     int ret = 0;
     int opt;
     test_context_t ctx = {0};
-    while((opt = getopt(argc, argv, "s:p:m:?")) != -1){
+    while((opt = getopt(argc, argv, "s:p:m:n:?")) != -1){
         switch(opt){
             case 's':
                 printf("-s : %s\n", optarg);
@@ -445,6 +457,10 @@ int main(int argc, char *argv[])
                 printf("-m : %s\n", optarg);
                 ctx.mode = atoi(optarg);
                 break;
+            case 'n':
+                printf("-n : %s\n", optarg);
+                ctx.repeat_num = atoi(optarg);
+                break;
             default:
                 printf("getopt error, unknown opt\n");
                 exit(1);
@@ -457,7 +473,7 @@ int main(int argc, char *argv[])
     gettimeofday(&start, NULL);
     if (1 == ctx.mode) {
         printf("array test case\n");
-        for(int i = 0; i < 100000; i++){
+        for(int i = 0; i < ctx.repeat_num; i++){
         #if ENABLE_ARRAY_KV_ENGINE
             array_test_case(connfd);
         #endif
@@ -465,7 +481,7 @@ int main(int argc, char *argv[])
     }
     if (2 == ctx.mode) {
         printf("rbtree test case\n");
-        for(int i = 0; i < 100000; i++){
+        for(int i = 0; i < ctx.repeat_num; i++){
         #if ENABLE_RBTREE_KV_ENGINE
             rbtree_test_case(connfd);
         #endif
@@ -473,7 +489,7 @@ int main(int argc, char *argv[])
     }
     if (3 == ctx.mode) {
         printf("hashtable test case\n");
-        for(int i = 0; i < 100000; i++){
+        for(int i = 0; i < ctx.repeat_num; i++){
         #if ENABLE_HASH_KV_ENGINE
             hash_test_case(connfd);
         #endif
@@ -481,7 +497,7 @@ int main(int argc, char *argv[])
     }
     if (4 == ctx.mode) {
         printf("skiptable test case\n");
-        for(int i = 0; i < 100000; i++){
+        for(int i = 0; i < ctx.repeat_num; i++){
         #if ENABLE_SKIPTABLE_KV_ENGINE
             skiptable_test_case(connfd);
         #endif
@@ -490,30 +506,30 @@ int main(int argc, char *argv[])
     if (5 == ctx.mode) {
         printf("array huge keys test case\n");
     #if ENABLE_ARRAY_KV_ENGINE
-        array_test_case_huge_keys(connfd);
+        array_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
     }
     if (6 == ctx.mode) {
         printf("rbtree huge keys test case\n");
     #if ENABLE_RBTREE_KV_ENGINE
-        rbtree_test_case_huge_keys(connfd);
+        rbtree_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
     }
     if (7 == ctx.mode) {
         printf("hashtable huge keys test case\n");
     #if ENABLE_HASH_KV_ENGINE
-        hash_test_case_huge_keys(connfd);
+        hash_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
     }
     if (8 == ctx.mode) {
         printf("skiptable huge keys test case\n");
     #if ENABLE_SKIPTABLE_KV_ENGINE
-        skiptable_test_case_huge_keys(connfd);
+        skiptable_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
     }
     gettimeofday(&end, NULL);
 
     int time_used = TIME_SUB_MS(end, start);
-    printf("time: %dms, qps: %d\n", time_used, 100000 * 1000 * 9 / time_used);
+    printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 1000 / time_used);
 
 }

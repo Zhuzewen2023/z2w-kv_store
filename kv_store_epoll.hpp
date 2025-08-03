@@ -80,6 +80,7 @@ private:
             case static_cast<int>(Command::MOD):
                 KV_LOG("MOD\n");
                 res = kvs_array_modify(&global_array, tokens[1], tokens[2]);
+                printf("kvs_array_modify res : %d\n", res);
                 if (res < 0) {
                     snprintf(w_buf, sizeof(w_buf), "ERROR");
                 } else if (res == 0) {

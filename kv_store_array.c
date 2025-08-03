@@ -118,9 +118,17 @@ kvs_array_delete(kvs_array_t *inst, char *key)
     }
     int i = 0;
     for (i = 0; i < inst->total; i++) {
+        if (inst->table[i].key == NULL) {
+            KV_LOG("table[%d].key is NULL,continue..\n", i);
+            continue;
+        }
         if (strcmp(inst->table[i].key, key) == 0) {
-            kvs_free(inst->table[i].key);
-            kvs_free(inst->table[i].value);
+            if (inst->table[i].key) {
+                kvs_free(inst->table[i].key);
+            }
+            if (inst->table[i].value) {
+                kvs_free(inst->table[i].value);
+            }
             inst->table[i].key = NULL;
             inst->table[i].value = NULL;
 
@@ -143,17 +151,19 @@ kvs_array_modify(kvs_array_t *inst, char *key, char *value)
     }
 
     if (inst->total == 0) {
-        //KV_LOG("kvs_array_modify failed, Table is empty\n");
+        KV_LOG("kvs_array_modify failed, Table is empty\n");
         return -2;
     }
 
     int i = 0;
+    char all_null_flag = 1;
     for (i = 0; i < inst->total; i++) {
         if (inst->table[i].key == NULL) {
             continue;
         }
 
         if (strcmp(inst->table[i].key, key) == 0) {
+            all_null_flag = 0;
             KV_LOG("kvs_array_modify get key %s\n", inst->table[i].key);
             kvs_free(inst->table[i].value);
             inst->table[i].value = NULL;
@@ -170,6 +180,9 @@ kvs_array_modify(kvs_array_t *inst, char *key, char *value)
                 return 0;
             }
         }
+    }
+    if (all_null_flag) {
+        return -4;
     }
     return i;
 }
