@@ -177,6 +177,24 @@ private:
                     snprintf(w_buf, sizeof(w_buf), "NO EXIST");
                 }
                 break;
+            case static_cast<int>(Command::RSAVE):
+                KV_LOG("RSAVE\n");
+                res = kvs_rbtree_save(tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                }
+                break;
+            case static_cast<int>(Command::RLOAD):
+                KV_LOG("RLOAD\n");
+                res = kvs_rbtree_load(tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                }
+                break;
             #endif
             #if ENABLE_HASH_KV_ENGINE
             /*hash*/
@@ -237,6 +255,24 @@ private:
                     snprintf(w_buf, sizeof(w_buf), "NO EXIST");
                 }
                 break;
+            case static_cast<int>(Command::HSAVE):
+                KV_LOG("HSAVE\n");
+                res = kvs_hash_save(tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                }
+                break;
+            case static_cast<int>(Command::HLOAD):
+                KV_LOG("HLOAD\n");
+                res = kvs_hash_load(tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                }
+                break;
             #endif
              #if ENABLE_SKIPTABLE_KV_ENGINE
             /*skiptable*/
@@ -295,6 +331,24 @@ private:
                     snprintf(w_buf, sizeof(w_buf), "EXIST");
                 } else {
                     snprintf(w_buf, sizeof(w_buf), "NO EXIST");
+                }
+                break;
+            case static_cast<int>(Command::SSAVE):
+                KV_LOG("SSAVE\n");
+                res = kvs_skiptable_save(tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
+                }
+                break;
+            case static_cast<int>(Command::SLOAD):
+                KV_LOG("SLOAD\n");
+                res = kvs_skiptable_load(tokens[1]);
+                if (res == 0) {
+                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
+                } else {
+                    snprintf(w_buf, sizeof(w_buf), "ERROR");
                 }
                 break;
             #endif
@@ -404,16 +458,22 @@ private:
         RDEL,
         RMOD,
         REXIST,
+        RSAVE,
+        RLOAD,
         HSET,
         HGET,
         HDEL,
         HMOD,
         HEXIST,
+        HSAVE,
+        HLOAD,
         SSET,
         SGET,
         SDEL,
         SMOD,
         SEXIST,
+        SSAVE,
+        SLOAD,
         COUNT,
     };
 
@@ -424,9 +484,9 @@ private:
     char w_buf[1024] = {0};
     const char* commands[static_cast<int>(Command::COUNT)] = {
         "SET", "GET", "DEL", "MOD","EXIST","SAVE", "LOAD",
-        "RSET", "RGET", "RDEL", "RMOD","REXIST",
-        "HSET", "HGET", "HDEL", "HMOD","HEXIST",
-        "SSET", "SGET", "SDEL", "SMOD","SEXIST",
+        "RSET", "RGET", "RDEL", "RMOD","REXIST","RSAVE","RLOAD",
+        "HSET", "HGET", "HDEL", "HMOD","HEXIST","HSAVE","HLOAD",
+        "SSET", "SGET", "SDEL", "SMOD","SEXIST","SSAVE","SLOAD"
     };
 
 };

@@ -450,3 +450,16 @@ kvs_rbtree_exist(kvs_rbtree_t *inst, char *key)
     if (node == NULL || node == inst->nil) return -2;
     return 0;
 }
+
+static int count_nodes_recursive(rbtree *T, rbtree_node *node) {
+	if (node == T->nil) return 0;
+	return 1 + count_nodes_recursive(T, node->left) + count_nodes_recursive(T, node->right);
+}
+
+int
+kvs_rbtree_count(kvs_rbtree_t *inst)
+{
+	if (inst == NULL) return -1;
+	return count_nodes_recursive(inst, inst->root);
+    
+}

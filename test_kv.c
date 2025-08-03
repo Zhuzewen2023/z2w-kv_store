@@ -301,6 +301,39 @@ void rbtree_test_case_huge_keys(int connfd, int num)
     }
 }
 
+void rbtree_save_test(int connfd, int num, char* filename)
+{
+    int i = 0;
+    for(i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d", i, i);
+        // printf("cmd = %s\n", cmd);
+        test_kv_case(connfd, cmd, "SUCCESS", "RSETCase");
+    }
+    char cmd[128] = {0};
+    snprintf(cmd, sizeof(cmd), "RSAVE %s", filename);
+    test_kv_case(connfd, cmd, "SUCCESS", "RSAVECase");
+}
+
+void rbtree_load_test(int connfd, int num, char* filename)
+{
+    char cmd[128] = {0};
+    for(int i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
+        test_kv_case(connfd, cmd, "NO EXIST", "RGETCase");
+    }
+    snprintf(cmd, sizeof(cmd), "RLOAD %s", filename);
+    test_kv_case(connfd, cmd, "SUCCESS", "RLOADCase");
+    for(int i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        test_kv_case(connfd, cmd, pattern, "RGETCase");
+    }
+}
+
 void hash_test_case(int connfd)
 {
     test_hash_case(connfd, "HSET Name ZZW", "SUCCESS", "HSETCase");
@@ -374,6 +407,40 @@ void hash_test_case_huge_keys(int connfd, int num)
     }
 }
 
+void hash_save_test(int connfd, int num, char* filename)
+{
+    int i = 0;
+    for(i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d", i, i);
+        // printf("cmd = %s\n", cmd);
+        test_kv_case(connfd, cmd, "SUCCESS", "HSETCase");
+    }
+    char cmd[128] = {0};
+    snprintf(cmd, sizeof(cmd), "HSAVE %s", filename);
+    test_kv_case(connfd, cmd, "SUCCESS", "HSAVECase");
+}
+
+void hash_load_test(int connfd, int num, char* filename)
+{
+    char cmd[128] = {0};
+    for(int i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
+        test_kv_case(connfd, cmd, "NO EXIST", "HGETCase");
+    }
+    snprintf(cmd, sizeof(cmd), "HLOAD %s", filename);
+    test_kv_case(connfd, cmd, "SUCCESS", "HLOADCase");
+    for(int i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        test_kv_case(connfd, cmd, pattern, "HGETCase");
+    }
+
+}
+
 void skiptable_test_case(int connfd)
 {
     test_kv_case(connfd, "SSET Name ZZW", "SUCCESS", "SSETCase");
@@ -445,6 +512,40 @@ void skiptable_test_case_huge_keys(int connfd, int num)
         snprintf(cmd, sizeof(cmd), "SEXIST Name_%d", i);
         test_kv_case(connfd, cmd, "NO EXIST", "SEXISTCase");
     }
+}
+
+void skiptable_save_test(int connfd, int num, char* filename)
+{
+    int i = 0;
+    for(i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d", i, i);
+        // printf("cmd = %s\n", cmd);
+        test_kv_case(connfd, cmd, "SUCCESS", "SSETCase");
+    }
+    char cmd[128] = {0};
+    snprintf(cmd, sizeof(cmd), "SSAVE %s", filename);
+    test_kv_case(connfd, cmd, "SUCCESS", "SSAVECase");
+}
+
+void skiptable_load_test(int connfd, int num, char* filename)
+{
+    char cmd[128] = {0};
+    for(int i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
+        test_kv_case(connfd, cmd, "NO EXIST", "SGETCase");
+    }
+    snprintf(cmd, sizeof(cmd), "SLOAD %s", filename);
+    test_kv_case(connfd, cmd, "SUCCESS", "SLOADCase");
+    for(int i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        test_kv_case(connfd, cmd, pattern, "SGETCase");
+    }
+
 }
 
 //array: 1, rbtree: 2, hashtable: 3, skiptable: 4
@@ -557,12 +658,27 @@ int main(int argc, char *argv[])
         array_save_test(connfd, ctx.repeat_num, ctx.filename);
         //kvs_array_save(ctx.filename);
     }
+    if (10 == ctx.mode) {
+        printf("save rbtree to harddisk test case\n");
+        printf("Please Enter filename: ");
+        scanf("%s", ctx.filename);
+        rbtree_save_test(connfd, ctx.repeat_num, ctx.filename);
+        //kvs_rbtree_save(ctx.filename);
+    }
+    
     if (13 == ctx.mode) {
         printf("load array from harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
         //kvs_array_load(ctx.filename);
         array_load_test(connfd, ctx.repeat_num, ctx.filename);
+    }
+    if (14 == ctx.mode) {
+        printf("load rbtree from harddisk test case\n");
+        printf("Please Enter filename: ");
+        scanf("%s", ctx.filename);
+        //kvs_rbtree_load(ctx.filename);
+        rbtree_load_test(connfd, ctx.repeat_num, ctx.filename);
     }
     gettimeofday(&end, NULL);
 

@@ -61,6 +61,10 @@ kvs_rbtree_modify(kvs_rbtree_t *inst, char *key, char *value);
 int
 kvs_rbtree_exist(kvs_rbtree_t *inst, char *key);
 
+int
+kvs_rbtree_count(kvs_rbtree_t *inst);
+
+
 #ifdef __cplusplus
 }
 #endif
