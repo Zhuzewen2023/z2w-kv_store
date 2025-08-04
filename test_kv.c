@@ -553,15 +553,16 @@ void skiptable_load_test(int connfd, int num, char* filename)
 //test_qps_tcpclient -s 127.0.0.1 -p 2048 -m 
 int main(int argc, char *argv[])
 {
+    printf("Usage: %s -s <server_ip> -p <port> -m <mode> -n <repeat_num>\n", argv[0]);
+    printf("mode: \n");
+    printf("\tarray: 1, rbtree: 2, hashtable: 3, skiptable: 4,\ 
+        array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, \ 
+        skiptable_huge_keys: 8, save_array_to_harddisk: 9, save_rbtree_to_harddisk: 10, \
+        save_hashtable_to_harddisk: 11, save_skiptable_to_harddisk: 12, \
+        load_array_from_harddisk: 13, load_rbtree_from_harddisk: 14, \
+        load_hashtable_from_harddisk: 15, load_skiptable_from_harddisk: 16\n");
     if (argc < 8) {
-        printf("Usage: %s -s <server_ip> -p <port> -m <mode> -n <repeat_num>\n", argv[0]);
-        printf("mode: \n");
-        printf("\tarray: 1, rbtree: 2, hashtable: 3, skiptable: 4,\ 
-            array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, \ 
-            skiptable_huge_keys: 8, save_array_to_harddisk: 9, save_rbtree_to_harddisk: 10, \
-            save_hashtable_to_harddisk: 11, save_skiptable_to_harddisk: 12, \
-            load_array_from_harddisk: 13, load_rbtree_from_harddisk: 14, \
-            load_hashtable_from_harddisk: 15, load_skiptable_from_harddisk: 16\n");
+        printf("Invalid parameters, please check Usage!\n");
         return -1;
     }
     int ret = 0;
@@ -665,7 +666,20 @@ int main(int argc, char *argv[])
         rbtree_save_test(connfd, ctx.repeat_num, ctx.filename);
         //kvs_rbtree_save(ctx.filename);
     }
-    
+    if (11 == ctx.mode) {
+        printf("save hashtable to harddisk test case\n");
+        printf("Please Enter filename: ");
+        scanf("%s", ctx.filename);
+        hash_save_test(connfd, ctx.repeat_num, ctx.filename);
+        //kvs_hashtable_save(ctx.filename);
+    }
+    if (12 == ctx.mode) {
+        printf("save skiptable to harddisk test case\n");
+        printf("Please Enter filename: ");
+        scanf("%s", ctx.filename);
+        skiptable_save_test(connfd, ctx.repeat_num, ctx.filename);
+        //kvs_skiptable_save(ctx.filename);
+    }
     if (13 == ctx.mode) {
         printf("load array from harddisk test case\n");
         printf("Please Enter filename: ");
@@ -680,9 +694,24 @@ int main(int argc, char *argv[])
         //kvs_rbtree_load(ctx.filename);
         rbtree_load_test(connfd, ctx.repeat_num, ctx.filename);
     }
+    if (15 == ctx.mode) {
+        printf("load hashtable from harddisk test case\n");
+        printf("Please Enter filename: ");
+        scanf("%s", ctx.filename);
+        hash_load_test(connfd, ctx.repeat_num, ctx.filename);
+    }
+    if (16 == ctx.mode) {
+        printf("load skiptable from harddisk test case\n");
+        printf("Please Enter filename: ");
+        scanf("%s", ctx.filename);
+        skiptable_load_test(connfd, ctx.repeat_num, ctx.filename);
+    }
+
     gettimeofday(&end, NULL);
 
     int time_used = TIME_SUB_MS(end, start);
     printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 1000 / time_used);
+
+    return 0;
 
 }
