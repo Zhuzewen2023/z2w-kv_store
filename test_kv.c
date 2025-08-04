@@ -548,20 +548,300 @@ void skiptable_load_test(int connfd, int num, char* filename)
 
 }
 
+void array_multiple_commands_test(int connfd, int num)
+{
+    if (!ENABLE_ARRAY_KV_ENGINE) {
+        printf("Error: Array engine is not enabled.\n");
+        return;
+    }
+    for(int i = 0; i < num; i++){
+        char cmd[512] = {0};
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n\
+                                    GET Name_%d\n\
+                                    SET Name_%d Linus_%d\n\
+                                    MOD Name_%d Linus_%d\n\
+                                    EXIST Name_%d\n\
+                                    GET Name_%d\n\
+                                    DEL Name_%d\n\
+                                    GET Name_%d\n\
+                                    MOD Name_%d Linus_%d\n\
+                                    EXIST Name_%d\n", 
+                                    i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+
+        char pattern[512] = {0};
+        snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
+EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
+                                    i, i);
+        test_kv_case(connfd, cmd, pattern, "ArrayMultipleCommandsCase");
+
+    }
+}
+
+void rbtree_multiple_commands_test(int connfd, int num)
+{
+    if (!ENABLE_RBTREE_KV_ENGINE) {
+        printf("Error: Red-Black Tree engine is not enabled.\n");
+        return;
+    }
+    for(int i = 0; i < num; i++){
+        char cmd[512] = {0};
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n\
+                                    RGET Name_%d\n\
+                                    RSET Name_%d Linus_%d\n\
+                                    RMOD Name_%d Linus_%d\n\
+                                    REXIST Name_%d\n\
+                                    RGET Name_%d\n\
+                                    RDEL Name_%d\n\
+                                    RGET Name_%d\n\
+                                    RMOD Name_%d Linus_%d\n\
+                                    REXIST Name_%d\n", 
+                                    i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+
+        char pattern[512] = {0};
+        snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
+EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
+                                    i, i);
+        test_kv_case(connfd, cmd, pattern, "RbTreeMultipleCommandsCase");
+
+    }
+}
+
+void hash_multiple_commands_test(int connfd, int num)
+{
+    if (!ENABLE_HASH_KV_ENGINE) {
+        printf("Error: Hash engine is not enabled.\n");
+        return;
+    }
+    for(int i = 0; i < num; i++){
+        char cmd[512] = {0};
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n\
+                                    HGET Name_%d\n\
+                                    HSET Name_%d Linus_%d\n\
+                                    HMOD Name_%d Linus_%d\n\
+                                    HEXIST Name_%d\n\
+                                    HGET Name_%d\n\
+                                    HDEL Name_%d\n\
+                                    HGET Name_%d\n\
+                                    HMOD Name_%d Linus_%d\n\
+                                    HEXIST Name_%d\n", 
+                                    i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+
+        char pattern[512] = {0};
+        snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
+EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
+                                    i, i);
+        test_kv_case(connfd, cmd, pattern, "HashMultipleCommandsCase");
+
+    }
+}
+
+void skiptable_multiple_commands_test(int connfd, int num)
+{
+    if (!ENABLE_SKIPTABLE_KV_ENGINE) {
+        printf("Error: Skiptable engine is not enabled.\n");
+        return;
+    }
+    for(int i = 0; i < num; i++){
+        char cmd[512] = {0};
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n\
+                                    SGET Name_%d\n\
+                                    SSET Name_%d Linus_%d\n\
+                                    SMOD Name_%d Linus_%d\n\
+                                    SEXIST Name_%d\n\
+                                    SGET Name_%d\n\
+                                    SDEL Name_%d\n\
+                                    SGET Name_%d\n\
+                                    SMOD Name_%d Linus_%d\n\
+                                    SEXIST Name_%d\n", 
+                                    i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+
+        char pattern[512] = {0};
+        snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\nEXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
+                                    i, i);
+        test_kv_case(connfd, cmd, pattern, "SkipTableMultipleCommandsCase");
+
+    }
+}
+
+void all_engine_multiple_commands_test(int connfd, int num)
+{
+    if (!ENABLE_ARRAY_KV_ENGINE || !ENABLE_RBTREE_KV_ENGINE 
+        || !ENABLE_HASH_KV_ENGINE || !ENABLE_SKIPTABLE_KV_ENGINE) {
+        printf("Error: Not all engines are enabled.\n");
+        return;
+    }
+    for(int i = 0; i < num; i++){
+        char cmd[512] = {0};
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n\
+                                    RSET Name_%d ZZW_%d\n\
+                                    HSET Name_%d ZZW_%d\n\
+                                    SSET Name_%d ZZW_%d\n", 
+                                    i, i, i, i, i, i, i, i);
+
+        test_kv_case(connfd, cmd, "SUCCESS\nSUCCESS\nSUCCESS\nSUCCESS\n", 
+                                    "AllEngineSETCase1");
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n\
+                                    RGET Name_%d\n\
+                                    HGET Name_%d\n\
+                                    SGET Name_%d\n", i, i, i, i);
+
+        char pattern[512] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\nZZW_%d\nZZW_%d\nZZW_%d\n", 
+                                    i, i, i, i);
+        test_kv_case(connfd, cmd, pattern, "AllEngineGETCase");
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "SET Name_%d Linus_%d\n\
+                                    RSET Name_%d Linus_%d\n\
+                                    HSET Name_%d Linus_%d\n\
+                                    SSET Name_%d Linus_%d\n", 
+                                    i, i, i, i, i, i, i, i);
+
+        test_kv_case(connfd, cmd, "EXIST\nEXIST\nEXIST\nEXIST\n", 
+                                    "AllEngineSETCase2"
+                                    );
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d\n\
+                                    RMOD Name_%d Linus_%d\n\
+                                    HMOD Name_%d Linus_%d\n\
+                                    SMOD Name_%d Linus_%d\n", 
+                                    i, i, i, i, i, i, i, i);
+
+        test_kv_case(connfd, cmd, "SUCCESS\nSUCCESS\nSUCCESS\nSUCCESS\n", 
+                                    "AllEngineMODCase"
+                                    );
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "EXIST Name_%d\n\
+                                    REXIST Name_%d\n\
+                                    HEXIST Name_%d\n\
+                                    SEXIST Name_%d\n", 
+                                    i, i, i, i);
+
+        test_kv_case(connfd, cmd, "EXIST\nEXIST\nEXIST\nEXIST\n", 
+                                    "AllEngineEXISTCase"
+                                    );
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n\
+                                    RGET Name_%d\n\
+                                    HGET Name_%d\n\
+                                    SGET Name_%d\n", 
+                                    i, i, i, i);
+
+        memset(pattern, 0, sizeof(pattern));
+        snprintf(pattern, sizeof(pattern), "Linus_%d\nLinus_%d\nLinus_%d\nLinus_%d\n",  
+                                    i, i, i, i);
+
+        test_kv_case(connfd, cmd, pattern, "AllEngineGETCase");
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "DEL Name_%d\n\
+                                    RDEL Name_%d\n\
+                                    HDEL Name_%d\n\
+                                    SDEL Name_%d\n", 
+                                    i, i, i, i);
+
+        test_kv_case(connfd, cmd, "SUCCESS\nSUCCESS\nSUCCESS\nSUCCESS\n", 
+                                    "AllEngineDELCase");
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n\
+                                    RGET Name_%d\n\
+                                    HGET Name_%d\n\
+                                    SGET Name_%d\n", 
+                                    i, i, i, i);
+
+        test_kv_case(connfd, cmd, "NO EXIST\nNO EXIST\nNO EXIST\nNO EXIST\n", 
+                                    "AllEngineDELCase"
+                                    );
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d\n\
+                                    RMOD Name_%d Linus_%d\n\
+                                    HMOD Name_%d Linus_%d\n\
+                                    SMOD Name_%d Linus_%d\n", 
+                                    i, i, i, i, i, i, i, i);
+        test_kv_case(connfd, cmd, "ERROR\nERROR\nERROR\nERROR\n", 
+                                    "AllEngineDELCase");
+
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "EXIST Name_%d\n\
+                                    REXIST Name_%d\n\
+                                    HEXIST Name_%d\n\
+                                    SEXIST Name_%d\n", 
+                                    i, i, i, i);
+
+        test_kv_case(connfd, cmd, "NO EXIST\nNO EXIST\nNO EXIST\nNO EXIST\n", 
+                                    "AllEngineDELCase"
+                                    );
+    }
+    
+    
+}
+
+static void print_banner(void)
+{
+    printf("\n");
+    printf("███████╗██████╗ ██╗    ██╗    ██╗  ██╗██╗   ██╗    ███████╗████████╗ ██████╗ ██████╗ ███████╗\n");
+    printf("╚══███╔╝╚════██╗██║    ██║    ██║ ██╔╝██║   ██║    ██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗██╔════╝\n");
+    printf("  ███╔╝  █████╔╝██║ █╗ ██║    █████╔╝ ██║   ██║    ███████╗   ██║   ██║   ██║██████╔╝█████╗  \n");
+    printf(" ███╔╝  ██╔═══╝ ██║███╗██║    ██╔═██╗ ╚██╗ ██╔╝    ╚════██║   ██║   ██║   ██║██╔══██╗██╔══╝  \n");
+    printf("███████╗███████╗╚███╔███╔╝    ██║  ██╗ ╚████╔╝     ███████║   ██║   ╚██████╔╝██║  ██║███████╗\n");
+    printf("╚══════╝╚══════╝ ╚══╝╚══╝     ╚═╝  ╚═╝  ╚═══╝      ╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝\n");
+    printf("\n");
+}
+
+// 打印使用说明
+static void print_usage(const char* prog_name) {
+    printf("Usage: %s -s <server_ip> -p <port> -m <mode> -n <repeat_num>\n\n", prog_name);
+    
+    printf("Options:\n");
+    printf("  -s <server_ip>    Server IP address\n");
+    printf("  -p <port>         Server port number\n");
+    printf("  -m <mode>         Test mode (see below)\n");
+    printf("  -n <repeat_num>   Number of test repetitions\n\n");
+    
+    printf("Available Test Modes:\n");
+    printf("  [1]  Test Array KV Engine\n");
+    printf("  [2]  Test Red-Black Tree KV Engine\n");
+    printf("  [3]  Test Hash Table KV Engine\n");
+    printf("  [4]  Test SkipTable KV Engine\n");
+    printf("  [5]  Test Array with Huge Keys\n");
+    printf("  [6]  Test Red-Black Tree with Huge Keys\n");
+    printf("  [7]  Test Hash Table with Huge Keys\n");
+    printf("  [8]  Test SkipTable with Huge Keys\n");
+    printf("  [9]  Test Save Array to Disk\n");
+    printf("  [10] Test Save Red-Black Tree to Disk\n");
+    printf("  [11] Test Save Hash Table to Disk\n");
+    printf("  [12] Test Save SkipTable to Disk\n");
+    printf("  [13] Test Load Array from Disk\n");
+    printf("  [14] Test Load Red-Black Tree from Disk\n");
+    printf("  [15] Test Load Hash Table from Disk\n");
+    printf("  [16] Test Load SkipTable from Disk\n\n");
+    printf("  [17] Test Array KV Engine Multiple Commands Test\n");
+    printf("  [18] Test Red-Black Tree KV Engine Multiple Commands Test\n");
+    printf("  [19] Test Hash Table KV Engine Multiple Commands Test\n");
+    printf("  [20] Test SkipTable KV Engine Multiple Commands Test\n");
+    printf("  [21] Test All Engine Multiple Commands Test\n");
+    
+    printf("Examples:\n");
+    printf("  %s -s 127.0.0.1 -p 8080 -m 1 -n 100\n", prog_name);
+    printf("  %s -s localhost -p 8888 -m 10 -n 1\n\n", prog_name);
+}
+
 //array: 1, rbtree: 2, hashtable: 3, skiptable: 4
 //array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, skiptable_huge_keys: 8
 //test_qps_tcpclient -s 127.0.0.1 -p 2048 -m 
 int main(int argc, char *argv[])
 {
-    printf("Usage: %s -s <server_ip> -p <port> -m <mode> -n <repeat_num>\n", argv[0]);
-    printf("mode: \n");
-    printf("\tarray: 1, rbtree: 2, hashtable: 3, skiptable: 4,\ 
-        array_huge_keys: 5, rbtree_huge_keys: 6, hashtable_huge_keys: 7, \ 
-        skiptable_huge_keys: 8, save_array_to_harddisk: 9, save_rbtree_to_harddisk: 10, \
-        save_hashtable_to_harddisk: 11, save_skiptable_to_harddisk: 12, \
-        load_array_from_harddisk: 13, load_rbtree_from_harddisk: 14, \
-        load_hashtable_from_harddisk: 15, load_skiptable_from_harddisk: 16\n");
+    print_banner();
+    print_usage(argv[0]);
     if (argc < 8) {
+        //print_usage(argv[0]);
         printf("Invalid parameters, please check Usage!\n");
         return -1;
     }
@@ -705,6 +985,26 @@ int main(int argc, char *argv[])
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
         skiptable_load_test(connfd, ctx.repeat_num, ctx.filename);
+    }
+    if (17 == ctx.mode) {
+        printf("Test Array KV Engine Multiple Commands\n");
+        array_multiple_commands_test(connfd, ctx.repeat_num);
+    }
+    if (18 == ctx.mode) {
+        printf("Test Rbtree KV Engine Multiple Commands\n");
+        rbtree_multiple_commands_test(connfd, ctx.repeat_num);
+    }
+    if (19 == ctx.mode) {
+        printf("Test Hash KV Engine Multiple Commands\n");
+        hash_multiple_commands_test(connfd, ctx.repeat_num);
+    }
+    if (20 == ctx.mode) {
+        printf("Test Skiptable KV Engine Multiple Commands\n");
+        skiptable_multiple_commands_test(connfd, ctx.repeat_num);
+    }
+    if (21 == ctx.mode) {
+        printf("Test All Engine Multiple Commands Test\n");
+        all_engine_multiple_commands_test(connfd, ctx.repeat_num);
     }
 
     gettimeofday(&end, NULL);

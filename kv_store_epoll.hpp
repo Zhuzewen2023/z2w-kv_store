@@ -16,10 +16,12 @@ class KVStoreEpollConnection : public IConnection, public std::enable_shared_fro
 public:
     KVStoreEpollConnection(int fd) : IConnection(fd), 
                                     r_buf(),
+                                    w_buf(),
                                     send_queue_(),
                                     current_send_offset_(0) 
     {
         r_buf.reserve(4096); /*预分配接收缓冲区*/
+        w_buf.reserve(4096); /*预分配发送缓冲区*/
     }
 
 private:
@@ -767,11 +769,12 @@ private:
             std::string response = process_command(command);
             KV_LOG("response: %s\n", response.c_str());
             send_queue_.push(response + '\n');
-            if (1 == send_queue_.size()) {
-                Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
-            }
+            //if (1 == send_queue_.size()) {
+                //Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
+            //}
             it = std::find(r_buf.begin(), r_buf.end(), '\n');
         }
+        Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
     }
 
     void 
@@ -810,6 +813,7 @@ private:
     void 
     handle_write() 
     {
+        std::string response;
         while(1) {
             if (send_queue_.empty()) {
                 KV_LOG("send queue empty\n");
@@ -825,30 +829,9 @@ private:
             //     Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
             //     return;
             // }
-            std::string response = send_queue_.front();
+            response += send_queue_.front();
             send_queue_.pop();
-            int n = send(fd_, response.data(), response.size(), 0);
-            KV_LOG("send: %s, bytes: %ld, ret = %d\n", response.data(), response.size(), n);
-            if (n > 0) {
-                KV_LOG("send: %s bytes: %ld success\n", response.data(), response.size());
-            } else if (n == 0) {
-                KV_LOG("n == 0, client closed\n");
-                Reactor::get_instance().unregister_handler(fd_);
-                close(fd_);
-                break;
-            } else {
-                if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                    /*缓冲区满，等待下次写事件*/
-                    KV_LOG("errno == EAGAIN || errno == EWOULDBLOCK\n");
-                    Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
-                    break;
-                } else {
-                    KV_LOG("send error\n");
-                    Reactor::get_instance().unregister_handler(fd_);
-                    close(fd_);
-                    break;
-                }
-            }
+            
             // while (true) {
             //     int n = send(fd_, w_buf + sent_bytes, total_len - sent_bytes, 0);
             //     if(n > 0){
@@ -881,6 +864,25 @@ private:
             //         break;
             //     }
             // }
+        }
+        int n = send(fd_, response.data(), response.size(), 0);
+        KV_LOG("send: %s, bytes: %ld, ret = %d\n", response.data(), response.size(), n);
+        if (n > 0) {
+            KV_LOG("send: %s bytes: %ld success\n", response.data(), response.size());
+        } else if (n == 0) {
+            KV_LOG("n == 0, client closed\n");
+            Reactor::get_instance().unregister_handler(fd_);
+            close(fd_);
+        } else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                /*缓冲区满，等待下次写事件*/
+                KV_LOG("errno == EAGAIN || errno == EWOULDBLOCK\n");
+                Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
+            } else {
+                KV_LOG("send error\n");
+                Reactor::get_instance().unregister_handler(fd_);
+                close(fd_);
+            }
         }
     }
     
@@ -932,6 +934,7 @@ private:
 
     char *tokens[MAX_TOKENS];
     std::vector<char> r_buf;
+    std::vector<char> w_buf;
     std::queue<std::string> send_queue_;
     size_t current_send_offset_ = 0;
     //char r_buf[1024] = {0};
