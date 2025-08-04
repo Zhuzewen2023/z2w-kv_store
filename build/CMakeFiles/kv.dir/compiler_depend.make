@@ -439,7 +439,9 @@ CMakeFiles/kv.dir/kv_store.cpp.o: ../kv_store.cpp \
   ../kv_store_skiptable.h \
   ../kv_store_epoll.hpp \
   ../kv_log.h \
-  ../kv_save.h
+  ../kv_save.h \
+  /usr/include/c++/11/queue \
+  /usr/include/c++/11/bits/stl_queue.h
 
 CMakeFiles/kv.dir/kv_store_array.c.o: ../kv_store_array.c \
   /usr/include/stdc-predef.h \
@@ -1196,6 +1198,8 @@ CMakeFiles/kv.dir/ntyco_server.c.o: ../ntyco_server.c \
 
 /usr/include/x86_64-linux-gnu/sys/cdefs.h:
 
+/usr/include/c++/11/bits/stl_queue.h:
+
 /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
@@ -1401,6 +1405,8 @@ CMakeFiles/kv.dir/ntyco_server.c.o: ../ntyco_server.c \
 /usr/include/c++/11/ext/string_conversions.h:
 
 /usr/include/c++/11/bits/nested_exception.h:
+
+/usr/include/c++/11/queue:
 
 /usr/include/c++/11/bits/shared_ptr_atomic.h:
 

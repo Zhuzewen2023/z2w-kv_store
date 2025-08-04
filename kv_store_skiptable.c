@@ -114,7 +114,7 @@ kvs_skiptable_set(kvs_skiptable_t *table, char *key, char *value)
     /*检查key是否已经存在*/
     if (current && strcmp(current->key, key) == 0) {
         /*key已经存在，返回大于0的错误码*/
-        KV_LOG("key %s already exists\n");
+        KV_LOG("key %s already exists\n", key);
         return 1;
     }
 

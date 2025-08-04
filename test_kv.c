@@ -111,16 +111,16 @@ void test_hash_case(int connfd, char *msg, char *pattern, char *casename)
 
 void array_test_case(int connfd)
 {
-    test_kv_case(connfd, "SET Name ZZW", "SUCCESS", "SETCase");
-    test_kv_case(connfd, "GET Name", "ZZW", "GETCase");
-    test_kv_case(connfd, "SET Name Linus", "EXIST", "SETCase");
-    test_kv_case(connfd, "MOD Name Linus", "SUCCESS", "MODCase");
-    test_kv_case(connfd, "EXIST Name", "EXIST", "EXISTCase");
-    test_kv_case(connfd, "GET Name", "Linus", "GETCase");
-    test_kv_case(connfd, "DEL Name", "SUCCESS", "DELCase");
-    test_kv_case(connfd, "GET Name", "NO EXIST", "GETCase");
-    test_kv_case(connfd, "MOD Name Linus", "ERROR", "MODCase");
-    test_kv_case(connfd, "EXIST Name", "NO EXIST", "EXISTCase");
+    test_kv_case(connfd, "SET Name ZZW\n", "SUCCESS\n", "SETCase");
+    test_kv_case(connfd, "GET Name\n", "ZZW\n", "GETCase");
+    test_kv_case(connfd, "SET Name Linus\n", "EXIST\n", "SETCase");
+    test_kv_case(connfd, "MOD Name Linus\n", "SUCCESS\n", "MODCase");
+    test_kv_case(connfd, "EXIST Name\n", "EXIST\n", "EXISTCase");
+    test_kv_case(connfd, "GET Name\n", "Linus\n", "GETCase");
+    test_kv_case(connfd, "DEL Name\n", "SUCCESS\n", "DELCase");
+    test_kv_case(connfd, "GET Name\n", "NO EXIST\n", "GETCase");
+    test_kv_case(connfd, "MOD Name Linus\n", "ERROR\n", "MODCase");
+    test_kv_case(connfd, "EXIST Name\n", "NO EXIST\n", "EXISTCase");
 }
 
 void array_test_case_huge_keys(int connfd, int num)
@@ -128,69 +128,69 @@ void array_test_case_huge_keys(int connfd, int num)
     int i = 0;
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d", i, i);
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", i, i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "SUCCESS", "SETCase");
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
         // printf("cmd = %s\n", cmd);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "GETCase");
     }
     for (i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SET Name_%d Linus_%d", i, i);
+        snprintf(cmd, sizeof(cmd), "SET Name_%d Linus_%d\n", i, i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "EXIST", "SETCase");
+        test_kv_case(connfd, cmd, "EXIST\n", "SETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d", i, i);
+        snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d\n", i, i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "SUCCESS", "MODCase");
+        test_kv_case(connfd, cmd, "SUCCESS\n", "MODCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "EXIST Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "EXIST Name_%d\n", i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "EXIST", "EXISTCase");
+        test_kv_case(connfd, cmd, "EXIST\n", "EXISTCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
         // printf("cmd = %s\n", cmd);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "Linus_%d", i);
+        snprintf(pattern, sizeof(pattern), "Linus_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "GETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "DEL Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "DEL Name_%d\n", i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "SUCCESS", "DELCase");
+        test_kv_case(connfd, cmd, "SUCCESS\n", "DELCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "NO EXIST", "GETCase");
+        test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d", i, i);
+        snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d\n", i, i);
         // printf("cmd = %s\n", cmd);
         char case_str[128] = {0};
-        snprintf(case_str, sizeof(case_str), "MODCase_%d", i);
-        test_kv_case(connfd, cmd, "ERROR", case_str);
+        snprintf(case_str, sizeof(case_str), "MODCase_%d\n", i);
+        test_kv_case(connfd, cmd, "ERROR\n", case_str);
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "EXIST Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "EXIST Name_%d\n", i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "NO EXIST", "EXISTCase");
+        test_kv_case(connfd, cmd, "NO EXIST\n", "EXISTCase");
     }
 }
 
@@ -199,13 +199,13 @@ void array_save_test(int connfd, int num, char* filename)
     int i = 0;
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d", i, i);
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", i, i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "SUCCESS", "SETCase");
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
     }
     char cmd[128] = {0};
-    snprintf(cmd, sizeof(cmd), "SAVE %s", filename);
-    test_kv_case(connfd, cmd, "SUCCESS", "SAVECase");
+    snprintf(cmd, sizeof(cmd), "SAVE %s\n", filename);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SAVECase");
 }
 
 void array_load_test(int connfd, int num, char* filename)
@@ -213,16 +213,16 @@ void array_load_test(int connfd, int num, char* filename)
     char cmd[128] = {0};
     for(int i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
-        test_kv_case(connfd, cmd, "NO EXIST", "GETCase");
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase");
     }
-    snprintf(cmd, sizeof(cmd), "LOAD %s", filename);
-    test_kv_case(connfd, cmd, "SUCCESS", "LOADCase");
+    snprintf(cmd, sizeof(cmd), "LOAD %s\n", filename);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "LOADCase");
     for(int i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "GET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "GETCase");
     }
 
@@ -230,16 +230,16 @@ void array_load_test(int connfd, int num, char* filename)
 
 void rbtree_test_case(int connfd)
 {
-    test_rb_case(connfd, "RSET Name ZZW", "SUCCESS", "RSETCase");
-    test_rb_case(connfd, "RGET Name", "ZZW", "RGETCase");
-    test_rb_case(connfd, "RSET Name Linus", "EXIST", "RSETCase");
-    test_rb_case(connfd, "RMOD Name Linus", "SUCCESS", "RMODCase");
-    test_rb_case(connfd, "REXIST Name", "EXIST", "REXISTCase");
-    test_rb_case(connfd, "RGET Name", "Linus", "RGETCase");
-    test_rb_case(connfd, "RDEL Name", "SUCCESS", "RDELCase");
-    test_rb_case(connfd, "RGET Name", "NO EXIST", "RGETCase");
-    test_rb_case(connfd, "RMOD Name Linus", "ERROR", "RMODCase");
-    test_rb_case(connfd, "REXIST Name", "NO EXIST", "REXISTCase");
+    test_rb_case(connfd, "RSET Name ZZW\n", "SUCCESS\n", "RSETCase");
+    test_rb_case(connfd, "RGET Name\n", "ZZW\n", "RGETCase");
+    test_rb_case(connfd, "RSET Name Linus\n", "EXIST\n", "RSETCase");
+    test_rb_case(connfd, "RMOD Name Linus\n", "SUCCESS\n", "RMODCase");
+    test_rb_case(connfd, "REXIST Name\n", "EXIST\n", "REXISTCase");
+    test_rb_case(connfd, "RGET Name\n", "Linus\n", "RGETCase");
+    test_rb_case(connfd, "RDEL Name\n", "SUCCESS\n", "RDELCase");
+    test_rb_case(connfd, "RGET Name\n", "NO EXIST\n", "RGETCase");
+    test_rb_case(connfd, "RMOD Name Linus\n", "ERROR\n", "RMODCase");
+    test_rb_case(connfd, "REXIST Name\n", "NO EXIST\n", "REXISTCase");
 }
 
 void rbtree_test_case_huge_keys(int connfd, int num)
@@ -247,57 +247,57 @@ void rbtree_test_case_huge_keys(int connfd, int num)
     int i = 0;
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d", i, i);
-        test_rb_case(connfd, cmd, "SUCCESS", "RSETCase");
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n", i, i);
+        test_rb_case(connfd, cmd, "SUCCESS\n", "RSETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_rb_case(connfd, cmd, pattern, "RGETCase");
     }
     for (i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RSET Name_%d Linus_%d", i, i);
-        test_rb_case(connfd, cmd, "EXIST", "RSETCase");
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d Linus_%d\n", i, i);
+        test_rb_case(connfd, cmd, "EXIST\n", "RSETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d", i, i);
-        test_rb_case(connfd, cmd, "SUCCESS", "RMODCase");
+        snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d\n", i, i);
+        test_rb_case(connfd, cmd, "SUCCESS\n", "RMODCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "REXIST Name_%d", i);
-        test_rb_case(connfd, cmd, "EXIST", "REXISTCase");
+        snprintf(cmd, sizeof(cmd), "REXIST Name_%d\n", i);
+        test_rb_case(connfd, cmd, "EXIST\n", "REXISTCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "Linus_%d", i);
+        snprintf(pattern, sizeof(pattern), "Linus_%d\n", i);
         test_rb_case(connfd, cmd, pattern, "RGETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RDEL Name_%d", i);
-        test_rb_case(connfd, cmd, "SUCCESS", "RDELCase");
+        snprintf(cmd, sizeof(cmd), "RDEL Name_%d\n", i);
+        test_rb_case(connfd, cmd, "SUCCESS\n", "RDELCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
-        test_rb_case(connfd, cmd, "NO EXIST", "RGETCase");
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
+        test_rb_case(connfd, cmd, "NO EXIST\n", "RGETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d", i, i);
-        test_rb_case(connfd, cmd, "ERROR", "RMODCase");
+        snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d\n", i, i);
+        test_rb_case(connfd, cmd, "ERROR\n", "RMODCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "REXIST Name_%d", i);
-        test_rb_case(connfd, cmd, "NO EXIST", "REXISTCase");
+        snprintf(cmd, sizeof(cmd), "REXIST Name_%d\n", i);
+        test_rb_case(connfd, cmd, "NO EXIST\n", "REXISTCase");
     }
 }
 
@@ -306,13 +306,13 @@ void rbtree_save_test(int connfd, int num, char* filename)
     int i = 0;
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d", i, i);
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n", i, i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "SUCCESS", "RSETCase");
+        test_kv_case(connfd, cmd, "SUCCESS\n", "RSETCase");
     }
     char cmd[128] = {0};
-    snprintf(cmd, sizeof(cmd), "RSAVE %s", filename);
-    test_kv_case(connfd, cmd, "SUCCESS", "RSAVECase");
+    snprintf(cmd, sizeof(cmd), "RSAVE %s\n", filename);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "RSAVECase");
 }
 
 void rbtree_load_test(int connfd, int num, char* filename)
@@ -320,32 +320,32 @@ void rbtree_load_test(int connfd, int num, char* filename)
     char cmd[128] = {0};
     for(int i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
-        test_kv_case(connfd, cmd, "NO EXIST", "RGETCase");
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "RGETCase");
     }
-    snprintf(cmd, sizeof(cmd), "RLOAD %s", filename);
-    test_kv_case(connfd, cmd, "SUCCESS", "RLOADCase");
+    snprintf(cmd, sizeof(cmd), "RLOAD %s\n", filename);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "RLOADCase");
     for(int i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "RGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "RGETCase");
     }
 }
 
 void hash_test_case(int connfd)
 {
-    test_hash_case(connfd, "HSET Name ZZW", "SUCCESS", "HSETCase");
-    test_hash_case(connfd, "HGET Name", "ZZW", "HGETCase");
-    test_hash_case(connfd, "HSET Name Linus", "EXIST", "HSETCase");
-    test_hash_case(connfd, "HMOD Name Linus", "SUCCESS", "HMODCase");
-    test_hash_case(connfd, "HEXIST Name", "EXIST", "HEXISTCase");
-    test_hash_case(connfd, "HGET Name", "Linus", "HGETCase");
-    test_hash_case(connfd, "HDEL Name", "SUCCESS", "HDELCase");
-    test_hash_case(connfd, "HGET Name", "NO EXIST", "HGETCase");
-    test_hash_case(connfd, "HMOD Name Linus", "ERROR", "HMODCase");
-    test_hash_case(connfd, "HEXIST Name", "NO EXIST", "HEXISTCase");
+    test_hash_case(connfd, "HSET Name ZZW\n", "SUCCESS\n", "HSETCase");
+    test_hash_case(connfd, "HGET Name\n", "ZZW\n", "HGETCase");
+    test_hash_case(connfd, "HSET Name Linus\n", "EXIST\n", "HSETCase");
+    test_hash_case(connfd, "HMOD Name Linus\n", "SUCCESS\n", "HMODCase");
+    test_hash_case(connfd, "HEXIST Name\n", "EXIST\n", "HEXISTCase");
+    test_hash_case(connfd, "HGET Name\n", "Linus\n", "HGETCase");
+    test_hash_case(connfd, "HDEL Name\n", "SUCCESS\n", "HDELCase");
+    test_hash_case(connfd, "HGET Name\n", "NO EXIST\n", "HGETCase");
+    test_hash_case(connfd, "HMOD Name Linus\n", "ERROR\n", "HMODCase");
+    test_hash_case(connfd, "HEXIST Name\n", "NO EXIST\n", "HEXISTCase");
 }
 
 void hash_test_case_huge_keys(int connfd, int num)
@@ -353,57 +353,57 @@ void hash_test_case_huge_keys(int connfd, int num)
     int i = 0;
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d", i, i);
-        test_rb_case(connfd, cmd, "SUCCESS", "HSETCase");
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n", i, i);
+        test_rb_case(connfd, cmd, "SUCCESS\n", "HSETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_rb_case(connfd, cmd, pattern, "HGETCase");
     }
     for (i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HSET Name_%d Linus_%d", i, i);
-        test_rb_case(connfd, cmd, "EXIST", "HSETCase");
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d Linus_%d\n", i, i);
+        test_rb_case(connfd, cmd, "EXIST\n", "HSETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d", i, i);
-        test_rb_case(connfd, cmd, "SUCCESS", "HMODCase");
+        snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d\n", i, i);
+        test_rb_case(connfd, cmd, "SUCCESS\n", "HMODCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HEXIST Name_%d", i);
-        test_rb_case(connfd, cmd, "EXIST", "HEXISTCase");
+        snprintf(cmd, sizeof(cmd), "HEXIST Name_%d\n", i);
+        test_rb_case(connfd, cmd, "EXIST\n", "HEXISTCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "Linus_%d", i);
+        snprintf(pattern, sizeof(pattern), "Linus_%d\n", i);
         test_rb_case(connfd, cmd, pattern, "HGETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HDEL Name_%d", i);
-        test_rb_case(connfd, cmd, "SUCCESS", "HDELCase");
+        snprintf(cmd, sizeof(cmd), "HDEL Name_%d\n", i);
+        test_rb_case(connfd, cmd, "SUCCESS\n", "HDELCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
-        test_rb_case(connfd, cmd, "NO EXIST", "HGETCase");
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
+        test_rb_case(connfd, cmd, "NO EXIST\n", "HGETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d", i, i);
-        test_rb_case(connfd, cmd, "ERROR", "HMODCase");
+        snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d\n", i, i);
+        test_rb_case(connfd, cmd, "ERROR\n", "HMODCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HEXIST Name_%d", i);
-        test_rb_case(connfd, cmd, "NO EXIST", "HEXISTCase");
+        snprintf(cmd, sizeof(cmd), "HEXIST Name_%d\n", i);
+        test_rb_case(connfd, cmd, "NO EXIST\n", "HEXISTCase");
     }
 }
 
@@ -412,13 +412,13 @@ void hash_save_test(int connfd, int num, char* filename)
     int i = 0;
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d", i, i);
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n", i, i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "SUCCESS", "HSETCase");
+        test_kv_case(connfd, cmd, "SUCCESS\n", "HSETCase");
     }
     char cmd[128] = {0};
-    snprintf(cmd, sizeof(cmd), "HSAVE %s", filename);
-    test_kv_case(connfd, cmd, "SUCCESS", "HSAVECase");
+    snprintf(cmd, sizeof(cmd), "HSAVE %s\n", filename);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "HSAVECase");
 }
 
 void hash_load_test(int connfd, int num, char* filename)
@@ -426,16 +426,16 @@ void hash_load_test(int connfd, int num, char* filename)
     char cmd[128] = {0};
     for(int i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
-        test_kv_case(connfd, cmd, "NO EXIST", "HGETCase");
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "HGETCase");
     }
-    snprintf(cmd, sizeof(cmd), "HLOAD %s", filename);
-    test_kv_case(connfd, cmd, "SUCCESS", "HLOADCase");
+    snprintf(cmd, sizeof(cmd), "HLOAD %s\n", filename);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "HLOADCase");
     for(int i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "HGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "HGETCase");
     }
 
@@ -443,16 +443,16 @@ void hash_load_test(int connfd, int num, char* filename)
 
 void skiptable_test_case(int connfd)
 {
-    test_kv_case(connfd, "SSET Name ZZW", "SUCCESS", "SSETCase");
-    test_kv_case(connfd, "SGET Name", "ZZW", "SGETCase");
-    test_kv_case(connfd, "SSET Name Linus", "EXIST", "SSETCase");
-    test_kv_case(connfd, "SMOD Name Linus", "SUCCESS", "SMODCase");
-    test_kv_case(connfd, "SEXIST Name", "EXIST", "SEXISTCase");
-    test_kv_case(connfd, "SGET Name", "Linus", "SGETCase");
-    test_kv_case(connfd, "SDEL Name", "SUCCESS", "SDELCase");
-    test_kv_case(connfd, "SGET Name", "NO EXIST", "SGETCase");
-    test_kv_case(connfd, "SMOD Name Linus", "ERROR", "SMODCase");
-    test_kv_case(connfd, "SEXIST Name", "NO EXIST", "SEXISTCase");
+    test_kv_case(connfd, "SSET Name ZZW\n", "SUCCESS\n", "SSETCase");
+    test_kv_case(connfd, "SGET Name\n", "ZZW\n", "SGETCase");
+    test_kv_case(connfd, "SSET Name Linus\n", "EXIST\n", "SSETCase");
+    test_kv_case(connfd, "SMOD Name Linus\n", "SUCCESS\n", "SMODCase");
+    test_kv_case(connfd, "SEXIST Name\n", "EXIST\n", "SEXISTCase");
+    test_kv_case(connfd, "SGET Name\n", "Linus\n", "SGETCase");
+    test_kv_case(connfd, "SDEL Name\n", "SUCCESS\n", "SDELCase");
+    test_kv_case(connfd, "SGET Name\n", "NO EXIST\n", "SGETCase");
+    test_kv_case(connfd, "SMOD Name Linus\n", "ERROR\n", "SMODCase");
+    test_kv_case(connfd, "SEXIST Name\n", "NO EXIST\n", "SEXISTCase");
 }
 
 void skiptable_test_case_huge_keys(int connfd, int num)
@@ -460,57 +460,57 @@ void skiptable_test_case_huge_keys(int connfd, int num)
     int i = 0;
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d", i, i);
-        test_kv_case(connfd, cmd, "SUCCESS", "SSETCase");
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "SGETCase");
     }
     for (i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SSET Name_%d Linus_%d", i, i);
-        test_kv_case(connfd, cmd, "EXIST", "SSETCase");
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d Linus_%d\n", i, i);
+        test_kv_case(connfd, cmd, "EXIST\n", "SSETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d", i, i);
-        test_kv_case(connfd, cmd, "SUCCESS", "SMODCase");
+        snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SMODCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SEXIST Name_%d", i);
-        test_kv_case(connfd, cmd, "EXIST", "SEXISTCase");
+        snprintf(cmd, sizeof(cmd), "SEXIST Name_%d\n", i);
+        test_kv_case(connfd, cmd, "EXIST\n", "SEXISTCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "Linus_%d", i);
+        snprintf(pattern, sizeof(pattern), "Linus_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "SGETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SDEL Name_%d", i);
-        test_kv_case(connfd, cmd, "SUCCESS", "SDELCase");
+        snprintf(cmd, sizeof(cmd), "SDEL Name_%d\n", i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SDELCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
-        test_kv_case(connfd, cmd, "NO EXIST", "SGETCase");
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "SGETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d", i, i);
-        test_kv_case(connfd, cmd, "ERROR", "SMODCase");
+        snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d\n", i, i);
+        test_kv_case(connfd, cmd, "ERROR\n", "SMODCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SEXIST Name_%d", i);
-        test_kv_case(connfd, cmd, "NO EXIST", "SEXISTCase");
+        snprintf(cmd, sizeof(cmd), "SEXIST Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "SEXISTCase");
     }
 }
 
@@ -519,13 +519,13 @@ void skiptable_save_test(int connfd, int num, char* filename)
     int i = 0;
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d", i, i);
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n", i, i);
         // printf("cmd = %s\n", cmd);
-        test_kv_case(connfd, cmd, "SUCCESS", "SSETCase");
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
     }
     char cmd[128] = {0};
-    snprintf(cmd, sizeof(cmd), "SSAVE %s", filename);
-    test_kv_case(connfd, cmd, "SUCCESS", "SSAVECase");
+    snprintf(cmd, sizeof(cmd), "SSAVE %s\n", filename);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SSAVECase");
 }
 
 void skiptable_load_test(int connfd, int num, char* filename)
@@ -533,16 +533,16 @@ void skiptable_load_test(int connfd, int num, char* filename)
     char cmd[128] = {0};
     for(int i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
-        test_kv_case(connfd, cmd, "NO EXIST", "SGETCase");
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "SGETCase");
     }
-    snprintf(cmd, sizeof(cmd), "SLOAD %s", filename);
-    test_kv_case(connfd, cmd, "SUCCESS", "SLOADCase");
+    snprintf(cmd, sizeof(cmd), "SLOAD %s\n", filename);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SLOADCase");
     for(int i = 0; i < num; i++){
         char cmd[128] = {0};
-        snprintf(cmd, sizeof(cmd), "SGET Name_%d", i);
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
         char pattern[128] = {0};
-        snprintf(pattern, sizeof(pattern), "ZZW_%d", i);
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "SGETCase");
     }
 
