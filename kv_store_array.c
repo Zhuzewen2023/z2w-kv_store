@@ -225,7 +225,7 @@ kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key,
         ret = -2;
         return ret;
     }
-
+    KV_LOG("start_key: %s, end_key: %s\n", start_key, end_key);
     /*统计符合条件的项数*/
     int match_count = 0;
     for (int i = 0; i < inst->total; i++) {
@@ -236,6 +236,7 @@ kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key,
             }
         }
     }
+    KV_LOG("match count: %d\n", match_count);
 
     if (match_count == 0) {
         *results = NULL;
@@ -276,6 +277,7 @@ kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key,
             }
         }
     }
+    KV_LOG("index: %d\n", index);
 
     *results = result_array;
     *count = index;

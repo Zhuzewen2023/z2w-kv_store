@@ -65,7 +65,7 @@ int recv_msg(int connfd, char *msg, int length)
     return res;
 }
 
-#define MAX_MSG_LENGTH  512
+#define MAX_MSG_LENGTH  4096
 
 void equals(char *pattern, char *result, char *casename)
 {
@@ -242,7 +242,7 @@ void array_range_test(int connfd, int start_range, int end_range, int num)
     char cmd[512] = {0};
     snprintf(cmd, sizeof(cmd), "RANGE Name_%09d Name_%09d\n", start_range, end_range);
     test_kv_case(connfd, cmd, "EMPTY\n", "RANGECase with no SET");
-    for (i = 0; i < num; i++) {
+    for (i = 0; i <= num; i++) {
         memset(cmd, 0, sizeof(cmd));
         snprintf(cmd, sizeof(cmd), "SET Name_%09d ZZW_%09d\n", i, i);
         test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
@@ -250,8 +250,8 @@ void array_range_test(int connfd, int start_range, int end_range, int num)
     memset(cmd, 0, sizeof(cmd));
     snprintf(cmd, sizeof(cmd), "RANGE Name_%09d Name_%09d\n", start_range, end_range);
     char pattern[4096] = { 0 };
-    if (end_range > num) {
-        printf("end range > num\n");
+    if (end_range > num && start_range < num) {
+        //printf("end range > num\n");
         int bytes_written = 0;
         for (int i = start_range; i <= num; i++) {
             char buffer[128] = { 0 };
@@ -260,6 +260,8 @@ void array_range_test(int connfd, int start_range, int end_range, int num)
             bytes_written += strlen(buffer);
         }
         
+    } else if (start_range > num) {
+        snprintf(pattern, sizeof(pattern), "EMPTY\n");
     } else {
         int bytes_written = 0;
         for (int i = start_range; i <= end_range; i++) {
@@ -867,7 +869,7 @@ static void print_usage(const char* prog_name) {
     printf("  [13] Test Load Array from Disk\n");
     printf("  [14] Test Load Red-Black Tree from Disk\n");
     printf("  [15] Test Load Hash Table from Disk\n");
-    printf("  [16] Test Load SkipTable from Disk\n\n");
+    printf("  [16] Test Load SkipTable from Disk\n");
     printf("  [17] Test Array KV Engine Multiple Commands Test\n");
     printf("  [18] Test Red-Black Tree KV Engine Multiple Commands Test\n");
     printf("  [19] Test Hash Table KV Engine Multiple Commands Test\n");
@@ -1061,7 +1063,7 @@ int main(int argc, char *argv[])
         printf("Please Enter end range: ");
         int end_range = 0;
         scanf("%d", &end_range);
-        printf("SET Range[0, %d)\n", ctx.repeat_num);
+        printf("SET Range[0, %d]\n", ctx.repeat_num);
         printf("GET Range[%d, %d]\n", start_range, end_range);
         array_range_test(connfd, start_range, end_range, ctx.repeat_num);
     }

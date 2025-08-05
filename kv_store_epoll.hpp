@@ -509,15 +509,26 @@ private:
                 int res_count = 0;
                 res = kvs_array_range(&global_array, tokens[1], tokens[2], &res_array, &res_count);
                 if (res == 0) {
+                    KV_LOG("res == 0, res_count: %d\n", res_count);
+                    if (res_array == NULL) {
+                        KV_LOG("res_array == NULL\n");
+                    }
                     for (int i = 0; i < res_count; i++) {
+                        if (res_array[i].key == NULL) {
+                            KV_LOG("res_array[%d].key == NULL\n", i);
+                        }
                         response += res_array[i].key;
                         response += " ";
+                        if (res_array[i].value == NULL) {
+                            KV_LOG("res_array[%d].value == NULL\n", i);
+                        }
                         response += res_array[i].value;
                         if (i != res_count - 1) {
                             response += "\n";
                         }
                         kvs_free(res_array[i].key);
                         kvs_free(res_array[i].value);
+                        KV_LOG("response: %s\n", response.c_str());
                     }
                     kvs_free(res_array);
                     KV_LOG("RANGE success, response : %s\n", response.c_str());
@@ -690,7 +701,7 @@ private:
                 }
                 break;
             #endif
-             #if ENABLE_SKIPTABLE_KV_ENGINE
+            #if ENABLE_SKIPTABLE_KV_ENGINE
             /*skiptable*/
             case static_cast<int>(Command::SSET):
                 KV_LOG("SSET\n");
