@@ -228,6 +228,52 @@ void array_load_test(int connfd, int num, char* filename)
 
 }
 
+void array_range_test(int connfd, int start_range, int end_range, int num)
+{
+    if (start_range > end_range) {
+        printf("array range test failed, start_range > end_range\n");
+        return;
+    }
+    if (num <= 0) {
+        printf("array range test failed, num <= 0\n");
+        return;
+    }
+    int i = 0;
+    char cmd[512] = {0};
+    snprintf(cmd, sizeof(cmd), "RANGE Name_%09d Name_%09d\n", start_range, end_range);
+    test_kv_case(connfd, cmd, "EMPTY\n", "RANGECase with no SET");
+    for (i = 0; i < num; i++) {
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "SET Name_%09d ZZW_%09d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
+    }
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "RANGE Name_%09d Name_%09d\n", start_range, end_range);
+    char pattern[4096] = { 0 };
+    if (end_range > num) {
+        printf("end range > num\n");
+        int bytes_written = 0;
+        for (int i = start_range; i <= num; i++) {
+            char buffer[128] = { 0 };
+            snprintf(buffer, sizeof(buffer),  "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+        
+    } else {
+        int bytes_written = 0;
+        for (int i = start_range; i <= end_range; i++) {
+            char buffer[128] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+    }
+    //printf("pattern : %s\n", pattern);
+    test_kv_case(connfd, cmd, pattern, "RANGECase");
+    
+}
+
 void rbtree_test_case(int connfd)
 {
     test_rb_case(connfd, "RSET Name ZZW\n", "SUCCESS\n", "RSETCase");
@@ -827,6 +873,7 @@ static void print_usage(const char* prog_name) {
     printf("  [19] Test Hash Table KV Engine Multiple Commands Test\n");
     printf("  [20] Test SkipTable KV Engine Multiple Commands Test\n");
     printf("  [21] Test All Engine Multiple Commands Test\n");
+    printf("  [22] Test Array Range Command Test\n");
     
     printf("Examples:\n");
     printf("  %s -s 127.0.0.1 -p 8080 -m 1 -n 100\n", prog_name);
@@ -1005,6 +1052,18 @@ int main(int argc, char *argv[])
     if (21 == ctx.mode) {
         printf("Test All Engine Multiple Commands Test\n");
         all_engine_multiple_commands_test(connfd, ctx.repeat_num);
+    }
+    if (22 == ctx.mode) {
+        printf("Test Array Range Command Test\n");
+        printf("Please Enter start range: ");
+        int start_range = 0;
+        scanf("%d", &start_range);
+        printf("Please Enter end range: ");
+        int end_range = 0;
+        scanf("%d", &end_range);
+        printf("SET Range[0, %d)\n", ctx.repeat_num);
+        printf("GET Range[%d, %d]\n", start_range, end_range);
+        array_range_test(connfd, start_range, end_range, ctx.repeat_num);
     }
 
     gettimeofday(&end, NULL);

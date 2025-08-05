@@ -208,3 +208,93 @@ kvs_array_count(kvs_array_t *inst) {
     }
     return inst->total;
 }
+
+int
+kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key, 
+               kvs_array_item_t **results, int* count) 
+{
+    int ret = -1;
+    if (inst == NULL || start_key == NULL || end_key == NULL || results == NULL 
+        || count == NULL) {
+        KV_LOG("kvs_array_range failed, inst or start_key or end_key or results or count is NULL\n");
+        return ret;
+    }
+
+    if (strcmp(start_key, end_key) > 0) {
+        KV_LOG("kvs_array_range failed, start_key > end_key\n");
+        ret = -2;
+        return ret;
+    }
+
+    /*统计符合条件的项数*/
+    int match_count = 0;
+    for (int i = 0; i < inst->total; i++) {
+        if (inst->table[i].key != NULL) {
+            if (strcmp(inst->table[i].key, start_key) >= 0 
+                && strcmp(inst->table[i].key, end_key) <= 0) {
+                match_count++;
+            }
+        }
+    }
+
+    if (match_count == 0) {
+        *results = NULL;
+        *count = 0;
+        ret = 1;
+        return ret;
+    }
+
+    kvs_array_item_t *result_array = kvs_malloc(sizeof(kvs_array_item_t) * match_count);
+    if (result_array == NULL) {
+        KV_LOG("kvs_array_range failed, malloc failed\n");
+        ret = -3;
+        return ret;
+    }
+
+    int index = 0;
+    for (int i = 0; i < inst->total; i++) {
+        if (inst->table[i].key != NULL) {
+            if (strcmp(inst->table[i].key, start_key) >= 0 
+                && strcmp(inst->table[i].key, end_key) <= 0) {
+                result_array[index].key = (char *)kvs_malloc(strlen(inst->table[i].key) + 1);
+                if (result_array[index].key == NULL) {
+                    KV_LOG("kvs_array_range failed, malloc failed\n");
+                    ret = -4;
+                    goto out;
+                }
+                memset(result_array[index].key, 0, strlen(inst->table[i].key) + 1);
+                strncpy(result_array[index].key, inst->table[i].key, strlen(inst->table[i].key) + 1);
+                result_array[index].value = (char *)kvs_malloc(strlen(inst->table[i].value) + 1);
+                if (result_array[index].value == NULL) {
+                    KV_LOG("kvs_array_range failed, malloc failed\n");
+                    ret = -5;
+                    goto out;
+                }
+                memset(result_array[index].value, 0, strlen(inst->table[i].value) + 1);
+                strncpy(result_array[index].value, inst->table[i].value, strlen(inst->table[i].value) + 1);
+                index++;
+            }
+        }
+    }
+
+    *results = result_array;
+    *count = index;
+    ret = 0;
+    return ret;
+
+    
+out:
+    if (result_array) {
+        for (int i = 0; i < index; i++) {
+            if (result_array[i].key != NULL) {
+                kvs_free(result_array[i].key);
+            }
+            if (result_array[i].value != NULL) {
+                kvs_free(result_array[i].value);
+            }
+        }
+        kvs_free(result_array);
+    }
+    return ret;    
+}
+

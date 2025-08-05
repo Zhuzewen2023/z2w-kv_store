@@ -502,6 +502,35 @@ private:
                     snprintf(response_buf, sizeof(response_buf), "ERROR");
                 }
                 break;
+            case static_cast<int>(Command::RANGE):
+            {
+                KV_LOG("RANGE\n");
+                kvs_array_item_t* res_array = NULL;
+                int res_count = 0;
+                res = kvs_array_range(&global_array, tokens[1], tokens[2], &res_array, &res_count);
+                if (res == 0) {
+                    for (int i = 0; i < res_count; i++) {
+                        response += res_array[i].key;
+                        response += " ";
+                        response += res_array[i].value;
+                        if (i != res_count - 1) {
+                            response += "\n";
+                        }
+                        kvs_free(res_array[i].key);
+                        kvs_free(res_array[i].value);
+                    }
+                    kvs_free(res_array);
+                    KV_LOG("RANGE success, response : %s\n", response.c_str());
+                    return response;
+                }
+                else if (res > 0) {
+                    snprintf(response_buf, sizeof(response_buf), "EMPTY");
+                }
+                else {
+                    snprintf(response_buf, sizeof(response_buf), "ERROR");
+                }
+            }
+                break;
             #endif
             #if ENABLE_RBTREE_KV_ENGINE
             /*rbtree*/
@@ -906,6 +935,7 @@ private:
         EXIST,
         SAVE,
         LOAD,
+        RANGE,
         RSET,
         RGET,
         RDEL,
@@ -913,6 +943,7 @@ private:
         REXIST,
         RSAVE,
         RLOAD,
+        RRANGE,
         HSET,
         HGET,
         HDEL,
@@ -920,6 +951,7 @@ private:
         HEXIST,
         HSAVE,
         HLOAD,
+        HRANGE,
         SSET,
         SGET,
         SDEL,
@@ -927,6 +959,7 @@ private:
         SEXIST,
         SSAVE,
         SLOAD,
+        SRANGE,
         COUNT,
     };
 
@@ -940,10 +973,10 @@ private:
     //char r_buf[1024] = {0};
     //char w_buf[1024] = {0};
     const char* commands[static_cast<int>(Command::COUNT)] = {
-        "SET", "GET", "DEL", "MOD","EXIST","SAVE", "LOAD",
-        "RSET", "RGET", "RDEL", "RMOD","REXIST","RSAVE","RLOAD",
-        "HSET", "HGET", "HDEL", "HMOD","HEXIST","HSAVE","HLOAD",
-        "SSET", "SGET", "SDEL", "SMOD","SEXIST","SSAVE","SLOAD"
+        "SET", "GET", "DEL", "MOD","EXIST","SAVE", "LOAD", "RANGE",
+        "RSET", "RGET", "RDEL", "RMOD","REXIST","RSAVE","RLOAD", "RRANGE",
+        "HSET", "HGET", "HDEL", "HMOD","HEXIST","HSAVE","HLOAD", "HRANGE",
+        "SSET", "SGET", "SDEL", "SMOD","SEXIST","SSAVE","SLOAD", "SRANGE",
     };
 
 };
