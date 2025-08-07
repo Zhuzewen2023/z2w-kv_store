@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "kv_range.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,6 +65,10 @@ kvs_rbtree_exist(kvs_rbtree_t *inst, char *key);
 
 int
 kvs_rbtree_count(kvs_rbtree_t *inst);
+
+int
+kvs_rbtree_range(kvs_rbtree_t* inst, const char* start_key, const char* end_key,
+    kvs_item_t** results, int* count);
 
 
 #ifdef __cplusplus

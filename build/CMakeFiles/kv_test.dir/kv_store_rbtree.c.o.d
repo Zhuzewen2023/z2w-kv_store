@@ -1,6 +1,7 @@
 CMakeFiles/kv_test.dir/kv_store_rbtree.c.o: \
  /root/z2w-kv_store/kv_store_rbtree.c /usr/include/stdc-predef.h \
- /root/z2w-kv_store/kv_store_rbtree.h /usr/include/stdio.h \
+ /root/z2w-kv_store/kv_store_rbtree.h /root/z2w-kv_store/kv_range.h \
+ /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \

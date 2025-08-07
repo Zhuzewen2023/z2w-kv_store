@@ -1,5 +1,6 @@
 #include "kv_store_array.h"
 #include "kv_log.h"
+#include "kv_range.h"
 
 kvs_array_t global_array = {0};
 
@@ -211,7 +212,7 @@ kvs_array_count(kvs_array_t *inst) {
 
 int
 kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key, 
-               kvs_array_item_t **results, int* count) 
+               kvs_item_t **results, int* count) 
 {
     int ret = -1;
     if (inst == NULL || start_key == NULL || end_key == NULL || results == NULL 
@@ -245,7 +246,7 @@ kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key,
         return ret;
     }
 
-    kvs_array_item_t *result_array = kvs_malloc(sizeof(kvs_array_item_t) * match_count);
+    kvs_item_t *result_array = kvs_malloc(sizeof(kvs_item_t) * match_count);
     if (result_array == NULL) {
         KV_LOG("kvs_array_range failed, malloc failed\n");
         ret = -3;

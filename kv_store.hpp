@@ -1,5 +1,5 @@
-#ifndef __KV_STORE_H__
-#define __KV_STORE_H__
+#ifndef __KV_STORE_HPP__
+#define __KV_STORE_HPP__
 
 #include "reactor.hpp"
 

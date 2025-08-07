@@ -434,6 +434,7 @@ CMakeFiles/kv.dir/kv_store.cpp.o: ../kv_store.cpp \
   ../kv_store_array.h \
   ../kv_mem.h \
   /usr/include/c++/11/stdlib.h \
+  ../kv_range.h \
   ../kv_store_rbtree.h \
   ../kv_store_hash.h \
   ../kv_store_skiptable.h \
@@ -490,6 +491,7 @@ CMakeFiles/kv.dir/kv_store_array.c.o: ../kv_store_array.c \
   /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
   /usr/include/alloca.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+  ../kv_range.h \
   /usr/include/stdio.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stdarg.h \
   /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
@@ -672,7 +674,8 @@ CMakeFiles/kv.dir/kv_store_rbtree.c.o: ../kv_store_rbtree.c \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/strings.h \
   ../kv_mem.h \
-  ../kv_log.h
+  ../kv_log.h \
+  ../kv_range.h
 
 CMakeFiles/kv.dir/kv_store_skiptable.c.o: ../kv_store_skiptable.c \
   /usr/include/stdc-predef.h \
@@ -873,6 +876,7 @@ CMakeFiles/kv.dir/ntyco_server.c.o: ../ntyco_server.c \
   /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
   /usr/include/alloca.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+  ../kv_range.h \
   /usr/include/stdio.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stdarg.h \
   /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
@@ -903,6 +907,8 @@ CMakeFiles/kv.dir/ntyco_server.c.o: ../ntyco_server.c \
 ../kv_store_hash.c:
 
 ../kv_store_array.c:
+
+../kv_range.h:
 
 /usr/include/c++/11/stdlib.h:
 

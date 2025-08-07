@@ -505,7 +505,7 @@ private:
             case static_cast<int>(Command::RANGE):
             {
                 KV_LOG("RANGE\n");
-                kvs_array_item_t* res_array = NULL;
+                kvs_item_t* res_array = NULL;
                 int res_count = 0;
                 res = kvs_array_range(&global_array, tokens[1], tokens[2], &res_array, &res_count);
                 if (res == 0) {
@@ -621,6 +621,19 @@ private:
                     snprintf(response_buf, sizeof(response_buf), "ERROR");
                 }
                 break;
+            case static_cast<int>(Command::RRANGE): {
+                KV_LOG("RRANGE\n");
+                
+                if (res == 0) {
+
+                } else if (res > 0) {
+                    snprintf(response_buf, sizeof(response_buf), "EMPTY");
+                }
+                else {
+                    snprintf(response_buf, sizeof(response_buf), "ERROR");
+                }
+                break;
+            }
             #endif
             #if ENABLE_HASH_KV_ENGINE
             /*hash*/

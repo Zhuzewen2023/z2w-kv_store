@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 #include "kv_mem.h"
+#include "kv_range.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,7 +52,7 @@ kvs_array_count(kvs_array_t *inst);
 
 int
 kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key, 
-               kvs_array_item_t **results, int* count);
+               kvs_item_t **results, int* count);
 
 #ifdef __cplusplus
 }
