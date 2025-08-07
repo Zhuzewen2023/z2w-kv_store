@@ -623,9 +623,34 @@ private:
                 break;
             case static_cast<int>(Command::RRANGE): {
                 KV_LOG("RRANGE\n");
-                
+                kvs_item_t* res_array = NULL;
+                int res_count = 0;
+                res = kvs_rbtree_range(&global_rbtree, tokens[1], tokens[2], &res_array, &res_count);
                 if (res == 0) {
-
+                    KV_LOG("res == 0, res_count: %d\n", res_count);
+                    if (res_array == NULL) {
+                        KV_LOG("res_array == NULL\n");
+                    }
+                    for (int i = 0; i < res_count; i++) {
+                        if (res_array[i].key == NULL) {
+                            KV_LOG("res_array[%d].key == NULL\n", i);
+                        }
+                        response += res_array[i].key;
+                        response += " ";
+                        if (res_array[i].value == NULL) {
+                            KV_LOG("res_array[%d].value == NULL\n", i);
+                        }
+                        response += res_array[i].value;
+                        if (i != res_count - 1) {
+                            response += "\n";
+                        }
+                        kvs_free(res_array[i].key);
+                        kvs_free(res_array[i].value);
+                        KV_LOG("response: %s\n", response.c_str());
+                    }
+                    kvs_free(res_array);
+                    KV_LOG("RANGE success, response : %s\n", response.c_str());
+                    return response;
                 } else if (res > 0) {
                     snprintf(response_buf, sizeof(response_buf), "EMPTY");
                 }
