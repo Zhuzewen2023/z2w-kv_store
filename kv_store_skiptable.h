@@ -5,6 +5,10 @@
 extern "C" {
 #endif
 
+#include "kv_range.h"
+
+#include <stdlib.h>
+
 #define MAX_LEVEL   32
 #define P           0.5 /*节点提升概率*/
 
@@ -62,6 +66,10 @@ kvs_skiptable_delete(kvs_skiptable_t *table, char *key);
 
 int 
 kvs_skiptable_exist(kvs_skiptable_t *table, char *key);
+
+int
+kvs_skiptable_range(kvs_skiptable_t* inst, const char* start_key, const char* end_key,
+    kvs_item_t** results, int* count);
 
 #ifdef __cplusplus
 }

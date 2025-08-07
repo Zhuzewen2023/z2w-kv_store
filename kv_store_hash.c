@@ -1,6 +1,8 @@
 #include "kv_store_hash.h"
 #include "kv_store.hpp"
 
+#include <stdlib.h>
+
 kvs_hash_t global_hash = {0};
 
 static int
@@ -242,4 +244,114 @@ kvs_hash_exist(kvs_hash_t *hash, char *key)
         return -1;
     }
     return 0;
+}
+
+int
+kvs_hash_range(kvs_hash_t* inst, const char* start_key, const char* end_key,
+    kvs_item_t** results, int* count)
+{
+    int ret = -1;
+    if (inst == NULL || start_key == NULL || end_key == NULL || results == NULL
+        || count == NULL) {
+        KV_LOG("kvs_hash_range failed, inst or start_key or end_key or results or count is NULL\n");
+        return ret;
+    }
+
+    if (strcmp(start_key, end_key) > 0) {
+        KV_LOG("kvs_hash_range failed, start_key > end_key\n");
+        ret = -2;
+        return ret;
+    }
+    KV_LOG("start_key: %s, end_key: %s\n", start_key, end_key);
+    int match_count = 0;
+    int total_count = kvs_hash_count(inst);
+    KV_LOG("current hash total count: %d\n", total_count);
+
+    /*收集所有符合条件的指针*/
+    hashnode_t** matched_nodes = (hashnode_t**)kvs_malloc(sizeof(hashnode_t*) * total_count);
+    if (!matched_nodes && total_count > 0) {
+        KV_LOG("kvs_hash_range failed: memory allocation failed\n");
+        ret = -3;
+        return ret;
+    }
+
+    hashnode_t* node = NULL;
+    for (int i = 0; i < inst->max_slots; i++) {
+        node = inst->table[i];
+        while (node != NULL) {
+            if (strcmp(node->key, start_key) >= 0 && strcmp(node->key, end_key) <= 0) {
+                matched_nodes[match_count] = node;
+                match_count++;
+            }
+            node = node->next;
+        }
+    }
+    KV_LOG("match count: %d\n", match_count);
+    kvs_item_t* result_array = NULL;
+    if (match_count == 0) {
+        *results = NULL;
+        *count = 0;
+        ret = 1;
+        goto out;
+    }
+
+    result_array = kvs_malloc(sizeof(kvs_item_t) * match_count);
+    if (!result_array) {
+        KV_LOG("kvs_hash_range failed, malloc failed\n");
+        ret = -4;
+        goto out;
+    }
+
+    for (int i = 0; i < match_count; i++) {
+        hashnode_t* node = matched_nodes[i];
+
+        result_array[i].key = kvs_malloc(strlen(node->key) + 1);
+        if (!result_array[i].key) {
+            KV_LOG("kvs_hash_range failed, malloc key failed\n");
+            ret = -5;
+            goto out;
+        }
+        memset(result_array[i].key, 0, sizeof(result_array[i].key));
+        strcpy(result_array[i].key, node->key);
+
+        result_array[i].value = kvs_malloc(strlen(node->value) + 1);
+        if (!result_array[i].value) {
+            KV_LOG("kvs_hash_range failed, malloc value failed\n");
+            ret = -6;
+            goto out;
+        }
+        memset(result_array[i].value, 0, sizeof(result_array[i].value));
+        strcpy(result_array[i].value, node->value);
+
+    }
+
+    kvs_free(matched_nodes);
+    matched_nodes = NULL;
+
+    qsort(result_array, match_count, sizeof(kvs_item_t), compare_kvs_items);
+
+    *results = result_array;
+    *count = match_count;
+    return 0;
+
+out:
+    if (matched_nodes) {
+        KV_LOG("free matched_nodes\n");
+        kvs_free(matched_nodes);
+    }
+    if (result_array) {
+        for (int i = 0; i < match_count; i++) {
+            if (result_array[i].key != NULL) {
+                KV_LOG("free result_array[%d].key\n", i);
+                kvs_free(result_array[i].key);
+            }
+            if (result_array[i].value != NULL) {
+                KV_LOG("free result_array[%d].value\n", i);
+                kvs_free(result_array[i].value);
+            }
+        }
+        KV_LOG("free result_array\n");
+        kvs_free(result_array);
+    }
+    return ret;
 }

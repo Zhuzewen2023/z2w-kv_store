@@ -237,3 +237,86 @@ kvs_skiptable_exist(kvs_skiptable_t *table, char *key)
     }
     return 0;
 }
+
+int
+kvs_skiptable_range(kvs_skiptable_t* inst, const char* start_key, const char* end_key,
+    kvs_item_t** results, int* count)
+{
+    int ret = -1;
+    if (inst == NULL || start_key == NULL || end_key == NULL || results == NULL
+        || count == NULL) {
+        KV_LOG("kvs_skiptable_range failed, inst or start_key or end_key or results or count is NULL\n");
+        return ret;
+    }
+
+    if (strcmp(start_key, end_key) > 0) {
+        KV_LOG("kvs_skiptable_range failed, start_key > end_key\n");
+        ret = -2;
+        return ret;
+    }
+    KV_LOG("start_key: %s, end_key: %s\n", start_key, end_key);
+
+    /*直接分配最大可能的结果数组*/
+    kvs_item_t* result_array = kvs_malloc(sizeof(kvs_item_t) * inst->size);
+    if (!result_array) {
+        KV_LOG("Memory allocation failed\n");
+        return -3;
+    }
+
+    int match_count = 0;
+    Node* current = inst->header->forward[0];
+    while (current != NULL) {
+        int cmp_start = strcmp(current->key, start_key);
+        int cmp_end = strcmp(current->key, end_key);
+
+        if (cmp_start >= 0 && cmp_end <= 0) {
+            result_array[match_count].key = kvs_malloc(strlen(current->key) + 1);
+            if (!result_array[match_count].key) {
+                KV_LOG("Key allocation failed\n");
+                goto out;
+            }
+
+            result_array[match_count].value = kvs_malloc(strlen(current->value) + 1);
+            if (!result_array[match_count].value) {
+                KV_LOG("Value allocation failed\n");
+                goto out;
+            }
+
+            // 复制数据
+            strcpy(result_array[match_count].key, current->key);
+            strcpy(result_array[match_count].value, current->value);
+            match_count++;
+        }
+
+        if (cmp_end > 0) break;
+
+        current = current->forward[0];
+        
+    }
+    KV_LOG("match count: %d\n", match_count);
+
+    if (match_count == 0) {
+        *results = NULL;
+        *count = 0;
+        ret = 1;
+        goto out;
+    }
+
+    *results = result_array;
+    *count = match_count;
+    return 0;
+
+out:
+    if (result_array) {
+        for (int i = 0; i < match_count; i++) {
+            if (result_array[i].key != NULL) {
+                kvs_free(result_array[i].key);
+            }
+            if (result_array[i].value != NULL) {
+                kvs_free(result_array[i].value);
+            }
+        }
+        kvs_free(result_array);
+    }
+    return ret;
+}

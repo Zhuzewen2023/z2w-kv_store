@@ -5,10 +5,18 @@
 extern "C" {
 #endif
 
+#include <string.h>
+
 typedef struct kvs_item {
 	char* key;
 	char* value;
 } kvs_item_t;
+
+static int compare_kvs_items(const void* a, const void* b) {
+    const kvs_item_t* item_a = (const kvs_item_t*)a;
+    const kvs_item_t* item_b = (const kvs_item_t*)b;
+    return strcmp(item_a->key, item_b->key);
+}
 
 #ifdef __cplusplus
 }

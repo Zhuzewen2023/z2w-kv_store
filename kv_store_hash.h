@@ -5,6 +5,9 @@
 extern "C" {
 #endif
 
+#include "kv_mem.h"
+#include "kv_range.h"
+
 #define MAX_KEY_LEN     128
 #define MAX_VALUE_LEN   512
 #define MAX_TABLE_SIZE  1024
@@ -55,6 +58,10 @@ kvs_hash_delete(kvs_hash_t *hash, char *key);
 
 int 
 kvs_hash_exist(kvs_hash_t *hash, char *key);
+
+int
+kvs_hash_range(kvs_hash_t* inst, const char* start_key, const char* end_key,
+    kvs_item_t** results, int* count);
 
 #ifdef __cplusplus
 }

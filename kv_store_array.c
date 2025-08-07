@@ -2,6 +2,8 @@
 #include "kv_log.h"
 #include "kv_range.h"
 
+#include <stdlib.h>
+
 kvs_array_t global_array = {0};
 
 int 
@@ -279,6 +281,8 @@ kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key,
         }
     }
     KV_LOG("index: %d\n", index);
+
+    qsort(result_array, match_count, sizeof(kvs_item_t), compare_kvs_items);
 
     *results = result_array;
     *count = index;

@@ -539,6 +539,56 @@ void hash_load_test(int connfd, int num, char* filename)
 
 }
 
+void hash_range_test(int connfd, int start_range, int end_range, int num)
+{
+    if (start_range > end_range) {
+        printf("hash range test failed, start_range > end_range\n");
+        return;
+    }
+    if (num <= 0) {
+        printf("hash range test failed, num <= 0\n");
+        return;
+    }
+    int i = 0;
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "HRANGE Name_%09d Name_%09d\n", start_range, end_range);
+    test_kv_case(connfd, cmd, "EMPTY\n", "HRANGECase with no SET");
+    for (i = 0; i <= num; i++) {
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "HSET Name_%09d ZZW_%09d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "HSETCase");
+    }
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HRANGE Name_%09d Name_%09d\n", start_range, end_range);
+    char pattern[4096] = { 0 };
+    if (end_range > num && start_range < num) {
+        //printf("end range > num\n");
+        int bytes_written = 0;
+        for (int i = start_range; i <= num; i++) {
+            char buffer[128] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+
+    }
+    else if (start_range > num) {
+        snprintf(pattern, sizeof(pattern), "EMPTY\n");
+    }
+    else {
+        int bytes_written = 0;
+        for (int i = start_range; i <= end_range; i++) {
+            char buffer[128] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+    }
+    //printf("pattern : %s\n", pattern);
+    test_kv_case(connfd, cmd, pattern, "HRANGECase");
+
+}
+
 void skiptable_test_case(int connfd)
 {
     test_kv_case(connfd, "SSET Name ZZW\n", "SUCCESS\n", "SSETCase");
@@ -643,6 +693,56 @@ void skiptable_load_test(int connfd, int num, char* filename)
         snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "SGETCase");
     }
+
+}
+
+void skiptable_range_test(int connfd, int start_range, int end_range, int num)
+{
+    if (start_range > end_range) {
+        printf("skiptable range test failed, start_range > end_range\n");
+        return;
+    }
+    if (num <= 0) {
+        printf("skiptable range test failed, num <= 0\n");
+        return;
+    }
+    int i = 0;
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "SRANGE Name_%09d Name_%09d\n", start_range, end_range);
+    test_kv_case(connfd, cmd, "EMPTY\n", "SRANGECase with no SET");
+    for (i = 0; i <= num; i++) {
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "SSET Name_%09d ZZW_%09d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
+    }
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SRANGE Name_%09d Name_%09d\n", start_range, end_range);
+    char pattern[4096] = { 0 };
+    if (end_range > num && start_range < num) {
+        //printf("end range > num\n");
+        int bytes_written = 0;
+        for (int i = start_range; i <= num; i++) {
+            char buffer[128] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+
+    }
+    else if (start_range > num) {
+        snprintf(pattern, sizeof(pattern), "EMPTY\n");
+    }
+    else {
+        int bytes_written = 0;
+        for (int i = start_range; i <= end_range; i++) {
+            char buffer[128] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+    }
+    //printf("pattern : %s\n", pattern);
+    test_kv_case(connfd, cmd, pattern, "SRANGECase");
 
 }
 
@@ -927,6 +1027,8 @@ static void print_usage(const char* prog_name) {
     printf("  [21] Test All Engine Multiple Commands Test\n");
     printf("  [22] Test Array Range Command Test\n");
     printf("  [23] Test Red-Black Tree Range Command Test\n");
+    printf("  [24] Test Hash Range Command Test\n");
+    printf("  [25] Test Skiptable Range Command Test\n");
     
     printf("Examples:\n");
     printf("  %s -s 127.0.0.1 -p 8080 -m 1 -n 100\n", prog_name);
@@ -1129,6 +1231,30 @@ int main(int argc, char *argv[])
         printf("RSET Range[0, %d]\n", ctx.repeat_num);
         printf("RGET Range[%d, %d]\n", start_range, end_range);
         rbtree_range_test(connfd, start_range, end_range, ctx.repeat_num);
+    }
+    if (24 == ctx.mode) {
+        printf("Test Hash Range Command Test\n");
+        printf("Please Enter start range: ");
+        int start_range = 0;
+        scanf("%d", &start_range);
+        printf("Please Enter end range: ");
+        int end_range = 0;
+        scanf("%d", &end_range);
+        printf("HSET Range[0, %d]\n", ctx.repeat_num);
+        printf("HGET Range[%d, %d]\n", start_range, end_range);
+        hash_range_test(connfd, start_range, end_range, ctx.repeat_num);
+    }
+    if (25 == ctx.mode) {
+        printf("Test Skiptable Range Command Test\n");
+        printf("Please Enter start range: ");
+        int start_range = 0;
+        scanf("%d", &start_range);
+        printf("Please Enter end range: ");
+        int end_range = 0;
+        scanf("%d", &end_range);
+        printf("SSET Range[0, %d]\n", ctx.repeat_num);
+        printf("SGET Range[%d, %d]\n", start_range, end_range);
+        skiptable_range_test(connfd, start_range, end_range, ctx.repeat_num);
     }
 
     gettimeofday(&end, NULL);
