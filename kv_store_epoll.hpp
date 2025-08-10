@@ -68,16 +68,6 @@ private:
             }
         }
         if (items) {
-            // for (int i = 0; i < count; ++i) {
-            //     if (items[i].key) {
-            //         kvs_free(items[i].key);
-            //         items[i].key = NULL;
-            //     }
-            //     if (items[i].value) {
-            //         kvs_free(items[i].value);
-            //         items[i].value = NULL;
-            //     }
-            // }
             KV_LOG("free items\n");
             kvs_free(items);
             items = NULL;
@@ -92,9 +82,42 @@ private:
 	{
 		std::vector<SyncData> result;
 		#if ENABLE_RBTREE_KV_ENGINE
-		
-
+		kvs_item_t* items = nullptr;
+        int count = -1;
+        int res = kvs_rbtree_get_all(&global_rbtree, &items, &count);
+        if (res < 0) {
+            KV_LOG("kvs_rbtree_get_all failed, res : %d\n", res);
+            return result;
+        }
+        if (count == 0) {
+            KV_LOG("kvs_rbtree_get_all count is 0\n");
+            return result;
+        }
+        KV_LOG("kvs_rbtree_get_all count: %d\n", count);
+        for (int i = 0; i < count; i++) {
+            if (items[i].key && items[i].value) {
+                std::string key = items[i].key;
+                std::string value = items[i].value;
+                result.emplace_back(key, value, items[i].timestamp);
+                if (items[i].key) {
+                    KV_LOG("free key: %s\n", items[i].key);
+                    kvs_free(items[i].key);
+                    items[i].key = NULL;
+                }
+                if (items[i].value) {
+                    KV_LOG("free value: %s\n", items[i].value);
+                    kvs_free(items[i].value);
+                    items[i].value = NULL;
+                }
+            }
+        }
+        if (items) {
+            KV_LOG("free items\n");
+            kvs_free(items);
+            items = NULL;
+        }
 		#endif
+		KV_LOG("get_local_rbtree_data() end\n");
 		return result;
 	}
 
@@ -103,7 +126,42 @@ private:
 	{
 		std::vector<SyncData> result;
 		#if ENABLE_HASH_KV_ENGINE
+        kvs_item_t* items = nullptr;
+        int count = -1;
+        int res = kvs_hash_get_all(&global_hash, &items, &count);
+        if (res < 0) {
+            KV_LOG("kvs_hash_get_all failed, res : %d\n", res);
+            return result;
+        }
+        if (count == 0) {
+            KV_LOG("kvs_hash_get_all count is 0\n");
+            return result;
+        }
+        KV_LOG("kvs_hash_get_all count: %d\n", count);
+        for (int i = 0; i < count; i++) {
+            if (items[i].key && items[i].value) {
+                std::string key = items[i].key;
+                std::string value = items[i].value;
+                result.emplace_back(key, value, items[i].timestamp);
+                if (items[i].key) {
+                    KV_LOG("free key: %s\n", items[i].key);
+                    kvs_free(items[i].key);
+                    items[i].key = NULL;
+                }
+                if (items[i].value) {
+                    KV_LOG("free value: %s\n", items[i].value);
+                    kvs_free(items[i].value);
+                    items[i].value = NULL;
+                }
+            }
+        }
+        if (items) {
+            KV_LOG("free items\n");
+            kvs_free(items);
+            items = NULL;
+        }
 		#endif
+		KV_LOG("get_local_hash_data() end\n");
 		return result;
 	}
 
@@ -112,7 +170,42 @@ private:
 	{
 		std::vector<SyncData> result;
 		#if ENABLE_SKIPTABLE_KV_ENGINE
+        kvs_item_t* items = nullptr;
+        int count = -1;
+        int res = kvs_skiptable_get_all(&global_skiptable, &items, &count);
+        if (res < 0) {
+            KV_LOG("kvs_skiptable_get_all failed, res : %d\n", res);
+            return result;
+        }
+        if (count == 0) {
+            KV_LOG("kvs_skiptable_get_all count is 0\n");
+            return result;
+        }
+        KV_LOG("kvs_skiptable_get_all count: %d\n", count);
+        for (int i = 0; i < count; i++) {
+            if (items[i].key && items[i].value) {
+                std::string key = items[i].key;
+                std::string value = items[i].value;
+                result.emplace_back(key, value, items[i].timestamp);
+                if (items[i].key) {
+                    KV_LOG("free key: %s\n", items[i].key);
+                    kvs_free(items[i].key);
+                    items[i].key = NULL;
+                }
+                if (items[i].value) {
+                    KV_LOG("free value: %s\n", items[i].value);
+                    kvs_free(items[i].value);
+                    items[i].value = NULL;
+                }
+            }
+        }
+        if (items) {
+            KV_LOG("free items\n");
+            kvs_free(items);
+            items = NULL;
+        }
 		#endif
+		KV_LOG("get_local_skiptable_data() end\n");
 		return result;
 	}
     
@@ -465,6 +558,77 @@ private:
                 }
                 break;
             }
+            case static_cast<int>(Command::RSYNC) : {
+                KV_LOG("RSYNC\n");
+                if (count < 3) {
+                    KV_LOG("invalid sync command\n");
+                    response = "FAILED";
+                    return response;
+                }
+                std::string remote_ip = tokens[1];
+                int remote_port = std::stoi(tokens[2]);
+                KV_LOG("remote_ip: %s, remote_port: %d\n", remote_ip.c_str(), remote_port);
+                SyncClient sync_client(remote_ip, remote_port);
+                if (0 != sync_client.connect()) {
+                    KV_LOG("Error: failed to connect remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+                KV_LOG("connect remote server success\n");
+
+                if (0 != sync_client.send_command("GETRBTREE\n")) {
+                    KV_LOG("Error: failed to send command GETRBTREE to remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                std::string remote_data_str = sync_client.receive_response();
+                if (remote_data_str.empty()) {
+                    KV_LOG("Error: failed to receive response from remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                KV_LOG("remote_data_str: %s\n", remote_data_str.c_str());
+                std::vector<SyncData> remote_data = sync_client.parse_remote_data_str(remote_data_str);
+                if (remote_data.empty()) {
+                    KV_LOG("Error: failed to parse remote data\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                if (0 != sync_client.sync_data_to_local_rbtree_engine(remote_data)) {
+                    KV_LOG("Error: failed to sync data to local rbtree engine\n");
+                    response = "FAILED";
+                }
+                else {
+                    KV_LOG("sync data to local rbtree engine success\n");
+                    response = "SUCCESS";
+                }
+                return response;
+                break;
+            }
+            case static_cast<int>(Command::GETRBTREE) : {
+                KV_LOG("GETRBTREE\n");
+                std::vector<SyncData> local_data = get_local_rbtree_data();
+                if (local_data.empty()) {
+                    KV_LOG("local_data is empty\n");
+                    response = "EMPTY";
+                    return response;
+                }
+                KV_LOG("local_data size: %lu\n", local_data.size());
+                for (auto& data : local_data) {
+                    response += data.key;
+                    response += " ";
+                    response += data.value;
+                    response += " ";
+                    response += std::to_string(data.timestamp);
+                    response += "\n";
+                    KV_LOG("response: %s", response.c_str());
+                }
+                return response;
+                break;
+            }
             #endif
             #if ENABLE_HASH_KV_ENGINE
             /*hash*/
@@ -583,6 +747,77 @@ private:
                 }
                 break;
             }
+            case static_cast<int>(Command::HSYNC) : {
+                KV_LOG("HSYNC\n");
+                if (count < 3) {
+                    KV_LOG("invalid sync command\n");
+                    response = "FAILED";
+                    return response;
+                }
+                std::string remote_ip = tokens[1];
+                int remote_port = std::stoi(tokens[2]);
+                KV_LOG("remote_ip: %s, remote_port: %d\n", remote_ip.c_str(), remote_port);
+                SyncClient sync_client(remote_ip, remote_port);
+                if (0 != sync_client.connect()) {
+                    KV_LOG("Error: failed to connect remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+                KV_LOG("connect remote server success\n");
+
+                if (0 != sync_client.send_command("GETHASH\n")) {
+                    KV_LOG("Error: failed to send command GETHASH to remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                std::string remote_data_str = sync_client.receive_response();
+                if (remote_data_str.empty()) {
+                    KV_LOG("Error: failed to receive response from remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                KV_LOG("remote_data_str: %s\n", remote_data_str.c_str());
+                std::vector<SyncData> remote_data = sync_client.parse_remote_data_str(remote_data_str);
+                if (remote_data.empty()) {
+                    KV_LOG("Error: failed to parse remote data\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                if (0 != sync_client.sync_data_to_local_hash_engine(remote_data)) {
+                    KV_LOG("Error: failed to sync data to local hash engine\n");
+                    response = "FAILED";
+                }
+                else {
+                    KV_LOG("sync data to local hash engine success\n");
+                    response = "SUCCESS";
+                }
+                return response;
+                break;
+            }
+            case static_cast<int>(Command::GETHASH) : {
+                KV_LOG("GETHASH\n");
+                std::vector<SyncData> local_data = get_local_hash_data();
+                if (local_data.empty()) {
+                    KV_LOG("local_data is empty\n");
+                    response = "EMPTY";
+                    return response;
+                }
+                KV_LOG("local_data size: %lu\n", local_data.size());
+                for (auto& data : local_data) {
+                    response += data.key;
+                    response += " ";
+                    response += data.value;
+                    response += " ";
+                    response += std::to_string(data.timestamp);
+                    response += "\n";
+                    KV_LOG("response: %s", response.c_str());
+                }
+                return response;
+                break;
+            }
             #endif
             #if ENABLE_SKIPTABLE_KV_ENGINE
             /*skiptable*/
@@ -699,6 +934,78 @@ private:
                 else {
                     snprintf(response_buf, sizeof(response_buf), "ERROR");
                 }
+                break;
+            }
+            case static_cast<int>(Command::SSYNC) : {
+                KV_LOG("SSYNC\n");
+                if (count < 3) {
+                    KV_LOG("invalid sync command\n");
+                    // snprintf(response_buf, sizeof(response_buf), "FAILED");
+                    response = "FAILED";
+                    return response;
+                }
+                std::string remote_ip = tokens[1];
+                int remote_port = std::stoi(tokens[2]);
+                KV_LOG("remote_ip: %s, remote_port: %d\n", remote_ip.c_str(), remote_port);
+                SyncClient sync_client(remote_ip, remote_port);
+                if (0 != sync_client.connect()) {
+                    KV_LOG("Error: failed to connect remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+                KV_LOG("connect remote server success\n");
+
+                if (0 != sync_client.send_command("GETSKIPTABLE\n")) {
+                    KV_LOG("Error: failed to send command GETSKIPTABLE to remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                std::string remote_data_str = sync_client.receive_response();
+                if (remote_data_str.empty()) {
+                    KV_LOG("Error: failed to receive response from remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                KV_LOG("remote_data_str: %s\n", remote_data_str.c_str());
+                std::vector<SyncData> remote_data = sync_client.parse_remote_data_str(remote_data_str);
+                if (remote_data.empty()) {
+                    KV_LOG("Error: failed to parse remote data\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                if (0 != sync_client.sync_data_to_local_skiptable_engine(remote_data)) {
+                    KV_LOG("Error: failed to sync data to local skiptable engine\n");
+                    response = "FAILED";
+                }
+                else {
+                    KV_LOG("sync data to local skiptable engine success\n");
+                    response = "SUCCESS";
+                }
+                return response;
+                break;
+            }
+            case static_cast<int>(Command::GETSKIPTABLE) : {
+                KV_LOG("GETSKIPTABLE\n");
+                std::vector<SyncData> local_data = get_local_skiptable_data();
+                if (local_data.empty()) {
+                    KV_LOG("local_data is empty\n");
+                    response = "EMPTY";
+                    return response;
+                }
+                KV_LOG("local_data size: %lu\n", local_data.size());
+                for (auto& data : local_data) {
+                    response += data.key;
+                    response += " ";
+                    response += data.value;
+                    response += " ";
+                    response += std::to_string(data.timestamp);
+                    response += "\n";
+                    KV_LOG("response: %s", response.c_str());
+                }
+                return response;
                 break;
             }
             #endif
@@ -824,6 +1131,8 @@ private:
         RSAVE,
         RLOAD,
         RRANGE,
+        RSYNC,
+        GETRBTREE,
         HSET,
         HGET,
         HDEL,
@@ -832,6 +1141,8 @@ private:
         HSAVE,
         HLOAD,
         HRANGE,
+        HSYNC,
+        GETHASH,
         SSET,
         SGET,
         SDEL,
@@ -840,6 +1151,8 @@ private:
         SSAVE,
         SLOAD,
         SRANGE,
+        SSYNC,
+        GETSKIPTABLE,
         COUNT,
     };
 
@@ -853,9 +1166,9 @@ private:
 
     const char* commands[static_cast<int>(Command::COUNT)] = {
         "SET", "GET", "DEL", "MOD","EXIST","SAVE", "LOAD", "RANGE","SYNC","GETARRAY",
-        "RSET", "RGET", "RDEL", "RMOD","REXIST","RSAVE","RLOAD", "RRANGE",
-        "HSET", "HGET", "HDEL", "HMOD","HEXIST","HSAVE","HLOAD", "HRANGE",
-        "SSET", "SGET", "SDEL", "SMOD","SEXIST","SSAVE","SLOAD", "SRANGE",
+        "RSET", "RGET", "RDEL", "RMOD","REXIST","RSAVE","RLOAD", "RRANGE", "RSYNC", "GETRBTREE",
+        "HSET", "HGET", "HDEL", "HMOD","HEXIST","HSAVE","HLOAD", "HRANGE", "HSYNC", "GETHASH",
+        "SSET", "SGET", "SDEL", "SMOD","SEXIST","SSAVE","SLOAD", "SRANGE", "SSYNC", "GETSKIPTABLE",
     };
 
 };

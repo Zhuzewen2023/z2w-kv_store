@@ -30,6 +30,7 @@ typedef struct Node
 {
     char key[256];
     char value[256];
+    uint64_t timestamp;
     struct Node** forward; 
 } Node;
 
@@ -50,13 +51,19 @@ void
 kvs_skiptable_destroy(kvs_skiptable_t *table);
 
 int 
-kvs_skiptable_set(kvs_skiptable_t *table, char *key, char *value);
+kvs_skiptable_set(kvs_skiptable_t *table, const char *key, const char *value);
+
+int
+kvs_skiptable_set_with_timestamp(kvs_skiptable_t *inst, const char* key, const char* value, uint64_t timestamp);
 
 char* 
-kvs_skiptable_get(kvs_skiptable_t *table, char *key);
+kvs_skiptable_get(kvs_skiptable_t *table, const char *key);
 
 int 
-kvs_skiptable_modify(kvs_skiptable_t *table, char *key, char *value);
+kvs_skiptable_modify(kvs_skiptable_t *table, const char *key, const char *value);
+
+int
+kvs_skiptable_modify_with_timestamp(kvs_skiptable_t *table, const char *key, const char* value, uint64_t timestamp);
 
 int 
 kvs_skiptable_count(kvs_skiptable_t *table);
@@ -70,6 +77,12 @@ kvs_skiptable_exist(kvs_skiptable_t *table, char *key);
 int
 kvs_skiptable_range(kvs_skiptable_t* inst, const char* start_key, const char* end_key,
     kvs_item_t** results, int* count);
+
+int
+kvs_skiptable_get_all(kvs_skiptable_t* inst, kvs_item_t** results, int* count);
+
+uint64_t
+kvs_skiptable_get_timestamp(kvs_skiptable_t* inst, const char* key);
 
 #ifdef __cplusplus
 }

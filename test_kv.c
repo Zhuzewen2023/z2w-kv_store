@@ -470,6 +470,44 @@ void rbtree_range_test(int connfd, int start_range, int end_range, int num)
 
 }
 
+void rbtree_sync_test_source(int connfd, int num)
+{
+    int i = 0;
+    for (i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "RSETCase");
+    }
+}
+
+void rbtree_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
+{
+    if (source_ip == NULL || source_port <= 0) {
+        printf("rbtree sync test failed, source_ip or source_port is invalid\n");
+        return;
+    }
+    printf("source_ip = %s, source_port = %d\n", source_ip, source_port);
+    int i = 0;
+    for (i = 0; i < num; i++) {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "RGETCase1");
+    }
+    {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RSYNC %s %d\n", source_ip, source_port);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "RSYNCCase");
+    }
+    for (i = 0; i < num; i++) {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
+        test_kv_case(connfd, cmd, pattern, "RGETCase2");
+    }
+    
+}
+
 void hash_test_case(int connfd)
 {
     test_hash_case(connfd, "HSET Name ZZW\n", "SUCCESS\n", "HSETCase");
@@ -627,6 +665,44 @@ void hash_range_test(int connfd, int start_range, int end_range, int num)
 
 }
 
+void hash_sync_test_source(int connfd, int num)
+{
+    int i = 0;
+    for (i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "HSETCase");
+    }
+}
+
+void hash_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
+{
+    if (source_ip == NULL || source_port <= 0) {
+        printf("hash sync test failed, source_ip or source_port is invalid\n");
+        return;
+    }
+    printf("source_ip = %s, source_port = %d\n", source_ip, source_port);
+    int i = 0;
+    for (i = 0; i < num; i++) {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "HGETCase1");
+    }
+    {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HSYNC %s %d\n", source_ip, source_port);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "HSYNCCase");
+    }
+    for (i = 0; i < num; i++) {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
+        test_kv_case(connfd, cmd, pattern, "HGETCase2");
+    }
+    
+}
+
 void skiptable_test_case(int connfd)
 {
     test_kv_case(connfd, "SSET Name ZZW\n", "SUCCESS\n", "SSETCase");
@@ -657,7 +733,7 @@ void skiptable_test_case_huge_keys(int connfd, int num)
         test_kv_case(connfd, cmd, pattern, "SGETCase");
     }
     for (i = 0; i < num; i++){
-        char cmd[128] = {0};
+        char cmd[128] = {0};  
         snprintf(cmd, sizeof(cmd), "SSET Name_%d Linus_%d\n", i, i);
         test_kv_case(connfd, cmd, "EXIST\n", "SSETCase");
     }
@@ -782,6 +858,44 @@ void skiptable_range_test(int connfd, int start_range, int end_range, int num)
     //printf("pattern : %s\n", pattern);
     test_kv_case(connfd, cmd, pattern, "SRANGECase");
 
+}
+
+void skiptable_sync_test_source(int connfd, int num)
+{
+    int i = 0;
+    for (i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
+    }
+}
+
+void skiptable_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
+{
+    if (source_ip == NULL || source_port <= 0) {
+        printf("skiptable sync test failed, source_ip or source_port is invalid\n");
+        return;
+    }
+    printf("source_ip = %s, source_port = %d\n", source_ip, source_port);
+    int i = 0;
+    for (i = 0; i < num; i++) {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "SGETCase1");
+    }
+    {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SSYNC %s %d\n", source_ip, source_port);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSYNCCase");
+    }
+    for (i = 0; i < num; i++) {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
+        test_kv_case(connfd, cmd, pattern, "SGETCase2");
+    }
+    
 }
 
 void array_multiple_commands_test(int connfd, int num)
@@ -1317,6 +1431,48 @@ int main(int argc, char *argv[])
         printf("Please Enter Source Port: ");
         scanf("%d", &source_port);
         array_sync_test_dest(connfd, ctx.repeat_num, source_ip, source_port);
+    }
+    if (28 == ctx.mode) {
+        printf("Test Rbtree Sync Command[Source]\n");
+        rbtree_sync_test_source(connfd, ctx.repeat_num);
+    }
+    if (29 == ctx.mode) {
+        printf("Test Rbtree Sync Command[Dest]\n");
+        char source_ip[128] = {0};
+        int source_port = -1;
+        printf("Please Enter Source IP: ");
+        scanf("%s", source_ip);
+        printf("Please Enter Source Port: ");
+        scanf("%d", &source_port);
+        rbtree_sync_test_dest(connfd, ctx.repeat_num, source_ip, source_port);
+    }
+    if (30 == ctx.mode) {
+        printf("Test Hash Sync Command[Source]\n");
+        hash_sync_test_source(connfd, ctx.repeat_num);
+    }
+    if (31 == ctx.mode) {
+        printf("Test Hash Sync Command[Dest]\n");
+        char source_ip[128] = {0};
+        int source_port = -1;
+        printf("Please Enter Source IP: ");
+        scanf("%s", source_ip);
+        printf("Please Enter Source Port: ");
+        scanf("%d", &source_port);
+        hash_sync_test_dest(connfd, ctx.repeat_num, source_ip, source_port);
+    }
+    if (32 == ctx.mode) {
+        printf("Test Skiptable Sync Command[Source]\n");
+        skiptable_sync_test_source(connfd, ctx.repeat_num);
+    }
+    if (33 == ctx.mode) {
+        printf("Test Skiptable Sync Command[Dest]\n");
+        char source_ip[128] = {0};
+        int source_port = -1;
+        printf("Please Enter Source IP: ");
+        scanf("%s", source_ip);
+        printf("Please Enter Source Port: ");
+        scanf("%d", &source_port);
+        skiptable_sync_test_dest(connfd, ctx.repeat_num, source_ip, source_port);
     }
 
     gettimeofday(&end, NULL);

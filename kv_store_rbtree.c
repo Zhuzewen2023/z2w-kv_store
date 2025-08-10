@@ -2,6 +2,7 @@
 #include "kv_mem.h"
 #include "kv_log.h"
 #include "kv_range.h"
+#include "kv_time.h"
 
 rbtree_node * rbtree_mini(rbtree * T, rbtree_node * x) {
 	while (x->left != T->nil) {
@@ -396,8 +397,13 @@ kvs_rbtree_destroy(kvs_rbtree_t* inst)
 }
 
 int
-kvs_rbtree_set(kvs_rbtree_t* inst, char* key, char* value)
+kvs_rbtree_set(kvs_rbtree_t* inst, const char* key, const char* value)
 {
+	uint64_t timestamp = 0;
+	timestamp = get_current_timestamp_ms();
+	KV_LOG("kvs_rbtree_set key:%s, value:%s, timestamp:%lu\n", key, value, timestamp);
+	return kvs_rbtree_set_with_timestamp(inst, key, value, timestamp);
+#if 0
 	if (!inst || !key || !value) {
 		KV_LOG("kvs_rbtree_set failed, inst or key or value is NULL\n");
 		return -1;
@@ -429,10 +435,48 @@ kvs_rbtree_set(kvs_rbtree_t* inst, char* key, char* value)
 
 	rbtree_insert(inst, node);
 	return 0;
+#endif
+}
+
+int
+kvs_rbtree_set_with_timestamp(kvs_rbtree_t *inst, const char* key, const char* value, uint64_t timestamp)
+{
+	if (!inst || !key || !value) {
+		KV_LOG("kvs_rbtree_set failed, inst or key or value is NULL\n");
+		return -1;
+	}
+
+	char* old_value = kvs_rbtree_get(inst, key);
+	if (old_value) {
+		//KV_LOG("kvs_rbtree_set failed, key:%s already exist\n");
+		return 1;
+	}
+
+	rbtree_node* node = (rbtree_node*)kvs_malloc(sizeof(rbtree_node));
+	node->key = kvs_malloc(strlen(key) + 1);
+	if (!node->key) {
+		KV_LOG("kvs_rbtree_set failed, kvs_malloc failed\n");
+		return -2;
+	}
+
+	memset(node->key, 0, strlen(key) + 1);
+	strcpy(node->key, key);
+
+	node->value = kvs_malloc(strlen(value) + 1);
+	if (!node->value) {
+		KV_LOG("kvs_rbtree_set failed, kvs_malloc failed\n");
+		return -3;
+	}
+	memset(node->value, 0, strlen(value) + 1);
+	strcpy(node->value, value);
+
+	node->timestamp = timestamp;
+	rbtree_insert(inst, node);
+	return 0;
 }
 
 char*
-kvs_rbtree_get(kvs_rbtree_t* inst, char* key)
+kvs_rbtree_get(kvs_rbtree_t* inst, const char* key)
 {
 	if (!inst || !key) return NULL;
 	rbtree_node* node = rbtree_search(inst, key);
@@ -455,7 +499,27 @@ kvs_rbtree_delete(kvs_rbtree_t* inst, char* key)
 }
 
 int
-kvs_rbtree_modify(kvs_rbtree_t* inst, char* key, char* value)
+kvs_rbtree_modify(kvs_rbtree_t* inst, const char* key, const char* value)
+{
+	uint64_t timestamp = 0;
+	timestamp = get_current_timestamp_ms();
+	KV_LOG("kvs_rbtree_modify key:%s, value:%s, timestamp:%lu\n", key, value, timestamp);
+	return kvs_rbtree_modify_with_timestamp(inst, key, value, timestamp);
+	#if 0
+	if (!inst || !key || !value) return -1;
+	rbtree_node* node = rbtree_search(inst, key);
+	if (node == NULL || node == inst->nil) return -2;
+	kvs_free(node->value);
+	node->value = kvs_malloc(strlen(value) + 1);
+	if (!node->value) return -3;
+	memset(node->value, 0, strlen(value) + 1);
+	strcpy(node->value, value);
+	return 0;
+	#endif
+}
+
+int
+kvs_rbtree_modify_with_timestamp(kvs_rbtree_t* inst, const char* key, const char* value, uint64_t timestamp)
 {
 	if (!inst || !key || !value) return -1;
 	rbtree_node* node = rbtree_search(inst, key);
@@ -465,6 +529,7 @@ kvs_rbtree_modify(kvs_rbtree_t* inst, char* key, char* value)
 	if (!node->value) return -3;
 	memset(node->value, 0, strlen(value) + 1);
 	strcpy(node->value, value);
+	node->timestamp = timestamp;
 	return 0;
 }
 
@@ -582,7 +647,7 @@ kvs_rbtree_range(kvs_rbtree_t* inst, const char* start_key, const char* end_key,
 		}
 		memset(result_array[index].value, 0, sizeof(result_array[index].value));
 		strcpy(result_array[index].value, current->value);
-
+		result_array[index].timestamp = current->timestamp;
 		index++;
 		current = rbtree_successor(inst, current);
 	}
@@ -605,4 +670,92 @@ out:
 	}
 	return ret;
 
+}
+
+int
+kvs_rbtree_get_all(kvs_rbtree_t* inst, kvs_item_t** results, int* count)
+{
+	if (inst == NULL || results == NULL || count == NULL) {
+		KV_LOG("kvs_rbtree_get_all failed: invalid arguments\n");
+		return -1;
+	}
+
+	int ret = -1;
+	int match_count = kvs_rbtree_count(inst);
+	if (match_count == 0) {
+		KV_LOG("kvs_rbtree_get_all failed: match_count == 0\n");
+		*results = NULL;
+		*count = 0;
+		return 0;
+	}
+
+	KV_LOG("match_count = %d\n", match_count);
+
+	kvs_item_t* result_array = kvs_malloc(sizeof(kvs_item_t) * match_count);
+	if (result_array == NULL) {
+	    KV_LOG("kvs_rbtree_get_all failed, malloc failed\n");
+		return -2;
+	}
+
+	int index = 0;
+	rbtree_node* current = rbtree_mini(inst, inst->root); /*从最小节点开始遍历*/
+	while (current != inst->nil && current != NULL && index < match_count) {
+		result_array[index].key = kvs_malloc(strlen(current->key) + 1);
+		if (!result_array[index].key) {
+			ret = -3;
+			KV_LOG("malloc result_array[%d].key failed\n", index);
+			goto out;
+		}
+		memset(result_array[index].key, 0, sizeof(result_array[index].key));
+		strcpy(result_array[index].key, current->key);
+
+		result_array[index].value = kvs_malloc(strlen(current->value) + 1);
+		if (!result_array[index].value) {
+			ret = -4;
+			KV_LOG("malloc result_array[%d].value failed\n", index);
+			goto out;
+		}
+		memset(result_array[index].value, 0, sizeof(result_array[index].value));
+		strcpy(result_array[index].value, current->value);
+		result_array[index].timestamp = current->timestamp;
+		index++;
+		current = rbtree_successor(inst, current);
+	}
+
+	*results = result_array;
+	*count = match_count;
+	return 0;
+
+out:
+	if (result_array) {
+		for (int i = 0; i < index; i++) {
+			if (result_array[i].key != NULL) {
+				kvs_free(result_array[i].key);
+				result_array[i].key = NULL;
+			}
+			if (result_array[i].value != NULL) {
+				kvs_free(result_array[i].value);
+				result_array[i].value = NULL;
+			}
+		}
+		kvs_free(result_array);
+		result_array = NULL;
+	}
+	return ret;
+}
+
+uint64_t
+kvs_rbtree_get_timestamp(kvs_rbtree_t* inst, const char* key)
+{
+    if (inst == NULL || key == NULL) {
+		KV_LOG("kvs_rbtree_get_timestamp failed, inst or key is NULL\n");
+		return 0;
+	}
+
+	rbtree_node* node = rbtree_search(inst, key);
+	if (node == NULL) {
+		KV_LOG("kvs_rbtree_get_timestamp failed, cannot find key %s\n", key);
+		return 0;
+	}
+	return node->timestamp;
 }

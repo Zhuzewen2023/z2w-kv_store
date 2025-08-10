@@ -6,7 +6,7 @@
 kvs_hash_t global_hash = {0};
 
 static int
-_hash(char *key, int size)
+_hash(const char *key, int size)
 {
     if (!key) return -1;
     int sum = 0;
@@ -20,7 +20,7 @@ _hash(char *key, int size)
 }
 
 static hashnode_t*
-_create_node(char* key, char* value)
+_create_node(const char* key, const char* value)
 {
     hashnode_t *node = (hashnode_t *)kvs_malloc(sizeof(hashnode_t));
     if (!node) {
@@ -54,6 +54,18 @@ _create_node(char* key, char* value)
     node->next = NULL;
     return node;
 
+}
+
+static hashnode_t*
+_create_node_with_timestamp(const char* key, const char* value, uint64_t timestamp)
+{
+    hashnode_t *node = _create_node(key, value);
+    if (!node) {
+        KV_LOG("_create_node failed, malloc failed\n");
+        return NULL;
+    }
+    node->timestamp = timestamp;
+    return node;
 }
 
 int 
@@ -97,8 +109,13 @@ kvs_hash_destroy(kvs_hash_t *hash)
 }
 
 int 
-kvs_hash_set(kvs_hash_t *hash, char *key, char *value)
+kvs_hash_set(kvs_hash_t *inst, const char *key, const char *value)
 {
+    uint64_t timestamp = 0;
+    timestamp = get_current_timestamp_ms();
+    KV_LOG("kvs_array_set timestamp: %lu\n", timestamp);
+    return kvs_hash_set_with_timestamp(inst, key, value, timestamp);
+    #if 0
     if (!hash || !key || !value) {
         KV_LOG("kvs_hash_set failed, invalid param\n");
         return -1;
@@ -121,10 +138,38 @@ kvs_hash_set(kvs_hash_t *hash, char *key, char *value)
     hash->table[slot] = new_node;
     hash->count++;
     return 0;
+    #endif
+}
+
+int
+kvs_hash_set_with_timestamp(kvs_hash_t *hash, const char *key, const char *value, uint64_t timestamp)
+{
+    if (!hash || !key || !value) {
+        KV_LOG("kvs_hash_set failed, invalid param\n");
+        return -1;
+    }
+    int slot = _hash(key, hash->max_slots);
+    hashnode_t *node = hash->table[slot];
+    while (node) {
+        if (strcmp(node->key, key) == 0) {
+            //KV_LOG("kvs_hash_set failed, key already exist\n");
+            return 1;
+        }
+        node = node->next;
+    }
+    hashnode_t *new_node = _create_node_with_timestamp(key, value, timestamp);
+    if (!new_node) {
+        KV_LOG("kvs_hash_set failed, _create_node failed\n");
+        return -3;
+    }
+    new_node->next = hash->table[slot];
+    hash->table[slot] = new_node;
+    hash->count++;
+    return 0;
 }
 
 char* 
-kvs_hash_get(kvs_hash_t *hash, char *key)
+kvs_hash_get(kvs_hash_t *hash, const char *key)
 {
     if (!hash || !key) {
         KV_LOG("kvs_hash_get failed, invalid param\n");
@@ -143,8 +188,13 @@ kvs_hash_get(kvs_hash_t *hash, char *key)
 }
 
 int 
-kvs_hash_modify(kvs_hash_t *hash, char *key, char *value)
+kvs_hash_modify(kvs_hash_t *inst, const char *key, const char *value)
 {
+    uint64_t timestamp = 0;
+    timestamp = get_current_timestamp_ms();
+    KV_LOG("kvs_hash_modify timestamp: %lu\n", timestamp);
+    return kvs_hash_modify_with_timestamp(inst, key, value, timestamp);
+    #if 0
     if (!hash || !key || !value) {
         KV_LOG("kvs_hash_mod failed, invalid param\n");
         return -1;
@@ -177,7 +227,45 @@ kvs_hash_modify(kvs_hash_t *hash, char *key, char *value)
     strncpy(node->value, value, MAX_VALUE_LEN);
 #endif
     return 0;
-    
+    #endif
+}
+
+int
+kvs_hash_modify_with_timestamp(kvs_hash_t *inst, const char* key, const char* value, uint64_t timestamp)
+{
+    if (!inst || !key || !value) {
+        KV_LOG("kvs_hash_mod failed, invalid param\n");
+        return -1;
+    }
+
+    int slot = _hash(key, inst->max_slots);
+    hashnode_t *node = inst->table[slot];
+    while (node) {
+        if (strcmp(node->key, key) == 0) {
+            break;
+        }
+        node = node->next;
+    }
+    if (!node) {
+        //KV_LOG("kvs_hash_mod failed, key not exist\n");
+        return -2;
+    }
+#if ENABLE_KEY_POINTER
+    kvs_free(node->value);
+    char *vcopy = (char *)kvs_malloc(strlen(value) + 1);
+    if (!vcopy) {
+        KV_LOG("kvs_hash_mod failed, malloc failed\n");
+        return -3;
+    }
+    memset(vcopy, 0, strlen(value) + 1);
+    strcpy(vcopy, value);
+    node->value = vcopy;
+#else
+    memset(node->value, 0, MAX_VALUE_LEN);
+    strncpy(node->value, value, MAX_VALUE_LEN);
+#endif
+    node->timestamp = timestamp;
+    return 0;
 }
 
 int 
@@ -322,7 +410,7 @@ kvs_hash_range(kvs_hash_t* inst, const char* start_key, const char* end_key,
         }
         memset(result_array[i].value, 0, sizeof(result_array[i].value));
         strcpy(result_array[i].value, node->value);
-
+        result_array[i].timestamp = node->timestamp;
     }
 
     kvs_free(matched_nodes);
@@ -354,4 +442,98 @@ out:
         kvs_free(result_array);
     }
     return ret;
+}
+
+int
+kvs_hash_get_all(kvs_hash_t* inst, kvs_item_t** results, int* count)
+{
+    if (inst == NULL || results == NULL || count == NULL) {
+        KV_LOG("kvs_hash_get_all failed, inst or results or count is NULL\n");
+        return -1;
+    }
+    int ret = -1;
+    int total_count = kvs_hash_count(inst);
+    if (total_count == 0) {
+        KV_LOG("kvs_hash_get_all failed, total_count is 0\n");
+        *results = NULL;
+        *count = 0;
+        ret = 0;
+        return ret;
+    }
+    KV_LOG("current hash total count: %d\n", total_count);
+
+    hashnode_t* node = NULL;
+    kvs_item_t* result_array = kvs_malloc(sizeof(kvs_item_t) * total_count);
+    if (!result_array) {
+        KV_LOG("kvs_hash_get_all failed, malloc failed\n");
+        return -2;        
+    }
+
+    int index = 0;
+
+    for (int i = 0; i < inst->max_slots; i++) {
+        node = inst->table[i];
+        while (node != NULL) {
+            result_array[index].key = kvs_malloc(strlen(node->key) + 1);
+            if (!result_array[index].key) {
+                KV_LOG("kvs_hash_get_all failed, malloc key failed\n");
+                ret = -3;
+                goto out;
+            }
+            memset(result_array[index].key, 0, sizeof(result_array[i].key));
+            strcpy(result_array[index].key, node->key);
+
+            result_array[index].value = kvs_malloc(strlen(node->value) + 1);
+            if (!result_array[index].value) {
+                KV_LOG("kvs_hash_get_all failed, malloc value failed\n");
+                ret = -4;
+                goto out;        
+            }
+            memset(result_array[index].value, 0, sizeof(result_array[i].value));
+            strcpy(result_array[index].value, node->value);
+            result_array[index].timestamp = node->timestamp;
+            index++;
+            node = node->next;
+        }
+    }
+    *results = result_array;
+    *count = index;
+    return 0;
+
+out:
+    if (result_array) {
+        for (int i = 0; i < index; i++) {
+            if (result_array[i].key != NULL) {
+                KV_LOG("free result_array[%d].key\n", i);
+                kvs_free(result_array[i].key);
+                result_array[i].key = NULL;
+            }
+            if (result_array[i].value != NULL) {
+                KV_LOG("free result_array[%d].value\n", i);
+                kvs_free(result_array[i].value);
+                result_array[i].value = NULL;
+            }
+        }
+    }
+    kvs_free(result_array);
+    return ret;
+}
+
+uint64_t
+kvs_hash_get_timestamp(kvs_hash_t* inst, const char* key)
+{
+    if (inst == NULL || key == NULL) {
+        KV_LOG("kvs_hash_get_timestamp failed, inst or key is NULL\n");
+        return 0;
+    }
+    hashnode_t *node = NULL;
+    int slot = _hash(key, inst->max_slots);
+    node = inst->table[slot];
+    while (node != NULL) {
+        if (strcmp(node->key, key) == 0) {
+            return node->timestamp;
+        }
+        node = node->next;
+    }
+    return 0;
 }

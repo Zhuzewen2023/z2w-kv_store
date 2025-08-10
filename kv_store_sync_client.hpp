@@ -226,22 +226,115 @@ public:
 	int sync_data_to_local_rbtree_engine(const std::vector<SyncData>& data)
 	{
 		#if ENABLE_RBTREE_KV_ENGINE
+		int ret = 0;
+		for (const auto& item : data) {
+			bool key_exists = false;
+			uint64_t local_timestamp = 0;
+			char* local_value = kvs_rbtree_get(&global_rbtree, item.key.c_str());
+			if (local_value != NULL) {
+				key_exists = true;
+				local_timestamp = kvs_rbtree_get_timestamp(&global_rbtree, item.key.c_str());
+			}
+
+			if (key_exists) {
+				if (item.timestamp > local_timestamp) {
+					/*远程数据更新*/
+					ret = kvs_rbtree_modify_with_timestamp(&global_rbtree, item.key.c_str(), item.value.c_str(), item.timestamp);
+					if (ret != 0) {
+						KV_LOG("kvs_rbtree_modify failed\n");
+						return ret;
+					}
+				}
+			}
+			else {
+				/*key 不存在*/
+				ret = kvs_rbtree_set_with_timestamp(&global_rbtree, item.key.c_str(), item.value.c_str(), item.timestamp);
+				if (ret != 0) {
+					KV_LOG("kvs_rbtree_set failed\n");
+					return ret;
+				}
+			}
+			KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n", 
+				item.key.c_str(), item.value.c_str(), item.timestamp);
+		}
 		#endif
-		return 0;
+		return ret;
 	}
 
 	int sync_data_to_local_hash_engine(const std::vector<SyncData>& data)
 	{
 		#if ENABLE_HASH_KV_ENGINE
+		int ret = 0;
+		for (const auto& item : data) {
+			bool key_exists = false;
+			uint64_t local_timestamp = 0;
+			char* local_value = kvs_hash_get(&global_hash, item.key.c_str());
+			if (local_value != NULL) {
+				key_exists = true;
+				local_timestamp = kvs_hash_get_timestamp(&global_hash, item.key.c_str());
+			}
+
+			if (key_exists) {
+				if (item.timestamp > local_timestamp) {
+					/*远程数据更新*/
+					ret = kvs_hash_modify_with_timestamp(&global_hash, item.key.c_str(), item.value.c_str(), item.timestamp);
+					if (ret != 0) {
+						KV_LOG("kvs_hash_modify failed\n");
+						return ret;
+					}
+				}
+			}
+			else {
+				/*key 不存在*/
+				ret = kvs_hash_set_with_timestamp(&global_hash, item.key.c_str(), item.value.c_str(), item.timestamp);
+				if (ret != 0) {
+					KV_LOG("kvs_hash_set failed\n");
+					return ret;
+				}
+			}
+			KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
+				item.key.c_str(), item.value.c_str(), item.timestamp);
+		}
 		#endif
-		return 0;
+		return ret;
 	}
 
 	int sync_data_to_local_skiptable_engine(const std::vector<SyncData>& data)
 	{
 		#if ENABLE_SKIPTABLE_KV_ENGINE
+		int ret = 0;
+		for (const auto& item : data) {
+			bool key_exists = false;
+			uint64_t local_timestamp = 0;
+			char* local_value = kvs_skiptable_get(&global_skiptable, item.key.c_str());
+			if (local_value != NULL) {
+				key_exists = true;
+				local_timestamp = kvs_skiptable_get_timestamp(&global_skiptable, item.key.c_str());
+			}
+
+			if (key_exists) {
+			    if (item.timestamp > local_timestamp) {
+					/*远程数据更新*/
+					ret = kvs_skiptable_modify_with_timestamp(&global_skiptable, item.key.c_str(), item.value.c_str(), item.timestamp);
+					if (ret != 0) {
+						KV_LOG("kvs_skiptable_modify failed\n");
+						return ret;
+					}
+				}
+			}
+			else {
+				/*key 不存在*/
+				ret = kvs_skiptable_set_with_timestamp(&global_skiptable, item.key.c_str(), item.value.c_str(), item.timestamp);
+				if (ret != 0) {
+					KV_LOG("kvs_skiptable_set failed\n");
+					return ret;
+				}
+			}
+			KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
+				item.key.c_str(), item.value.c_str(), item.timestamp);
+		}
 		#endif
-		return 0;
+		return ret;
 	}
 
 

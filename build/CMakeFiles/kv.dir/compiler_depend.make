@@ -695,7 +695,9 @@ CMakeFiles/kv.dir/kv_store_rbtree.c.o: ../kv_store_rbtree.c \
   /usr/include/alloca.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   ../kv_mem.h \
-  ../kv_log.h
+  ../kv_log.h \
+  ../kv_time.h \
+  /usr/include/x86_64-linux-gnu/sys/time.h
 
 CMakeFiles/kv.dir/kv_store_skiptable.c.o: ../kv_store_skiptable.c \
   /usr/include/stdc-predef.h \
