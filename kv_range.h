@@ -6,10 +6,12 @@ extern "C" {
 #endif
 
 #include <string.h>
+#include <stdint.h>
 
 typedef struct kvs_item {
 	char* key;
 	char* value;
+    uint64_t timestamp;
 } kvs_item_t;
 
 static int compare_kvs_items(const void* a, const void* b) {

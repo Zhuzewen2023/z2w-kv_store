@@ -276,6 +276,44 @@ void array_range_test(int connfd, int start_range, int end_range, int num)
     
 }
 
+void array_sync_test_source(int connfd, int num)
+{
+    int i = 0;
+    for (i = 0; i < num; i++){
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
+    }
+}
+
+void array_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
+{
+    if (source_ip == NULL || source_port <= 0) {
+        printf("array sync test failed, source_ip or source_port is invalid\n");
+        return;
+    }
+    printf("source_ip = %s, source_port = %d\n", source_ip, source_port);
+    int i = 0;
+    for (i = 0; i < num; i++) {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
+        test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase1");
+    }
+    {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "SYNC %s %d\n", source_ip, source_port);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SYNCCase");
+    }
+    for (i = 0; i < num; i++) {
+        char cmd[128] = {0};
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
+        char pattern[128] = {0};
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
+        test_kv_case(connfd, cmd, pattern, "GETCase2");
+    }
+    
+}
+
 void rbtree_test_case(int connfd)
 {
     test_rb_case(connfd, "RSET Name ZZW\n", "SUCCESS\n", "RSETCase");
@@ -1029,6 +1067,14 @@ static void print_usage(const char* prog_name) {
     printf("  [23] Test Red-Black Tree Range Command Test\n");
     printf("  [24] Test Hash Range Command Test\n");
     printf("  [25] Test Skiptable Range Command Test\n");
+    printf("  [26] Test Array Sync Command[Source]\n");
+    printf("  [27] Test Array Sync Command[Dest]\n");
+    printf("  [28] Test Red-Black Tree Sync Command[Source]\n");
+    printf("  [29] Test Red-Block Tree Sync Command[Dest]\n");
+    printf("  [30] Test Hash Sync Command[Source]\n");
+    printf("  [31] Test Hash Sync Command[Dest]\n");
+    printf("  [32] Test Skiptable Sync Command[Source]\n");
+    printf("  [33] Test Skiptable Sync Command[Dest]\n");
     
     printf("Examples:\n");
     printf("  %s -s 127.0.0.1 -p 8080 -m 1 -n 100\n", prog_name);
@@ -1255,6 +1301,22 @@ int main(int argc, char *argv[])
         printf("SSET Range[0, %d]\n", ctx.repeat_num);
         printf("SGET Range[%d, %d]\n", start_range, end_range);
         skiptable_range_test(connfd, start_range, end_range, ctx.repeat_num);
+    }
+    if (26 == ctx.mode) {
+        printf("Test Array Sync Command[Source]\n");
+        /*被同步服务器，仅设定本地数据以及接受GETARRAY请求后返回数据*/
+        array_sync_test_source(connfd, ctx.repeat_num);
+    }
+    if (27 == ctx.mode) {
+        printf("Test Array Sync Command[Dest]\n");
+        /*同步服务器，发送SYNC + 目标服务器IP + 目标服务器端口并接受数据后存入本地，然后验证*/
+        char source_ip[128] = {0};
+        int source_port = -1;
+        printf("Please Enter Source IP: ");
+        scanf("%s", source_ip);
+        printf("Please Enter Source Port: ");
+        scanf("%d", &source_port);
+        array_sync_test_dest(connfd, ctx.repeat_num, source_ip, source_port);
     }
 
     gettimeofday(&end, NULL);

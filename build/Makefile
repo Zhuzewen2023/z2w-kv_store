@@ -389,6 +389,33 @@ kv_store_skiptable.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_skiptable.c.s
 .PHONY : kv_store_skiptable.c.s
 
+kv_time.o: kv_time.c.o
+.PHONY : kv_time.o
+
+# target to build an object file
+kv_time.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_time.c.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_time.c.o
+.PHONY : kv_time.c.o
+
+kv_time.i: kv_time.c.i
+.PHONY : kv_time.i
+
+# target to preprocess a source file
+kv_time.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_time.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_time.c.i
+.PHONY : kv_time.c.i
+
+kv_time.s: kv_time.c.s
+.PHONY : kv_time.s
+
+# target to generate assembly for a file
+kv_time.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_time.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_time.c.s
+.PHONY : kv_time.c.s
+
 ntyco_server.o: ntyco_server.c.o
 .PHONY : ntyco_server.o
 
@@ -478,6 +505,9 @@ help:
 	@echo "... kv_store_skiptable.o"
 	@echo "... kv_store_skiptable.i"
 	@echo "... kv_store_skiptable.s"
+	@echo "... kv_time.o"
+	@echo "... kv_time.i"
+	@echo "... kv_time.s"
 	@echo "... ntyco_server.o"
 	@echo "... ntyco_server.i"
 	@echo "... ntyco_server.s"

@@ -4,10 +4,15 @@
 #include "kv_store.hpp"
 #include "kv_log.h"
 #include "kv_save.h"
+#include <stddef.h>
 
 #ifdef __cplusplus
 
 #include <queue>
+#include <chrono>
+#include <vector>
+
+#include "kv_store_sync_client.hpp"
 
 using namespace std;
 
@@ -25,367 +30,96 @@ public:
     }
 
 private:
-    constexpr static int MAX_TOKENS = 128;
-    #if 0
-    int 
-    split_token() 
-    {
-        int idx = 0;
-        char *token = strtok(r_buf, " ");
+    constexpr static int MAX_TOKENS = 256;
 
-        while (token != NULL) {
-            tokens[idx++] = token;
-            token = strtok(NULL, " ");
-        }
-        return idx;
-    }
-    
-    int 
-    parse_protocol(int count) 
+    std::vector<SyncData> 
+    get_local_array_data()
     {
-        if (count < 1) {
-            return -1;
-        }
+        std::vector<SyncData> result;
 
-        int cmd = static_cast<int>(Command::START);
-        for(cmd = static_cast<int>(Command::START); cmd < static_cast<int>(Command::COUNT); ++cmd){
-            if(strcmp(tokens[0], commands[cmd]) == 0){
-                break;
+        #if ENABLE_ARRAY_KV_ENGINE
+        kvs_item_t* items = nullptr;
+        int count = -1;
+        int res = kvs_array_get_all(&global_array, &items, &count);
+        if (res < 0) {
+            KV_LOG("kvs_array_get_all failed, res : %d\n", res);
+            return result;
+        }
+        if (count == 0) {
+            KV_LOG("kvs_array_get_all count is 0\n");
+            return result;
+        }
+        KV_LOG("kvs_array_get_all count: %d\n", count);
+        for (int i = 0; i < count; i++) {
+            if (items[i].key && items[i].value) {
+                std::string key = items[i].key;
+                std::string value = items[i].value;
+                result.emplace_back(key, value, items[i].timestamp);
+                if (items[i].key) {
+                    KV_LOG("free key: %s\n", items[i].key);
+                    kvs_free(items[i].key);
+                    items[i].key = NULL;
+                }
+                if (items[i].value) {
+                    KV_LOG("free value: %s\n", items[i].value);
+                    kvs_free(items[i].value);
+                    items[i].value = NULL;
+                }
             }
         }
-        int res = 0;
-        char *value = nullptr;
-        switch(cmd) {
-            #if ENABLE_ARRAY_KV_ENGINE
-            /*array*/
-            case static_cast<int>(Command::SET):
-                KV_LOG("SET\n");
-                if(count < 3){
-                    KV_LOG("invalid set command\n");
-                    snprintf(w_buf, sizeof(w_buf), "FAILED");
-                    return -1;
-                }
-                res = kvs_array_set(&global_array, tokens[1], tokens[2]);
-                if(res == 0){
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "EXIST");
-                }
-                break;
-            case static_cast<int>(Command::GET):
-                KV_LOG("GET\n");
-                value = kvs_array_get(&global_array, tokens[1]);
-                if(value){
-                    KV_LOG("GET success : %s\n", value);
-                    snprintf(w_buf, sizeof(w_buf), "%s", value);
-                }else{
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::DEL):
-                KV_LOG("DEL\n");
-                res = kvs_array_delete(&global_array, tokens[1]);
-                if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::MOD):
-                KV_LOG("MOD\n");
-                res = kvs_array_modify(&global_array, tokens[1], tokens[2]);
-                //printf("kvs_array_modify res : %d\n", res);
-                if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::EXIST):
-                KV_LOG("EXIST\n");
-                res = kvs_array_exist(&global_array, tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "EXIST");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::SAVE):
-                KV_LOG("SAVE\n");
-                res = kvs_array_save(tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                }
-                break;
-            case static_cast<int>(Command::LOAD):
-                KV_LOG("LOAD\n");
-                res = kvs_array_load(tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                }
-                break;
-            #endif
-            #if ENABLE_RBTREE_KV_ENGINE
-            /*rbtree*/
-                case static_cast<int>(Command::RSET):
-                KV_LOG("RSET\n");
-                if(count < 3){
-                    KV_LOG("invalid set command\n");
-                    snprintf(w_buf, sizeof(w_buf), "FAILED");
-                    return -1;
-                }
-                res = kvs_rbtree_set(&global_rbtree, tokens[1], tokens[2]);
-                if(res == 0){
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "EXIST");
-                }
-                break;
-            case static_cast<int>(Command::RGET):
-                KV_LOG("GET\n");
-                value = kvs_rbtree_get(&global_rbtree, tokens[1]);
-                if(value){
-                    KV_LOG("RGET success : %s\n", value);
-                    snprintf(w_buf, sizeof(w_buf), "%s", value);
-                }else{
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::RDEL):
-                KV_LOG("RDEL\n");
-                res = kvs_rbtree_delete(&global_rbtree, tokens[1]);
-                if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::RMOD):
-                KV_LOG("RMOD\n");
-                res = kvs_rbtree_modify(&global_rbtree, tokens[1], tokens[2]);
-                if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::REXIST):
-                KV_LOG("REXIST\n");
-                res = kvs_rbtree_exist(&global_rbtree, tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "EXIST");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::RSAVE):
-                KV_LOG("RSAVE\n");
-                res = kvs_rbtree_save(tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                }
-                break;
-            case static_cast<int>(Command::RLOAD):
-                KV_LOG("RLOAD\n");
-                res = kvs_rbtree_load(tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                }
-                break;
-            #endif
-            #if ENABLE_HASH_KV_ENGINE
-            /*hash*/
-            case static_cast<int>(Command::HSET):
-                KV_LOG("HSET\n");
-                if(count < 3){
-                    KV_LOG("invalid set command\n");
-                    snprintf(w_buf, sizeof(w_buf), "FAILED");
-                    return -1;
-                }
-                res = kvs_hash_set(&global_hash, tokens[1], tokens[2]);
-                if(res == 0){
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "EXIST");
-                }
-                break;
-            case static_cast<int>(Command::HGET):
-                KV_LOG("HGET\n");
-                value = kvs_hash_get(&global_hash, tokens[1]);
-                if(value){
-                    KV_LOG("HGET success : %s\n", value);
-                    snprintf(w_buf, sizeof(w_buf), "%s", value);
-                }else{
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::HDEL):
-                KV_LOG("HDEL\n");
-                res = kvs_hash_delete(&global_hash, tokens[1]);
-                if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::HMOD):
-                KV_LOG("HMOD\n");
-                res = kvs_hash_modify(&global_hash, tokens[1], tokens[2]);
-                if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::HEXIST):
-                KV_LOG("HEXIST\n");
-                res = kvs_hash_exist(&global_hash, tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "EXIST");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::HSAVE):
-                KV_LOG("HSAVE\n");
-                res = kvs_hash_save(tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                }
-                break;
-            case static_cast<int>(Command::HLOAD):
-                KV_LOG("HLOAD\n");
-                res = kvs_hash_load(tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                }
-                break;
-            #endif
-             #if ENABLE_SKIPTABLE_KV_ENGINE
-            /*skiptable*/
-            case static_cast<int>(Command::SSET):
-                KV_LOG("SSET\n");
-                if(count < 3){
-                    KV_LOG("invalid set command\n");
-                    snprintf(w_buf, sizeof(w_buf), "FAILED");
-                    return -1;
-                }
-                res = kvs_skiptable_set(&global_skiptable, tokens[1], tokens[2]);
-                if(res == 0){
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "EXIST");
-                }
-                break;
-            case static_cast<int>(Command::SGET):
-                KV_LOG("SGET\n");
-                value = kvs_skiptable_get(&global_skiptable, tokens[1]);
-                if(value){
-                    KV_LOG("SGET success : %s\n", value);
-                    snprintf(w_buf, sizeof(w_buf), "%s", value);
-                }else{
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::SDEL):
-                KV_LOG("SDEL\n");
-                res = kvs_skiptable_delete(&global_skiptable, tokens[1]);
-                if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::SMOD):
-                KV_LOG("SMOD\n");
-                res = kvs_skiptable_modify(&global_skiptable, tokens[1], tokens[2]);
-                if (res < 0) {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                } else if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::SEXIST):
-                KV_LOG("SEXIST\n");
-                res = kvs_skiptable_exist(&global_skiptable, tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "EXIST");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "NO EXIST");
-                }
-                break;
-            case static_cast<int>(Command::SSAVE):
-                KV_LOG("SSAVE\n");
-                res = kvs_skiptable_save(tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                }
-                break;
-            case static_cast<int>(Command::SLOAD):
-                KV_LOG("SLOAD\n");
-                res = kvs_skiptable_load(tokens[1]);
-                if (res == 0) {
-                    snprintf(w_buf, sizeof(w_buf), "SUCCESS");
-                } else {
-                    snprintf(w_buf, sizeof(w_buf), "ERROR");
-                }
-                break;
-            #endif
-            default:
-                KV_LOG("unknow command, echo...\n");
-                snprintf(w_buf, sizeof(w_buf), r_buf);
-                break;
-                //return -1;
+        if (items) {
+            // for (int i = 0; i < count; ++i) {
+            //     if (items[i].key) {
+            //         kvs_free(items[i].key);
+            //         items[i].key = NULL;
+            //     }
+            //     if (items[i].value) {
+            //         kvs_free(items[i].value);
+            //         items[i].value = NULL;
+            //     }
+            // }
+            KV_LOG("free items\n");
+            kvs_free(items);
+            items = NULL;
         }
-        if(strlen(w_buf) > 0){
-
-            Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
-        }
-        return 0;
+		#endif
+        KV_LOG("get_local_array_data() end\n");
+        return result;
     }
-    #endif
 
+	std::vector<SyncData>
+	get_local_rbtree_data()
+	{
+		std::vector<SyncData> result;
+		#if ENABLE_RBTREE_KV_ENGINE
+		
+
+		#endif
+		return result;
+	}
+
+	std::vector<SyncData>
+	get_local_hash_data()
+	{
+		std::vector<SyncData> result;
+		#if ENABLE_HASH_KV_ENGINE
+		#endif
+		return result;
+	}
+
+	std::vector<SyncData>
+	get_local_skiptable_data()
+	{
+		std::vector<SyncData> result;
+		#if ENABLE_SKIPTABLE_KV_ENGINE
+		#endif
+		return result;
+	}
+    
     std::string 
     process_command(const std::string& command)
     {
+        KV_LOG("process_command : %s\n", command.c_str());
         char command_buf[1024] = {0};
         strncpy(command_buf, command.c_str(), sizeof(command_buf));
         command_buf[sizeof(command_buf) - 1] = '\0';
@@ -502,8 +236,7 @@ private:
                     snprintf(response_buf, sizeof(response_buf), "ERROR");
                 }
                 break;
-            case static_cast<int>(Command::RANGE):
-            {
+            case static_cast<int>(Command::RANGE): {
                 KV_LOG("RANGE\n");
                 kvs_item_t* res_array = NULL;
                 int res_count = 0;
@@ -540,8 +273,81 @@ private:
                 else {
                     snprintf(response_buf, sizeof(response_buf), "ERROR");
                 }
-            }
+            
                 break;
+            }
+            case static_cast<int>(Command::SYNC): {
+                KV_LOG("SYNC\n");
+                if (count < 3) {
+                    KV_LOG("invalid sync command\n");
+                    // snprintf(response_buf, sizeof(response_buf), "FAILED");
+                    response = "FAILED";
+                    return response;
+                }
+                std::string remote_ip = tokens[1];
+                int remote_port = std::stoi(tokens[2]);
+                KV_LOG("remote_ip: %s, remote_port: %d\n", remote_ip.c_str(), remote_port);
+                SyncClient sync_client(remote_ip, remote_port);
+                if (0 != sync_client.connect()) {
+                    KV_LOG("Error: failed to connect remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+                KV_LOG("connect remote server success\n");
+
+                if (0 != sync_client.send_command("GETARRAY\n")) {
+                    KV_LOG("Error: failed to send command GETARRAY to remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                std::string remote_data_str = sync_client.receive_response();
+                if (remote_data_str.empty()) {
+                    KV_LOG("Error: failed to receive response from remote server\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                KV_LOG("remote_data_str: %s\n", remote_data_str.c_str());
+                std::vector<SyncData> remote_data = sync_client.parse_remote_data_str(remote_data_str);
+                if (remote_data.empty()) {
+                    KV_LOG("Error: failed to parse remote data\n");
+                    response = "FAILED";
+                    return response;
+                }
+
+                if (0 != sync_client.sync_data_to_local_array_engine(remote_data)) {
+                    KV_LOG("Error: failed to sync data to local array engine\n");
+                    response = "FAILED";
+                }
+                else {
+                    KV_LOG("sync data to local array engine success\n");
+                    response = "SUCCESS";
+                }
+                return response;
+                break;
+            }
+            case static_cast<int>(Command::GETARRAY) : {
+                KV_LOG("GETARRAY\n");
+                std::vector<SyncData> local_data = get_local_array_data();
+                if (local_data.empty()) {
+                    KV_LOG("local_data is empty\n");
+                    response = "EMPTY";
+                    return response;
+                }
+                KV_LOG("local_data size: %lu\n", local_data.size());
+                for (auto& data : local_data) {
+                    response += data.key;
+                    response += " ";
+                    response += data.value;
+                    response += " ";
+                    response += std::to_string(data.timestamp);
+                    response += "\n";
+                    KV_LOG("response: %s", response.c_str());
+                }
+                return response;
+                break;
+            }
             #endif
             #if ENABLE_RBTREE_KV_ENGINE
             /*rbtree*/
@@ -550,7 +356,7 @@ private:
                 if(count < 3){
                     KV_LOG("invalid set command\n");
                     // snprintf(response_buf, sizeof(response_buf), "FAILED");
-                    response = "FAILED\n";
+                    response = "FAILED";
                     return response;
                 }
                 res = kvs_rbtree_set(&global_rbtree, tokens[1], tokens[2]);
@@ -667,7 +473,7 @@ private:
                 if(count < 3){
                     KV_LOG("invalid set command\n");
                     // snprintf(response_buf, sizeof(response_buf), "FAILED");
-                    response = "FAILED\n";
+                    response = "FAILED";
                     return response;
                 }
                 res = kvs_hash_set(&global_hash, tokens[1], tokens[2]);
@@ -785,7 +591,7 @@ private:
                 if(count < 3){
                     KV_LOG("invalid set command\n");
                     // snprintf(response_buf, sizeof(response_buf), "FAILED");
-                    response = "FAILED\n";
+                    response = "FAILED";
                     return response;
                 }
                 res = kvs_skiptable_set(&global_skiptable, tokens[1], tokens[2]);
@@ -898,16 +704,10 @@ private:
             #endif
             default:
                 KV_LOG("unknow command, echo...\n");
-                // snprintf(response_buf, sizeof(response_buf), r_buf.data());
                 response = r_buf.data();
                 break;
-                //return -1;
         }
         response = response_buf;
-        // if(strlen(w_buf) > 0){
-
-        //     Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
-        // }
         return response;
     }
 
@@ -923,11 +723,9 @@ private:
             std::string command(r_buf.begin(), it);
             r_buf.erase(r_buf.begin(), it + 1); /*连带换行符删除*/
             std::string response = process_command(command);
-            KV_LOG("response: %s\n", response.c_str());
+            KV_LOG("response: %s", response.c_str());
             send_queue_.push(response + '\n');
-            //if (1 == send_queue_.size()) {
-                //Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
-            //}
+            // send_queue_.push(response);
             it = std::find(r_buf.begin(), r_buf.end(), '\n');
         }
         Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
@@ -944,13 +742,6 @@ private:
                 KV_LOG("read: %s, bytes: %d\n", temp_buf, n);
                 r_buf.insert(r_buf.end(), temp_buf, temp_buf + n);
                 process_received_data();                
-                // int count = split_token();
-                // KV_LOG("tokens count: %d\n", count);
-                // for(int i = 0; i < count; ++i){
-                    // KV_LOG("token: %s\n", tokens[i]);
-                // }
-                // parse_protocol(count);
-                // send(fd_, r_buf, n, 0);
             } else if (n == 0) {
                 KV_LOG("client close\n");
                 Reactor::get_instance().unregister_handler(fd_);
@@ -978,48 +769,8 @@ private:
                                                         shared_from_this());
                 break;
             }
-            // static size_t sent_bytes = 0;
-            // size_t total_len = strlen(w_buf);
-            // if(total_len == 0 || sent_bytes >= total_len){
-            //     sent_bytes = 0;
-            //     Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
-            //     return;
-            // }
             response += send_queue_.front();
             send_queue_.pop();
-            
-            // while (true) {
-            //     int n = send(fd_, w_buf + sent_bytes, total_len - sent_bytes, 0);
-            //     if(n > 0){
-            //         sent_bytes += n;
-            //         if ( sent_bytes >= total_len ) {
-            //             /*全部发送完成*/
-            //             KV_LOG("all send\n");
-            //             memset(w_buf, 0, sizeof(w_buf));
-            //             sent_bytes = 0;
-            //             Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
-            //             break;
-            //         }
-            //         KV_LOG("send: %s bytes: %d\n", w_buf + sent_bytes, n);
-            //     } else if (n == 0) {
-            //         KV_LOG("n == 0\n");
-            //         Reactor::get_instance().unregister_handler(fd_);
-            //         close(fd_);
-            //         break;
-            //     } else {
-            //         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            //             /*缓冲区满，等待下次写事件*/
-            //             KV_LOG("errno == EAGAIN || errno == EWOULDBLOCK\n");
-            //             Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLOUT | EPOLLET, shared_from_this());
-            //             // Reactor::get_instance().modify_handler(fd_, EPOLLIN | EPOLLET, shared_from_this());
-            //             break;
-            //         }
-            //         perror("send");
-            //         Reactor::get_instance().unregister_handler(fd_);
-            //         close(fd_);
-            //         break;
-            //     }
-            // }
         }
         int n = send(fd_, response.data(), response.size(), 0);
         KV_LOG("send: %s, bytes: %ld, ret = %d\n", response.data(), response.size(), n);
@@ -1063,6 +814,8 @@ private:
         SAVE,
         LOAD,
         RANGE,
+        SYNC,
+        GETARRAY,
         RSET,
         RGET,
         RDEL,
@@ -1097,10 +850,9 @@ private:
     std::vector<char> w_buf;
     std::queue<std::string> send_queue_;
     size_t current_send_offset_ = 0;
-    //char r_buf[1024] = {0};
-    //char w_buf[1024] = {0};
+
     const char* commands[static_cast<int>(Command::COUNT)] = {
-        "SET", "GET", "DEL", "MOD","EXIST","SAVE", "LOAD", "RANGE",
+        "SET", "GET", "DEL", "MOD","EXIST","SAVE", "LOAD", "RANGE","SYNC","GETARRAY",
         "RSET", "RGET", "RDEL", "RMOD","REXIST","RSAVE","RLOAD", "RRANGE",
         "HSET", "HGET", "HDEL", "HMOD","HEXIST","HSAVE","HLOAD", "HRANGE",
         "SSET", "SGET", "SDEL", "SMOD","SEXIST","SSAVE","SLOAD", "SRANGE",
@@ -1120,7 +872,6 @@ public:
 private:
     void on_new_connection(int new_fd) override{
         auto client = std::make_shared<KVStoreEpollConnection>(new_fd);
-        // Reactor::get_instance().register_handler(new_fd, EPOLLIN | EPOLLET | EPOLLONESHOT, client);
         printf("new connection: %d\n", new_fd);
         Reactor::get_instance().register_handler(new_fd, EPOLLIN | EPOLLET, client);
     }
