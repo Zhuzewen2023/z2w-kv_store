@@ -48,67 +48,77 @@ make
 |17      |测试数组
 
 ## 性能测试
+系统配置：
+Ubuntu 22.04 64位 2核4G
 ### 数组存储引擎
-```C
-test_kv_case(connfd, "SET Name ZZW\n", "SUCCESS\n", "SETCase");
-test_kv_case(connfd, "GET Name\n", "ZZW\n", "GETCase");
-test_kv_case(connfd, "SET Name Linus\n", "EXIST\n", "SETCase");
-test_kv_case(connfd, "MOD Name Linus\n", "SUCCESS\n", "MODCase");
-test_kv_case(connfd, "EXIST Name\n", "EXIST\n", "EXISTCase");
-test_kv_case(connfd, "GET Name\n", "Linus\n", "GETCase");
-test_kv_case(connfd, "DEL Name\n", "SUCCESS\n", "DELCase");
-test_kv_case(connfd, "GET Name\n", "NO EXIST\n", "GETCase");
-test_kv_case(connfd, "MOD Name Linus\n", "ERROR\n", "MODCase");
-test_kv_case(connfd, "EXIST Name\n", "NO EXIST\n", "EXISTCase");
-```
-> 进行10次指令，重复10000次
+> 按序进行SET,GET,SET,MOD,EXIST,GET,DEL,GET,MOD,EXIST指令，重复10000次
 <img width="405" height="105" alt="image" src="https://github.com/user-attachments/assets/7cd681d9-b360-40c7-826b-95b0537fc53f" />
 
+--------------------------------------------------------------
+> 分别对每条SET,GET,SET,MOD,EXIST,GET,DEL,GET,MOD,EXIST指令重复100000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
+
+太慢，跑了几小时
+
+------------------------------------
+
+> 存储10W键值，每次插入的键值后缀按照重复次数累加
+<img width="343" height="120" alt="image" src="https://github.com/user-attachments/assets/20173e5c-1066-48b1-9e14-da9925297d5f" />
+
+----------------------------------
+------------------------------------
+
 ### 红黑树存储引擎
-```C
-test_rb_case(connfd, "RSET Name ZZW\n", "SUCCESS\n", "RSETCase");
-test_rb_case(connfd, "RGET Name\n", "ZZW\n", "RGETCase");
-test_rb_case(connfd, "RSET Name Linus\n", "EXIST\n", "RSETCase");
-test_rb_case(connfd, "RMOD Name Linus\n", "SUCCESS\n", "RMODCase");
-test_rb_case(connfd, "REXIST Name\n", "EXIST\n", "REXISTCase");
-test_rb_case(connfd, "RGET Name\n", "Linus\n", "RGETCase");
-test_rb_case(connfd, "RDEL Name\n", "SUCCESS\n", "RDELCase");
-test_rb_case(connfd, "RGET Name\n", "NO EXIST\n", "RGETCase");
-test_rb_case(connfd, "RMOD Name Linus\n", "ERROR\n", "RMODCase");
-test_rb_case(connfd, "REXIST Name\n", "NO EXIST\n", "REXISTCase");
-```
-> 进行10次指令，重复10000次
+
+> 按序进行RSET,RGET,RSET,RMOD,REXIST,RGET,RDEL,RGET,RMOD,REXIST指令，重复10000次
 <img width="496" height="109" alt="image" src="https://github.com/user-attachments/assets/d87422ca-0bcb-4454-80ec-ab431c179449" />
 
+--------------------------------------------------------------
+
+> 分别对每条RSET,RGET,RSET,RMOD,REXIST,RGET,RDEL,RGET,RMOD,REXIST指令重复100000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
+<img width="399" height="103" alt="image" src="https://github.com/user-attachments/assets/13322cbd-97fd-43e7-9520-737a20c411c3" />
+
+--------------------------------------------------------------
+
+> 存储10W键值，每次插入的键值后缀按照重复次数累加
+<img width="395" height="120" alt="image" src="https://github.com/user-attachments/assets/6b35e59c-e34f-4290-9a6e-58cb5a29c115" />
+
+--------------------------
+--------------------------
+
 ### 哈希表存储引擎
-```C
-test_hash_case(connfd, "HSET Name ZZW\n", "SUCCESS\n", "HSETCase");
-test_hash_case(connfd, "HGET Name\n", "ZZW\n", "HGETCase");
-test_hash_case(connfd, "HSET Name Linus\n", "EXIST\n", "HSETCase");
-test_hash_case(connfd, "HMOD Name Linus\n", "SUCCESS\n", "HMODCase");
-test_hash_case(connfd, "HEXIST Name\n", "EXIST\n", "HEXISTCase");
-test_hash_case(connfd, "HGET Name\n", "Linus\n", "HGETCase");
-test_hash_case(connfd, "HDEL Name\n", "SUCCESS\n", "HDELCase");
-test_hash_case(connfd, "HGET Name\n", "NO EXIST\n", "HGETCase");
-test_hash_case(connfd, "HMOD Name Linus\n", "ERROR\n", "HMODCase");
-test_hash_case(connfd, "HEXIST Name\n", "NO EXIST\n", "HEXISTCase");
-```
-> 进行10次指令，重复10000次
+
+> 按序进行HSET,HGET,HSET,HMOD,HEXIST,HGET,HDEL,HGET,HMOD,HEXIST指令，重复10000次
 <img width="490" height="105" alt="image" src="https://github.com/user-attachments/assets/92b783d1-20d1-4ebf-9f48-df9d4b2bd793" />
 
+--------------------------------------------------------------
+
+> 分别对每条HSET,HGET,HSET,HMOD,HEXIST,HGET,HDEL,HGET,HMOD,HEXIST指令重复100000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
+<img width="344" height="104" alt="image" src="https://github.com/user-attachments/assets/a1518373-9b28-4e63-b516-cf4c042b0b47" />
+
+-----------------------------------------------------------------
+
+> 存储10W键值，每次插入的键值后缀按照重复次数累加
+<img width="481" height="119" alt="image" src="https://github.com/user-attachments/assets/3763e128-acd4-4747-8a06-cbbcc54bfe26" />
+
+-------------------------------------------
+-------------------------------------------
+
 ### 跳表存储引擎
-```C
-test_kv_case(connfd, "SSET Name ZZW\n", "SUCCESS\n", "SSETCase");
-test_kv_case(connfd, "SGET Name\n", "ZZW\n", "SGETCase");
-test_kv_case(connfd, "SSET Name Linus\n", "EXIST\n", "SSETCase");
-test_kv_case(connfd, "SMOD Name Linus\n", "SUCCESS\n", "SMODCase");
-test_kv_case(connfd, "SEXIST Name\n", "EXIST\n", "SEXISTCase");
-test_kv_case(connfd, "SGET Name\n", "Linus\n", "SGETCase");
-test_kv_case(connfd, "SDEL Name\n", "SUCCESS\n", "SDELCase");
-test_kv_case(connfd, "SGET Name\n", "NO EXIST\n", "SGETCase");
-test_kv_case(connfd, "SMOD Name Linus\n", "ERROR\n", "SMODCase");
-test_kv_case(connfd, "SEXIST Name\n", "NO EXIST\n", "SEXISTCase");
-```
-> 进行10次指令，重复10000次
+
+> 按序进行SSET,SGET,SSET,SMOD,SEXIST,SGET,SDEL,SGET,SMOD,SEXIST指令，重复10000次
 <img width="440" height="109" alt="image" src="https://github.com/user-attachments/assets/406b2350-8aeb-4a5b-ad7c-ac41d4bb8b14" />
+
+--------------------------------------------------------------
+
+> 分别对每条SSET,SGET,SSET,SMOD,SEXIST,SGET,SDEL,SGET,SMOD,SEXIST指令重复100000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
+<img width="413" height="101" alt="image" src="https://github.com/user-attachments/assets/f5740bda-a337-49d3-b8e4-a3dd86a755dc" />
+
+-----------------------------------------------------------------
+
+> 存储10W键值，每次插入的键值后缀按照重复次数累加
+<img width="425" height="119" alt="image" src="https://github.com/user-attachments/assets/aaaf7005-0740-440a-926d-d0d78e4a29c9" />
+
+
+-------------------------------------------------------------------
+--------------------------------------------------------------------
 
