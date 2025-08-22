@@ -8,6 +8,20 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <netinet/in.h>
+#include <ctype.h>
+#include <semaphore.h>
+
+typedef struct test_status_s
+{
+    int total_cases; //总测试用例数
+    int passed_cases; //通过的用例数
+    int failed_cases; //失败的用例数
+    int total_operations; //总操作数（用于QPS计算)
+    pthread_mutex_t status_mutex; //统计信息互斥锁
+} test_status_t;
+
+test_status_t g_status = {0, 0, 0, 0, PTHREAD_MUTEX_INITIALIZER};
 
 typedef struct test_context_s{
     char serverip[16];
@@ -15,11 +29,19 @@ typedef struct test_context_s{
     int mode;
     int repeat_num;
     char filename[128];
-#if 1
     int failed;
-#endif
-
+    int thread_id; //线程ID，用于多线程测试
+    sem_t* start_sem; //用于同步线程开始
 } test_context_t;
+
+typedef struct thread_safety_test_s
+{
+    int num_threads;
+	int operations_per_thread;
+	char serverip[16];
+    int port;
+	int engine_type; // 0 for array, 1 for rbtree, 2 for hash, 3 for skiptable
+}thread_safety_test_t;
 
 #define TIME_SUB_MS(tv1, tv2) ((tv1.tv_sec - tv2.tv_sec) * 1000 + (tv1.tv_usec - tv2.tv_usec) / 1000)
 
@@ -129,13 +151,11 @@ void array_test_case_huge_keys(int connfd, int num)
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", i, i);
-        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
-        // printf("cmd = %s\n", cmd);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "GETCase");
@@ -143,25 +163,21 @@ void array_test_case_huge_keys(int connfd, int num)
     for (i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SET Name_%d Linus_%d\n", i, i);
-        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "EXIST\n", "SETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d\n", i, i);
-        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "SUCCESS\n", "MODCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "EXIST Name_%d\n", i);
-        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "EXIST\n", "EXISTCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
-        // printf("cmd = %s\n", cmd);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "Linus_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "GETCase");
@@ -169,19 +185,16 @@ void array_test_case_huge_keys(int connfd, int num)
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "DEL Name_%d\n", i);
-        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "SUCCESS\n", "DELCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
-        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase");
     }
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d\n", i, i);
-        // printf("cmd = %s\n", cmd);
         char case_str[128] = {0};
         snprintf(case_str, sizeof(case_str), "MODCase_%d\n", i);
         test_kv_case(connfd, cmd, "ERROR\n", case_str);
@@ -189,7 +202,6 @@ void array_test_case_huge_keys(int connfd, int num)
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "EXIST Name_%d\n", i);
-        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "NO EXIST\n", "EXISTCase");
     }
 }
@@ -200,7 +212,6 @@ void array_save_test(int connfd, int num, char* filename)
     for(i = 0; i < num; i++){
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", i, i);
-        // printf("cmd = %s\n", cmd);
         test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
     }
     char cmd[128] = {0};
@@ -905,7 +916,7 @@ void array_multiple_commands_test(int connfd, int num)
         return;
     }
     for(int i = 0; i < num; i++){
-        char cmd[512] = {0};
+        char cmd[1024] = {0};
         snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n\
                                     GET Name_%d\n\
                                     SET Name_%d Linus_%d\n\
@@ -918,7 +929,7 @@ void array_multiple_commands_test(int connfd, int num)
                                     EXIST Name_%d\n", 
                                     i, i, i, i, i, i, i, i, i, i, i, i, i, i);
 
-        char pattern[512] = {0};
+        char pattern[1024] = {0};
         snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
 EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
                                     i, i);
@@ -934,7 +945,7 @@ void rbtree_multiple_commands_test(int connfd, int num)
         return;
     }
     for(int i = 0; i < num; i++){
-        char cmd[512] = {0};
+        char cmd[1024] = {0};
         snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n\
                                     RGET Name_%d\n\
                                     RSET Name_%d Linus_%d\n\
@@ -947,7 +958,7 @@ void rbtree_multiple_commands_test(int connfd, int num)
                                     REXIST Name_%d\n", 
                                     i, i, i, i, i, i, i, i, i, i, i, i, i, i);
 
-        char pattern[512] = {0};
+        char pattern[1024] = {0};
         snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
 EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
                                     i, i);
@@ -963,7 +974,7 @@ void hash_multiple_commands_test(int connfd, int num)
         return;
     }
     for(int i = 0; i < num; i++){
-        char cmd[512] = {0};
+        char cmd[1024] = {0};
         snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n\
                                     HGET Name_%d\n\
                                     HSET Name_%d Linus_%d\n\
@@ -976,7 +987,7 @@ void hash_multiple_commands_test(int connfd, int num)
                                     HEXIST Name_%d\n", 
                                     i, i, i, i, i, i, i, i, i, i, i, i, i, i);
 
-        char pattern[512] = {0};
+        char pattern[1024] = {0};
         snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
 EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
                                     i, i);
@@ -992,7 +1003,7 @@ void skiptable_multiple_commands_test(int connfd, int num)
         return;
     }
     for(int i = 0; i < num; i++){
-        char cmd[512] = {0};
+        char cmd[1024] = {0};
         snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n\
                                     SGET Name_%d\n\
                                     SSET Name_%d Linus_%d\n\
@@ -1005,7 +1016,7 @@ void skiptable_multiple_commands_test(int connfd, int num)
                                     SEXIST Name_%d\n", 
                                     i, i, i, i, i, i, i, i, i, i, i, i, i, i);
 
-        char pattern[512] = {0};
+        char pattern[1024] = {0};
         snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\nEXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
                                     i, i);
         test_kv_case(connfd, cmd, pattern, "SkipTableMultipleCommandsCase");
@@ -1021,7 +1032,7 @@ void all_engine_multiple_commands_test(int connfd, int num)
         return;
     }
     for(int i = 0; i < num; i++){
-        char cmd[512] = {0};
+        char cmd[1024] = {0};
         snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n\
                                     RSET Name_%d ZZW_%d\n\
                                     HSET Name_%d ZZW_%d\n\
@@ -1037,7 +1048,7 @@ void all_engine_multiple_commands_test(int connfd, int num)
                                     HGET Name_%d\n\
                                     SGET Name_%d\n", i, i, i, i);
 
-        char pattern[512] = {0};
+        char pattern[1024] = {0};
         snprintf(pattern, sizeof(pattern), "ZZW_%d\nZZW_%d\nZZW_%d\nZZW_%d\n", 
                                     i, i, i, i);
         test_kv_case(connfd, cmd, pattern, "AllEngineGETCase");
@@ -1245,6 +1256,9 @@ int main(int argc, char *argv[])
             array_test_case(connfd);
         #endif
         }
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (2 == ctx.mode) {
         printf("rbtree test case\n");
@@ -1253,6 +1267,9 @@ int main(int argc, char *argv[])
             rbtree_test_case(connfd);
         #endif
         }
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (3 == ctx.mode) {
         printf("hashtable test case\n");
@@ -1261,6 +1278,9 @@ int main(int argc, char *argv[])
             hash_test_case(connfd);
         #endif
         }
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (4 == ctx.mode) {
         printf("skiptable test case\n");
@@ -1269,104 +1289,152 @@ int main(int argc, char *argv[])
             skiptable_test_case(connfd);
         #endif
         }
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (5 == ctx.mode) {
         printf("array huge keys test case\n");
     #if ENABLE_ARRAY_KV_ENGINE
         array_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (6 == ctx.mode) {
         printf("rbtree huge keys test case\n");
     #if ENABLE_RBTREE_KV_ENGINE
         rbtree_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (7 == ctx.mode) {
         printf("hashtable huge keys test case\n");
     #if ENABLE_HASH_KV_ENGINE
         hash_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (8 == ctx.mode) {
         printf("skiptable huge keys test case\n");
     #if ENABLE_SKIPTABLE_KV_ENGINE
         skiptable_test_case_huge_keys(connfd, ctx.repeat_num);
     #endif
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (9 == ctx.mode) {
         printf("save array to harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
         array_save_test(connfd, ctx.repeat_num, ctx.filename);
-        //kvs_array_save(ctx.filename);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 1000 / time_used);
     }
     if (10 == ctx.mode) {
         printf("save rbtree to harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
         rbtree_save_test(connfd, ctx.repeat_num, ctx.filename);
-        //kvs_rbtree_save(ctx.filename);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 1000 / time_used);
     }
     if (11 == ctx.mode) {
         printf("save hashtable to harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
         hash_save_test(connfd, ctx.repeat_num, ctx.filename);
-        //kvs_hashtable_save(ctx.filename);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 1000 / time_used);
     }
     if (12 == ctx.mode) {
         printf("save skiptable to harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
         skiptable_save_test(connfd, ctx.repeat_num, ctx.filename);
-        //kvs_skiptable_save(ctx.filename);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 1000 / time_used);
     }
     if (13 == ctx.mode) {
         printf("load array from harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
-        //kvs_array_load(ctx.filename);
         array_load_test(connfd, ctx.repeat_num, ctx.filename);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 2 * 1000 / time_used);
     }
     if (14 == ctx.mode) {
         printf("load rbtree from harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
-        //kvs_rbtree_load(ctx.filename);
         rbtree_load_test(connfd, ctx.repeat_num, ctx.filename);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 2 * 1000 / time_used);
     }
     if (15 == ctx.mode) {
         printf("load hashtable from harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
         hash_load_test(connfd, ctx.repeat_num, ctx.filename);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 2 * 1000 / time_used);
     }
     if (16 == ctx.mode) {
         printf("load skiptable from harddisk test case\n");
         printf("Please Enter filename: ");
         scanf("%s", ctx.filename);
         skiptable_load_test(connfd, ctx.repeat_num, ctx.filename);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 2 * 1000 / time_used);
     }
     if (17 == ctx.mode) {
         printf("Test Array KV Engine Multiple Commands\n");
         array_multiple_commands_test(connfd, ctx.repeat_num);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (18 == ctx.mode) {
         printf("Test Rbtree KV Engine Multiple Commands\n");
         rbtree_multiple_commands_test(connfd, ctx.repeat_num);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (19 == ctx.mode) {
         printf("Test Hash KV Engine Multiple Commands\n");
         hash_multiple_commands_test(connfd, ctx.repeat_num);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (20 == ctx.mode) {
         printf("Test Skiptable KV Engine Multiple Commands\n");
         skiptable_multiple_commands_test(connfd, ctx.repeat_num);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 10 * 1000 / time_used);
     }
     if (21 == ctx.mode) {
         printf("Test All Engine Multiple Commands Test\n");
         all_engine_multiple_commands_test(connfd, ctx.repeat_num);
+        gettimeofday(&end, NULL);
+        int time_used = TIME_SUB_MS(end, start);
+        printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 40 * 1000 / time_used);
     }
     if (22 == ctx.mode) {
         printf("Test Array Range Command Test\n");
@@ -1474,11 +1542,6 @@ int main(int argc, char *argv[])
         scanf("%d", &source_port);
         skiptable_sync_test_dest(connfd, ctx.repeat_num, source_ip, source_port);
     }
-
-    gettimeofday(&end, NULL);
-
-    int time_used = TIME_SUB_MS(end, start);
-    printf("time: %dms, qps: %d\n", time_used, ctx.repeat_num * 1000 / time_used);
 
     close(connfd);
     connfd = -1;
