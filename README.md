@@ -64,6 +64,11 @@ Ubuntu 22.04 64位 2核4G
 > 存储10W键值，每次插入的键值后缀按照重复次数累加
 <img width="343" height="120" alt="image" src="https://github.com/user-attachments/assets/20173e5c-1066-48b1-9e14-da9925297d5f" />
 
+------------------------------------
+
+> 读取存储的10W键值
+<img width="395" height="120" alt="image" src="https://github.com/user-attachments/assets/2ba8f6f5-1a99-484c-a23b-1933c9e64bf6" />
+
 ----------------------------------
 ------------------------------------
 
@@ -81,6 +86,11 @@ Ubuntu 22.04 64位 2核4G
 
 > 存储10W键值，每次插入的键值后缀按照重复次数累加
 <img width="395" height="120" alt="image" src="https://github.com/user-attachments/assets/6b35e59c-e34f-4290-9a6e-58cb5a29c115" />
+
+--------------------------------------------------------------
+
+> 读取存储的10W键值
+<img width="465" height="120" alt="image" src="https://github.com/user-attachments/assets/ff40577d-dbe9-4d52-9937-6eb0a9b7b664" />
 
 --------------------------
 --------------------------
@@ -100,6 +110,11 @@ Ubuntu 22.04 64位 2核4G
 > 存储10W键值，每次插入的键值后缀按照重复次数累加
 <img width="481" height="119" alt="image" src="https://github.com/user-attachments/assets/3763e128-acd4-4747-8a06-cbbcc54bfe26" />
 
+-----------------------------------------------------------------
+
+> 读取存储的10W键值
+<img width="500" height="129" alt="image" src="https://github.com/user-attachments/assets/d1bae8e2-2bf2-495e-8e74-c7370978725d" />
+
 -------------------------------------------
 -------------------------------------------
 
@@ -118,7 +133,12 @@ Ubuntu 22.04 64位 2核4G
 > 存储10W键值，每次插入的键值后缀按照重复次数累加
 <img width="425" height="119" alt="image" src="https://github.com/user-attachments/assets/aaaf7005-0740-440a-926d-d0d78e4a29c9" />
 
+-----------------------------------------------------------------
+
+> 读取存储的10W键值
+<img width="486" height="124" alt="image" src="https://github.com/user-attachments/assets/30a09a6e-4daf-4f30-be75-cb197bb6fbd2" />
 
 -------------------------------------------------------------------
 --------------------------------------------------------------------
+
 
