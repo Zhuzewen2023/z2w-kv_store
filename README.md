@@ -1,4 +1,4 @@
-<img width="610" height="106" alt="image" src="https://github.com/user-attachments/assets/ed0b894e-f4f4-4214-8e5c-f147c86c9dd0" /># z2w-kv_store
+# z2w-kv_store
 基于C/C++的键值（KV）存储项目，支持多种底层存储引擎和丰富的操作接口，适用于高并发场景下的轻量级数据存储需求。
 ## 项目简介
 `z2w-kv_store`是一个轻量级KV存储项目，核心特点：
@@ -68,7 +68,7 @@ Ubuntu 22.04 64位 2核4G
 -------------------------------------
 
 > 开启5个线程，分别对每条SET,GET,SET,MOD,EXIST,GET,DEL,GET,MOD,EXIST指令重复20000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
-<img width="711" height="360" alt="image" src="https://github.com/user-attachments/assets/938652f0-0daa-4baf-ab63-b2ccf2579b6f" />
+<img width="650" height="363" alt="image" src="https://github.com/user-attachments/assets/0af48936-65f4-4dbc-9437-f092f6d77dd2" />
 
 ------------------------------------
 
@@ -203,6 +203,7 @@ Ubuntu 22.04 64位 2核4G
 
 -------------------------------------------------------------------
 --------------------------------------------------------------------
+
 
 
 
