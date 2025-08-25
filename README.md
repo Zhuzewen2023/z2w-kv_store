@@ -99,6 +99,11 @@ Ubuntu 22.04 64位 2核4G
 
 --------------------------------------------------------------
 
+> 开启5个线程，分别对每条RSET,RGET,RSET,RMOD,REXIST,RGET,RDEL,RGET,RMOD,HEXIST指令重复20000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
+<img width="524" height="336" alt="image" src="https://github.com/user-attachments/assets/87c826b1-19cd-4761-8881-316cc8b56a67" />
+
+--------------------------------------------------------------
+
 > 单线程存储10W键值，每次插入的键值后缀按照重复次数累加
 <img width="395" height="120" alt="image" src="https://github.com/user-attachments/assets/6b35e59c-e34f-4290-9a6e-58cb5a29c115" />
 
@@ -118,13 +123,18 @@ Ubuntu 22.04 64位 2核4G
 --------------------------------------------------------------
 
 > 开启4个线程，按序进行HSET,HGET,HSET,HMOD,HEXIST,HGET,HDEL,HGET,HMOD,HEXIST指令，重复10000次，合计重复40000次,执行40万条指令
-<img width="525" height="318" alt="image" src="https://github.com/user-attachments/assets/98b8ea4d-06d3-477e-87c5-8d3241b809c5" />
+<img width="458" height="305" alt="image" src="https://github.com/user-attachments/assets/fab51427-1b2b-4ea3-9026-e749c63fad35" />
 
 --------------------------------------------------------------
 
 > 单线程分别对每条HSET,HGET,HSET,HMOD,HEXIST,HGET,HDEL,HGET,HMOD,HEXIST指令重复100000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
 <img width="344" height="104" alt="image" src="https://github.com/user-attachments/assets/a1518373-9b28-4e63-b516-cf4c042b0b47" />
 
+-----------------------------------------------------------------
+
+> 开启5个线程，分别对每条HSET,HGET,HSET,HMOD,HEXIST,HGET,HDEL,HGET,HMOD,HEXIST指令重复20000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
+<img width="541" height="336" alt="image" src="https://github.com/user-attachments/assets/125faee5-6d09-447a-8e67-1e4dd9dc7434" />
+ 
 -----------------------------------------------------------------
 
 > 单线程存储10W键值，每次插入的键值后缀按照重复次数累加
@@ -146,12 +156,17 @@ Ubuntu 22.04 64位 2核4G
 --------------------------------------------------------------
 
 > 开启4个线程，按序进行SSET,SGET,SSET,SMOD,SEXIST,SGET,SDEL,SGET,SMOD,SEXIST指令，重复10000次，合计重复40000次，执行40万条指令
-<img width="456" height="305" alt="image" src="https://github.com/user-attachments/assets/92c1cb78-6f15-4927-b079-fdace3e27b18" />
+<img width="446" height="304" alt="image" src="https://github.com/user-attachments/assets/a95d2339-58c3-4f2a-8807-9972bf87cf0f" />
 
 --------------------------------------------------------------
 
 > 单线程分别对每条SSET,SGET,SSET,SMOD,SEXIST,SGET,SDEL,SGET,SMOD,SEXIST指令重复100000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
 <img width="413" height="101" alt="image" src="https://github.com/user-attachments/assets/f5740bda-a337-49d3-b8e4-a3dd86a755dc" />
+
+---------------------------------------------------------------
+
+> 开启5个线程，分别对每条SSET,SGET,SSET,SMOD,SEXIST,SGET,SDEL,SGET,SMOD,SEXIST指令重复20000次，每次插入的键值后缀按照重复次数累加，共计执行100万次指令
+<img width="565" height="340" alt="image" src="https://github.com/user-attachments/assets/2b08e1b5-ca60-478a-bb1f-9e2e70ae1aca" />
 
 -----------------------------------------------------------------
 
@@ -165,6 +180,7 @@ Ubuntu 22.04 64位 2核4G
 
 -------------------------------------------------------------------
 --------------------------------------------------------------------
+
 
 
 
