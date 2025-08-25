@@ -1,4 +1,4 @@
-# z2w-kv_store
+<img width="610" height="106" alt="image" src="https://github.com/user-attachments/assets/ed0b894e-f4f4-4214-8e5c-f147c86c9dd0" /># z2w-kv_store
 基于C/C++的键值（KV）存储项目，支持多种底层存储引擎和丰富的操作接口，适用于高并发场景下的轻量级数据存储需求。
 ## 项目简介
 `z2w-kv_store`是一个轻量级KV存储项目，核心特点：
@@ -76,8 +76,8 @@ Ubuntu 22.04 64位 2核4G
 
 --------------------------------------
 
-> 单线程将SET,GET,SET,MOD,EXIST,GET,DEL,GET,MOD,EXIST指令合并为1条指令发送，重复10000次
-> 
+> 单线程将SET,GET,SET,MOD,EXIST,GET,DEL,GET,MOD,EXIST指令合并为1条指令发送，重复100000次
+<img width="511" height="110" alt="image" src="https://github.com/user-attachments/assets/9c47d66d-430d-4255-a7e9-5367ef21a6fa" />
 
 ----------------------------------
 ------------------------------------
@@ -112,6 +112,13 @@ Ubuntu 22.04 64位 2核4G
 > 单线程读取存储的10W键值
 <img width="465" height="120" alt="image" src="https://github.com/user-attachments/assets/ff40577d-dbe9-4d52-9937-6eb0a9b7b664" />
 
+--------------------------------------------------------------
+
+> 单线程将RSET,RGET,RSET,RMOD,REXIST,RGET,RDEL,RGET,RMOD,REXIST指令合并为1条指令发送，重复100000次
+<img width="610" height="106" alt="image" src="https://github.com/user-attachments/assets/c9701cf9-6982-4d0a-86cc-9a50a7f14985" />
+
+--------------------------------------------------------------
+
 --------------------------
 --------------------------
 
@@ -144,6 +151,11 @@ Ubuntu 22.04 64位 2核4G
 
 > 单线程读取存储的10W键值
 <img width="500" height="129" alt="image" src="https://github.com/user-attachments/assets/d1bae8e2-2bf2-495e-8e74-c7370978725d" />
+
+-------------------------------------------------------------------
+
+> 单线程将HSET,HGET,HSET,HMOD,HEXIST,HGET,HDEL,HGET,HMOD,HEXIST指令合并为1条指令发送，重复100000次
+<img width="595" height="114" alt="image" src="https://github.com/user-attachments/assets/cbeefa2a-b605-4123-b6d0-103aef0c4c2a" />
 
 -------------------------------------------
 -------------------------------------------
@@ -178,8 +190,14 @@ Ubuntu 22.04 64位 2核4G
 > 单线程读取存储的10W键值
 <img width="486" height="124" alt="image" src="https://github.com/user-attachments/assets/30a09a6e-4daf-4f30-be75-cb197bb6fbd2" />
 
+------------------------------------------------------------------
+
+> 单线程将SSET,SGET,SSET,SMOD,SEXIST,SGET,SDEL,SGET,SMOD,SEXIST指令合并为1条指令发送，重复100000次
+<img width="496" height="104" alt="image" src="https://github.com/user-attachments/assets/46ff3747-9a23-44b8-b8f9-7945295deb9c" />
+
 -------------------------------------------------------------------
 --------------------------------------------------------------------
+
 
 
 
