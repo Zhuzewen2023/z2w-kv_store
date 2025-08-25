@@ -32,6 +32,8 @@ typedef struct test_context_s{
     int failed;
     int thread_id; //线程ID，用于多线程测试
     sem_t* start_sem; //用于同步线程开始
+    int engine_type;
+    int operations_per_thread;
 } test_context_t;
 
 typedef struct thread_safety_test_s
@@ -143,6 +145,44 @@ void array_test_case(int connfd)
     test_kv_case(connfd, "GET Name\n", "NO EXIST\n", "GETCase");
     test_kv_case(connfd, "MOD Name Linus\n", "ERROR\n", "MODCase");
     test_kv_case(connfd, "EXIST Name\n", "NO EXIST\n", "EXISTCase");
+}
+
+void array_test_case_multithread(int connfd, int key_id)
+{
+    char cmd[1024] = { 0 };
+    char pattern[1024] = { 0 };
+	snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", key_id, key_id);
+	test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
+    memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+	snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+	test_kv_case(connfd, cmd, pattern, "GETCase");
+	memset(cmd, 0, sizeof(cmd));
+    memset(pattern, 0, sizeof(pattern));
+	snprintf(cmd, sizeof(cmd), "SET Name_%d Linus_%d\n", key_id, key_id);
+	test_kv_case(connfd, cmd, "EXIST\n", "SETCase");
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d\n", key_id, key_id);
+	test_kv_case(connfd, cmd, "SUCCESS\n", "MODCase");
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "EXIST Name_%d\n", key_id);
+	test_kv_case(connfd, cmd, "EXIST\n", "EXISTCase");
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+	snprintf(pattern, sizeof(pattern), "Linus_%d\n", key_id);
+	test_kv_case(connfd, cmd, pattern, "GETCase");
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "DEL Name_%d\n", key_id);
+	test_kv_case(connfd, cmd, "SUCCESS\n", "DELCase");
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+	test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase");
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "MOD Name_%d Linus_%d\n", key_id, key_id);
+	test_kv_case(connfd, cmd, "ERROR\n", "MODCase");
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "EXIST Name_%d\n", key_id);
+	test_kv_case(connfd, cmd, "NO EXIST\n", "EXISTCase");
 }
 
 void array_test_case_huge_keys(int connfd, int num)
@@ -339,6 +379,44 @@ void rbtree_test_case(int connfd)
     test_rb_case(connfd, "REXIST Name\n", "NO EXIST\n", "REXISTCase");
 }
 
+void rbtree_test_case_multithread(int connfd, int key_id)
+{
+    char cmd[1024] = { 0 };
+    char pattern[1024] = { 0 };
+    snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "RSETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", key_id);
+    snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+    test_kv_case(connfd, cmd, pattern, "RGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    memset(pattern, 0, sizeof(pattern));
+    snprintf(cmd, sizeof(cmd), "RSET Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "EXIST\n", "RSETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "RMODCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "REXIST Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "EXIST\n", "REXISTCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", key_id);
+    snprintf(pattern, sizeof(pattern), "Linus_%d\n", key_id);
+    test_kv_case(connfd, cmd, pattern, "RGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "RDEL Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "RDELCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "NO EXIST\n", "RGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "RMOD Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "ERROR\n", "RMODCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "REXIST Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "NO EXIST\n", "REXISTCase");
+}
+
 void rbtree_test_case_huge_keys(int connfd, int num)
 {
     int i = 0;
@@ -531,6 +609,44 @@ void hash_test_case(int connfd)
     test_hash_case(connfd, "HGET Name\n", "NO EXIST\n", "HGETCase");
     test_hash_case(connfd, "HMOD Name Linus\n", "ERROR\n", "HMODCase");
     test_hash_case(connfd, "HEXIST Name\n", "NO EXIST\n", "HEXISTCase");
+}
+
+void hash_test_case_multithread(int connfd, int key_id)
+{
+    char cmd[1024] = { 0 };
+    char pattern[1024] = { 0 };
+    snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "HSETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", key_id);
+    snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+    test_kv_case(connfd, cmd, pattern, "HGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    memset(pattern, 0, sizeof(pattern));
+    snprintf(cmd, sizeof(cmd), "HSET Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "EXIST\n", "HSETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "HMODCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HEXIST Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "EXIST\n", "HEXISTCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", key_id);
+    snprintf(pattern, sizeof(pattern), "Linus_%d\n", key_id);
+    test_kv_case(connfd, cmd, pattern, "HGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HDEL Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "HDELCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "NO EXIST\n", "HGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HMOD Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "ERROR\n", "HMODCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HEXIST Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "NO EXIST\n", "HEXISTCase");
 }
 
 void hash_test_case_huge_keys(int connfd, int num)
@@ -726,6 +842,44 @@ void skiptable_test_case(int connfd)
     test_kv_case(connfd, "SGET Name\n", "NO EXIST\n", "SGETCase");
     test_kv_case(connfd, "SMOD Name Linus\n", "ERROR\n", "SMODCase");
     test_kv_case(connfd, "SEXIST Name\n", "NO EXIST\n", "SEXISTCase");
+}
+
+void skiptable_test_case_multithread(int connfd, int key_id)
+{
+    char cmd[1024] = { 0 };
+    char pattern[1024] = { 0 };
+    snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", key_id);
+    snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+    test_kv_case(connfd, cmd, pattern, "SGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    memset(pattern, 0, sizeof(pattern));
+    snprintf(cmd, sizeof(cmd), "SSET Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "EXIST\n", "SSETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SMODCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SEXIST Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "EXIST\n", "SEXISTCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", key_id);
+    snprintf(pattern, sizeof(pattern), "Linus_%d\n", key_id);
+    test_kv_case(connfd, cmd, pattern, "SGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SDEL Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SDELCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "NO EXIST\n", "SGETCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SMOD Name_%d Linus_%d\n", key_id, key_id);
+    test_kv_case(connfd, cmd, "ERROR\n", "SMODCase");
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SEXIST Name_%d\n", key_id);
+    test_kv_case(connfd, cmd, "NO EXIST\n", "SEXISTCase");
 }
 
 void skiptable_test_case_huge_keys(int connfd, int num)
@@ -1158,13 +1312,14 @@ static void print_banner(void)
 
 // 打印使用说明
 static void print_usage(const char* prog_name) {
-    printf("Usage: %s -s <server_ip> -p <port> -m <mode> -n <repeat_num>\n\n", prog_name);
+    printf("Usage: %s -s <server_ip> -p <port> -m <mode> -n <repeat_num> [-t <num_threads>]\n\n", prog_name);
     
     printf("Options:\n");
     printf("  -s <server_ip>    Server IP address\n");
     printf("  -p <port>         Server port number\n");
     printf("  -m <mode>         Test mode (see below)\n");
     printf("  -n <repeat_num>   Number of test repetitions\n\n");
+    printf("  -t <num_threads>  Number of threads (for multi-thread tests)\n\n");
     
     printf("Available Test Modes:\n");
     printf("  [1]  Test Array KV Engine\n");
@@ -1200,10 +1355,94 @@ static void print_usage(const char* prog_name) {
     printf("  [31] Test Hash Sync Command[Dest]\n");
     printf("  [32] Test Skiptable Sync Command[Source]\n");
     printf("  [33] Test Skiptable Sync Command[Dest]\n");
+    printf("  [34] Test Array KV Engine multi thread\n");
+    printf("  [35] Test Red-Black Tree KV Engine multi threads\n");
+    printf("  [36] Test Hash Table KV Engine multi threads\n");
+    printf("  [37] Test SkipTable KV Engine multi threads\n");
+    printf("  [38] Test Array with Huge Keys multi threads\n");
+    printf("  [39] Test Red-Black Tree with Huge Keys multi threads\n");
+    printf("  [40] Test Hash Table with Huge Keys multi threads\n");
+    printf("  [41] Test SkipTable with Huge Keys multi threads\n");
     
     printf("Examples:\n");
     printf("  %s -s 127.0.0.1 -p 8080 -m 1 -n 100\n", prog_name);
-    printf("  %s -s localhost -p 8888 -m 10 -n 1\n\n", prog_name);
+    printf("  %s -s localhost -p 8888 -m 10 -n 100 -t 4\n\n", prog_name);
+}
+
+// 根据引擎类型执行相应操作
+void perform_engine_operations(int connfd, test_context_t* ctx)
+{
+    int i;
+
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        // 为每个线程生成唯一的键，避免键冲突
+        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+
+        switch (ctx->mode) {
+            case 34: // Array 
+            {
+                #if ENABLE_ARRAY_KV_ENGINE
+                array_test_case_multithread(connfd, key_id);
+                #endif
+                break;
+            }
+            case 35: // Red-Black Tree
+            {
+                #if ENABLE_RBTREE_KV_ENGINE
+                rbtree_test_case_multithread(connfd, key_id);
+                #endif
+                break;
+            }
+            case 36: // Hash Table
+            {
+                #if ENABLE_HASH_KV_ENGINE
+                hash_test_case_multithread(connfd, key_id);
+                #endif
+                break;
+            }
+            case 37: // SkipTable
+            {
+                #if ENABLE_SKIPTABLE_KV_ENGINE
+                skiptable_test_case_multithread(connfd, key_id);
+                #endif
+                break;
+            }
+
+            if (ctx->failed) {
+                break;
+            }
+        }
+    }
+}
+
+// 线程入口函数
+void* thread_test_entry(void* arg)
+{
+    test_context_t* ctx = (test_context_t*)arg;
+    if (!ctx) {
+        printf("Invalid thread context\n");
+        return NULL;
+    }
+
+    // 等待所有线程准备就绪
+    sem_wait(ctx->start_sem);
+
+    // 每个线程创建独立的连接
+    int connfd = connect_tcpserver(ctx->serverip, ctx->port);
+    if (connfd < 0) {
+        printf("Thread %d failed to connect to server\n", ctx->thread_id);
+        return NULL;
+    }
+
+    printf("Thread %d started, performing %d operations\n",
+        ctx->thread_id, ctx->operations_per_thread);
+
+    // 执行测试操作
+    perform_engine_operations(connfd, ctx);
+
+    close(connfd);
+    printf("Thread %d completed\n", ctx->thread_id);
+    return NULL;
 }
 
 //array: 1, rbtree: 2, hashtable: 3, skiptable: 4
@@ -1213,7 +1452,7 @@ int main(int argc, char *argv[])
 {
     print_banner();
     print_usage(argv[0]);
-    if (argc < 8) {
+    if (argc < 9) {
         //print_usage(argv[0]);
         printf("Invalid parameters, please check Usage!\n");
         return -1;
@@ -1221,7 +1460,8 @@ int main(int argc, char *argv[])
     int ret = 0;
     int opt;
     test_context_t ctx = {0};
-    while((opt = getopt(argc, argv, "s:p:m:n:?")) != -1){
+    int num_threads = 1;
+    while((opt = getopt(argc, argv, "s:p:m:n:t:?")) != -1){
         switch(opt){
             case 's':
                 printf("-s : %s\n", optarg);
@@ -1239,10 +1479,90 @@ int main(int argc, char *argv[])
                 printf("-n : %s\n", optarg);
                 ctx.repeat_num = atoi(optarg);
                 break;
+            case 't':
+				printf("-t : %s\n", optarg);
+				num_threads = atoi(optarg);
+                if (num_threads < 1) num_threads = 1;
+				break;
             default:
                 printf("getopt error, unknown opt\n");
                 exit(1);
         }
+    }
+
+    if (ctx.mode >= 34) {
+        struct timeval start, end;
+        pthread_t* threads;
+        test_context_t* thread_ctxs;
+        sem_t start_sem;
+
+        ctx.engine_type = ctx.mode - 34;
+        printf("Starting multi-thread test for engine type %d\n", ctx.engine_type);
+        printf("Number of threads: %d, operations per thread: %d\n",
+            num_threads, ctx.repeat_num);
+
+        sem_init(&start_sem, 0, 0);
+
+        threads = (pthread_t*)malloc(num_threads * sizeof(pthread_t));
+        thread_ctxs = (test_context_t*)malloc(num_threads * sizeof(test_context_t));
+        if (!threads || !thread_ctxs) {
+            perror("Memory allocation failed");
+            return -1;
+        }
+
+        for (int i = 0; i < num_threads; i++) {
+            thread_ctxs[i] = ctx;
+            thread_ctxs[i].thread_id = i;
+            thread_ctxs[i].start_sem = &start_sem;
+            thread_ctxs[i].operations_per_thread = ctx.repeat_num;
+            thread_ctxs[i].failed = 0;
+        }
+
+        // 创建线程
+        for (int i = 0; i < num_threads; i++) {
+            ret = pthread_create(&threads[i], NULL, thread_test_entry, &thread_ctxs[i]);
+            if (ret != 0) {
+                perror("pthread_create failed");
+                num_threads = i; // 只等待已创建的线程
+                break;
+            }
+        }
+
+        // 等待所有线程准备就绪后同时开始
+        gettimeofday(&start, NULL);
+        for (int i = 0; i < num_threads; i++) {
+            sem_post(&start_sem); // 释放信号量，允许线程开始
+        }
+
+        // 等待所有线程完成
+        for (int i = 0; i < num_threads; i++) {
+            pthread_join(threads[i], NULL);
+        }
+        gettimeofday(&end, NULL);
+
+        // 计算并输出结果
+        int time_used = TIME_SUB_MS(end, start);
+        printf("\nMulti-thread test completed:\n");
+        printf("Total time: %dms\n", time_used);
+        switch (ctx.mode) {
+        case 34:
+        case 35:
+        case 36:
+        case 37: {
+            g_status.total_operations = num_threads * ctx.repeat_num * 10;
+            break;
+        }
+        }
+        printf("Total operations: %d\n", g_status.total_operations);
+        printf("QPS: %.2f\n", time_used > 0 ?
+            (g_status.total_operations * 1000.0 / time_used) : 0);
+        
+
+        // 清理资源
+        sem_destroy(&start_sem);
+        free(threads);
+        free(thread_ctxs);
+        return 0;
     }
 
     int connfd = connect_tcpserver(ctx.serverip, ctx.port);

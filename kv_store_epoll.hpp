@@ -5,12 +5,14 @@
 #include "kv_log.h"
 #include "kv_save.h"
 #include <stddef.h>
+#include <pthread.h>
 
 #ifdef __cplusplus
 
 #include <queue>
 #include <chrono>
 #include <vector>
+#include <mutex>
 
 #include "kv_store_sync_client.hpp"
 
