@@ -308,6 +308,33 @@ kv_store_array.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_array.c.s
 .PHONY : kv_store_array.c.s
 
+kv_store_epoll.o: kv_store_epoll.cpp.o
+.PHONY : kv_store_epoll.o
+
+# target to build an object file
+kv_store_epoll.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_epoll.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_epoll.cpp.o
+.PHONY : kv_store_epoll.cpp.o
+
+kv_store_epoll.i: kv_store_epoll.cpp.i
+.PHONY : kv_store_epoll.i
+
+# target to preprocess a source file
+kv_store_epoll.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_epoll.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_epoll.cpp.i
+.PHONY : kv_store_epoll.cpp.i
+
+kv_store_epoll.s: kv_store_epoll.cpp.s
+.PHONY : kv_store_epoll.s
+
+# target to generate assembly for a file
+kv_store_epoll.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv.dir/build.make CMakeFiles/kv.dir/kv_store_epoll.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kv_test.dir/build.make CMakeFiles/kv_test.dir/kv_store_epoll.cpp.s
+.PHONY : kv_store_epoll.cpp.s
+
 kv_store_hash.o: kv_store_hash.c.o
 .PHONY : kv_store_hash.o
 
@@ -496,6 +523,9 @@ help:
 	@echo "... kv_store_array.o"
 	@echo "... kv_store_array.i"
 	@echo "... kv_store_array.s"
+	@echo "... kv_store_epoll.o"
+	@echo "... kv_store_epoll.i"
+	@echo "... kv_store_epoll.s"
 	@echo "... kv_store_hash.o"
 	@echo "... kv_store_hash.i"
 	@echo "... kv_store_hash.s"

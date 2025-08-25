@@ -7,6 +7,7 @@ extern "C" {
 
 #include "kv_mem.h"
 #include "kv_range.h"
+#include "kv_store.hpp"
 
 #define MAX_KEY_LEN     128
 #define MAX_VALUE_LEN   512
@@ -18,10 +19,12 @@ typedef struct hashnode {
 #if ENABLE_KEY_POINTER
     char *key;
     char *value;
-    uint64_t timestamp;
 #else
     char key[MAX_KEY_LEN];
     char value[MAX_VALUE_LEN];
+#endif
+#if USE_TIMESTAMP
+    uint64_t timestamp;
 #endif
     struct hashnode *next;
 } hashnode_t;
@@ -45,17 +48,11 @@ kvs_hash_destroy(kvs_hash_t *hash);
 int 
 kvs_hash_set(kvs_hash_t *hash, const char *key, const char *value);
 
-int
-kvs_hash_set_with_timestamp(kvs_hash_t* inst, const char* key, const char* value, uint64_t timestamp);
-
 char* 
 kvs_hash_get(kvs_hash_t *hash, const char *key);
 
 int 
 kvs_hash_modify(kvs_hash_t *hash, const char *key, const char *value);
-
-int
-kvs_hash_modify_with_timestamp(kvs_hash_t* inst, const char* key, const char* value, uint64_t timestamp);
 
 int 
 kvs_hash_count(kvs_hash_t *hash);
@@ -73,8 +70,20 @@ kvs_hash_range(kvs_hash_t* inst, const char* start_key, const char* end_key,
 int
 kvs_hash_get_all(kvs_hash_t* inst, kvs_item_t** results, int* count);
 
+
+
+#if USE_TIMESTAMP
+
+int
+kvs_hash_set_with_timestamp(kvs_hash_t* inst, const char* key, const char* value, uint64_t timestamp);
+
+int
+kvs_hash_modify_with_timestamp(kvs_hash_t* inst, const char* key, const char* value, uint64_t timestamp);
+
 uint64_t
 kvs_hash_get_timestamp(kvs_hash_t* inst, const char* key);
+
+#endif
 
 #ifdef __cplusplus
 }

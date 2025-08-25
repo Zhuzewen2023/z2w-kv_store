@@ -14,6 +14,8 @@
 class SyncData
 {
 public:
+	SyncData(const std::string& k, const std::string& v) : key(k), value(v) {}
+#if USE_TIMESTAMP
 	SyncData(const std::string& k, const std::string& v, uint64_t t) : key(k), value(v), timestamp(t)
 	{
 
@@ -23,9 +25,12 @@ public:
 	{
 
 	}
+
+	uint64_t timestamp;
+#endif
 	std::string key;
 	std::string value;
-	uint64_t timestamp;
+	
 };
 
 class SyncClient
@@ -171,12 +176,18 @@ public:
 			    continue;
 			}
 			std::string key, value;
-			uint64_t timestamp;
 			std::stringstream line_ss(line);
+#if USE_TIMESTAMP
+			uint64_t timestamp;
 			line_ss >> key >> value >> timestamp;
 			// sscanf(line.c_str(), "%s %s %lu", key.c_str(), value.c_str(), &timestamp);
 			KV_LOG("parse remote data str key: %s, value: %s, timestamp: %lu\n", key.c_str(), value.c_str(), timestamp);
 			result.emplace_back(key, value, timestamp);
+#else
+			line_ss >> key >> value;
+			KV_LOG("parse remote data str key: %s, value: %s\n", key.c_str(), value.c_str());
+			result.emplace_back(key, value);
+#endif
 		}
 		return result;
 	}
@@ -187,15 +198,19 @@ public:
 		for (const auto& item : data) {
 			bool key_exists = false;
 			uint64_t local_timestamp = 0;
-			#if ENABLE_ARRAY_KV_ENGINE
+#if ENABLE_ARRAY_KV_ENGINE
 			char* local_value = kvs_array_get(&global_array, item.key.c_str());
 			if (local_value != NULL) {
 				key_exists = true;
+#if USE_TIMESTAMP
+				
 				local_timestamp = kvs_array_get_timestamp(&global_array, item.key.c_str());
+#endif
 			}
-			#endif
+#endif
 			
 			if (key_exists) {
+#if USE_TIMESTAMP
 				if (item.timestamp > local_timestamp) {
 					/*远程数据更新*/
 					#if ENABLE_ARRAY_KV_ENGINE
@@ -206,8 +221,11 @@ public:
 					}
 					#endif
 				}
+#else
+#endif
 			}
 			else {
+#if USE_TIMESTAMP
 				/*key 不存在*/
 				#if ENABLE_ARRAY_KV_ENGINE
 				ret = kvs_array_set_with_timestamp(&global_array, item.key.c_str(), item.value.c_str(), item.timestamp);
@@ -216,9 +234,21 @@ public:
 					return ret;
 				}
 				#endif
+				KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
+					item.key.c_str(), item.value.c_str(), item.timestamp);
+#else
+	#if ENABLE_ARRAY_KV_ENGINE
+				ret = kvs_array_set(&global_array, item.key.c_str(), item.value.c_str());
+				if (ret != 0) {
+					KV_LOG("kvs_array_set failed\n");
+					return ret;
+				}
+	#endif
+				KV_LOG("sync data: key: %s, value: %s\n",
+					item.key.c_str(), item.value.c_str());
+#endif
 			}
-			KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n", 
-				item.key.c_str(), item.value.c_str(), item.timestamp);
+			
 		}
 		return ret;
 	}
@@ -233,10 +263,14 @@ public:
 			char* local_value = kvs_rbtree_get(&global_rbtree, item.key.c_str());
 			if (local_value != NULL) {
 				key_exists = true;
+#if USE_TIMESTAMP
+				
 				local_timestamp = kvs_rbtree_get_timestamp(&global_rbtree, item.key.c_str());
+#endif
 			}
 
 			if (key_exists) {
+#if USE_TIMESTAMP
 				if (item.timestamp > local_timestamp) {
 					/*远程数据更新*/
 					ret = kvs_rbtree_modify_with_timestamp(&global_rbtree, item.key.c_str(), item.value.c_str(), item.timestamp);
@@ -245,17 +279,29 @@ public:
 						return ret;
 					}
 				}
+#endif
 			}
 			else {
+#if USE_TIMESTAMP
 				/*key 不存在*/
 				ret = kvs_rbtree_set_with_timestamp(&global_rbtree, item.key.c_str(), item.value.c_str(), item.timestamp);
 				if (ret != 0) {
 					KV_LOG("kvs_rbtree_set failed\n");
 					return ret;
 				}
+				KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
+					item.key.c_str(), item.value.c_str(), item.timestamp);
+#else
+				ret = kvs_rbtree_set(&global_rbtree, item.key.c_str(), item.value.c_str());
+				if (ret != 0) {
+					KV_LOG("kvs_rbtree_set failed\n");
+					return ret;
+				}
+				KV_LOG("sync data: key: %s, value: %s\n",
+					item.key.c_str(), item.value.c_str());
+#endif
 			}
-			KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n", 
-				item.key.c_str(), item.value.c_str(), item.timestamp);
+			
 		}
 		#endif
 		return ret;
@@ -271,10 +317,14 @@ public:
 			char* local_value = kvs_hash_get(&global_hash, item.key.c_str());
 			if (local_value != NULL) {
 				key_exists = true;
+#if USE_TIMESTAMP
+				
 				local_timestamp = kvs_hash_get_timestamp(&global_hash, item.key.c_str());
+#endif
 			}
 
 			if (key_exists) {
+#if USE_TIMESTAMP
 				if (item.timestamp > local_timestamp) {
 					/*远程数据更新*/
 					ret = kvs_hash_modify_with_timestamp(&global_hash, item.key.c_str(), item.value.c_str(), item.timestamp);
@@ -283,17 +333,30 @@ public:
 						return ret;
 					}
 				}
+#else
+#endif
 			}
 			else {
+#if USE_TIMESTAMP
 				/*key 不存在*/
 				ret = kvs_hash_set_with_timestamp(&global_hash, item.key.c_str(), item.value.c_str(), item.timestamp);
 				if (ret != 0) {
 					KV_LOG("kvs_hash_set failed\n");
 					return ret;
 				}
+				KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
+					item.key.c_str(), item.value.c_str(), item.timestamp);
+#else
+				ret = kvs_hash_set(&global_hash, item.key.c_str(), item.value.c_str());
+				if (ret != 0) {
+					KV_LOG("kvs_hash_set failed\n");
+					return ret;
+				}
+				KV_LOG("sync data: key: %s, value: %s\n",
+					item.key.c_str(), item.value.c_str());
+#endif
 			}
-			KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
-				item.key.c_str(), item.value.c_str(), item.timestamp);
+			
 		}
 		#endif
 		return ret;
@@ -305,14 +368,19 @@ public:
 		int ret = 0;
 		for (const auto& item : data) {
 			bool key_exists = false;
+#if USE_TIMESTAMP
 			uint64_t local_timestamp = 0;
+#endif
 			char* local_value = kvs_skiptable_get(&global_skiptable, item.key.c_str());
 			if (local_value != NULL) {
 				key_exists = true;
+#if USE_TIMESTAMP
 				local_timestamp = kvs_skiptable_get_timestamp(&global_skiptable, item.key.c_str());
+#endif
 			}
 
 			if (key_exists) {
+#if USE_TIMESTAMP
 			    if (item.timestamp > local_timestamp) {
 					/*远程数据更新*/
 					ret = kvs_skiptable_modify_with_timestamp(&global_skiptable, item.key.c_str(), item.value.c_str(), item.timestamp);
@@ -321,17 +389,30 @@ public:
 						return ret;
 					}
 				}
+#else
+#endif
 			}
 			else {
+#if USE_TIMESTAMP
 				/*key 不存在*/
 				ret = kvs_skiptable_set_with_timestamp(&global_skiptable, item.key.c_str(), item.value.c_str(), item.timestamp);
 				if (ret != 0) {
 					KV_LOG("kvs_skiptable_set failed\n");
 					return ret;
 				}
+				KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
+					item.key.c_str(), item.value.c_str(), item.timestamp);
+#else
+				ret = kvs_skiptable_set(&global_skiptable, item.key.c_str(), item.value.c_str());
+				if (ret != 0) {
+					KV_LOG("kvs_skiptable_set failed\n");
+					return ret;
+				}
+				KV_LOG("sync data: key: %s, value: %s\n",
+					item.key.c_str(), item.value.c_str());
+#endif
 			}
-			KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
-				item.key.c_str(), item.value.c_str(), item.timestamp);
+			
 		}
 		#endif
 		return ret;
@@ -343,16 +424,21 @@ public:
 		int ret = 0;
 		for (const auto& item : data) {
 			bool key_exists = false;
+#if USE_TIMESTAMP
 			uint64_t local_timestamp = 0;
+#endif
 			#if ENABLE_ARRAY_KV_ENGINE
 			char* local_value = kvs_array_get(&global_array, item.key.c_str());
 			if (local_value != NULL) {
 				key_exists = true;
+#if USE_TIMESTAMP
 				local_timestamp = kvs_array_get_timestamp(&global_array, item.key.c_str());
+#endif
 			}
 			#endif
 			
 			if (key_exists) {
+#if USE_TIMESTAMP
 				if (item.timestamp > local_timestamp) {
 					/*远程数据更新*/
 					#if ENABLE_ARRAY_KV_ENGINE
@@ -363,8 +449,11 @@ public:
 					}
 					#endif
 				}
+#else
+#endif
 			}
 			else {
+#if USE_TIMESTAMP
 				/*key 不存在*/
 				#if ENABLE_ARRAY_KV_ENGINE
 				ret = kvs_array_set_with_timestamp(&global_array, item.key.c_str(), item.value.c_str(), item.timestamp);
@@ -373,9 +462,21 @@ public:
 					return ret;
 				}
 				#endif
+				KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n",
+					item.key.c_str(), item.value.c_str(), item.timestamp);
+#else
+	#if ENABLE_ARRAY_KV_ENGINE
+				ret = kvs_array_set(&global_array, item.key.c_str(), item.value.c_str());
+				if (ret != 0) {
+					KV_LOG("kvs_array_set failed\n");
+					return ret;
+				}
+	#endif
+				KV_LOG("sync data: key: %s, value: %s\n",
+					item.key.c_str(), item.value.c_str());
+#endif
 			}
-			KV_LOG("sync data: key: %s, value: %s, timestamp: %lu\n", 
-				item.key.c_str(), item.value.c_str(), item.timestamp);
+			
 		}
 		return ret;
 	}

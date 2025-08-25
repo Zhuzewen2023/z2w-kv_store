@@ -151,6 +151,7 @@ void array_test_case_multithread(int connfd, int key_id)
 {
     char cmd[1024] = { 0 };
     char pattern[1024] = { 0 };
+    //printf("key_id:%d\n", key_id);
 	snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", key_id, key_id);
 	test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
     memset(cmd, 0, sizeof(cmd));
@@ -848,6 +849,7 @@ void skiptable_test_case_multithread(int connfd, int key_id)
 {
     char cmd[1024] = { 0 };
     char pattern[1024] = { 0 };
+    //printf("key_id: %d\n", key_id);
     snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n", key_id, key_id);
     test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
     memset(cmd, 0, sizeof(cmd));
@@ -940,6 +942,7 @@ void skiptable_test_case_huge_keys(int connfd, int num)
         test_kv_case(connfd, cmd, "NO EXIST\n", "SEXISTCase");
     }
 }
+
 
 void skiptable_save_test(int connfd, int num, char* filename)
 {
@@ -1407,6 +1410,34 @@ void perform_engine_operations(int connfd, test_context_t* ctx)
                 #endif
                 break;
             }
+            case 38:
+            {
+#if ENABLE_ARRAY_KV_ENGINE
+                array_test_case_multithread(connfd, key_id);
+#endif
+                break;
+            }
+            case 39:
+            {
+#if ENABLE_RBTREE_KV_ENGINE
+                rbtree_test_case_multithread(connfd, key_id);
+#endif
+                break;
+            }
+            case 40:
+            {
+#if ENABLE_HASH_KV_ENGINE
+                hash_test_case_multithread(connfd, key_id);
+#endif
+                break;
+            }
+            case 41:
+            {
+#if ENABLE_SKIPTABLE_KV_ENGINE
+                skiptable_test_case_multithread(connfd, key_id);
+#endif
+                break;
+            }
 
             if (ctx->failed) {
                 break;
@@ -1548,7 +1579,11 @@ int main(int argc, char *argv[])
         case 34:
         case 35:
         case 36:
-        case 37: {
+        case 37: 
+        case 38:
+        case 39:
+        case 40:
+        case 41:{
             g_status.total_operations = num_threads * ctx.repeat_num * 10;
             break;
         }

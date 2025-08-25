@@ -53,6 +53,7 @@ static Node* create_node(int level, const char* key, const char* value)
     return node;
 }
 
+#if USE_TIMESTAMP
 static Node* create_node_with_timestamp(int level, const char* key, const char* value, uint64_t timestamp)
 {
     Node* node = create_node(level, key, value);
@@ -64,6 +65,7 @@ static Node* create_node_with_timestamp(int level, const char* key, const char* 
     node->timestamp = timestamp;
     return node;
 }
+#endif
 
 int 
 kvs_skiptable_create(kvs_skiptable_t *table)
@@ -109,16 +111,17 @@ kvs_skiptable_destroy(kvs_skiptable_t *table)
 int 
 kvs_skiptable_set(kvs_skiptable_t *inst, const char *key, const char *value)
 {
+#if USE_TIMESTAMP
     uint64_t timestamp = 0;
     timestamp = get_current_timestamp_ms();
     KV_LOG("kvs_skiptable_set timestamp: %lu\n", timestamp);
     return kvs_skiptable_set_with_timestamp(inst, key, value, timestamp);
-#if 0
+#else
     Node* update[MAX_LEVEL + 1] = {0};
-    Node* current = table->header;
+    Node* current = inst->header;
 
     /*从最高层开始搜索*/
-    for (int i = table->level; i >= 0; i--) {
+    for (int i = inst->level; i >= 0; i--) {
         while (current->forward[i] && strcmp(current->forward[i]->key, key) < 0) {
             current = current->forward[i];
         }
@@ -144,12 +147,12 @@ kvs_skiptable_set(kvs_skiptable_t *inst, const char *key, const char *value)
     }
 
     /*如果新节点层数高于当前层数，初始化header*/
-    if (new_level > table->level) {
-        for (int i = table->level + 1; i <= new_level; i++) {
+    if (new_level > inst->level) {
+        for (int i = inst->level + 1; i <= new_level; i++) {
             /*此时新层的前驱节点就是头节点*/
-            update[i] = table->header;
+            update[i] = inst->header;
         }
-        table->level = new_level;
+        inst->level = new_level;
     }
 
     /*将新节点插入到链表中*/
@@ -158,11 +161,12 @@ kvs_skiptable_set(kvs_skiptable_t *inst, const char *key, const char *value)
         update[i]->forward[i] = new_node;
     }
 
-    table->size++;
+    inst->size++;
     return 0;
 #endif
 }
 
+#if USE_TIMESTAMP
 int
 kvs_skiptable_set_with_timestamp(kvs_skiptable_t *inst, const char* key, const char* value, uint64_t timestamp)
 {
@@ -213,6 +217,7 @@ kvs_skiptable_set_with_timestamp(kvs_skiptable_t *inst, const char* key, const c
     inst->size++;
     return 0;
 }
+#endif
 
 char* 
 kvs_skiptable_get(kvs_skiptable_t *table, const char *key)
@@ -237,13 +242,14 @@ kvs_skiptable_get(kvs_skiptable_t *table, const char *key)
 int 
 kvs_skiptable_modify(kvs_skiptable_t *inst, const char *key, const char *value)
 {
+#if USE_TIMESTAMP
     uint64_t timestamp = 0;
     timestamp = get_current_timestamp_ms();
     KV_LOG("kvs_skiptable_modify timestamp: %lu\n", timestamp);
     return kvs_skiptable_modify_with_timestamp(inst, key, value, timestamp);
-#if 0
-    Node *node = table->header;
-    for (int i = table->level; i >= 0; i--) {
+#else
+    Node *node = inst->header;
+    for (int i = inst->level; i >= 0; i--) {
         while (node->forward[i] && strcmp(node->forward[i]->key, key) < 0) {
             node = node->forward[i];
         }
@@ -260,6 +266,7 @@ kvs_skiptable_modify(kvs_skiptable_t *inst, const char *key, const char *value)
 #endif
 }
 
+#if USE_TIMESTAMP
 int
 kvs_skiptable_modify_with_timestamp(kvs_skiptable_t *inst, const char* key, const char* value, uint64_t timestamp)
 {
@@ -280,6 +287,7 @@ kvs_skiptable_modify_with_timestamp(kvs_skiptable_t *inst, const char* key, cons
     KV_LOG("key %s not found\n", key);
     return -1;
 }
+#endif
 
 int 
 kvs_skiptable_count(kvs_skiptable_t *table)
@@ -381,7 +389,9 @@ kvs_skiptable_range(kvs_skiptable_t* inst, const char* start_key, const char* en
             // 复制数据
             strcpy(result_array[match_count].key, current->key);
             strcpy(result_array[match_count].value, current->value);
+#if USE_TIMESTAMP
             result_array[match_count].timestamp = current->timestamp;
+#endif
             match_count++;
         }
 
@@ -463,7 +473,9 @@ kvs_skiptable_get_all(kvs_skiptable_t* inst, kvs_item_t** results, int* count)
         // 复制数据
         strcpy(result_array[match_count].key, current->key);
         strcpy(result_array[match_count].value, current->value);
+#if USE_TIMESTAMP
         result_array[match_count].timestamp = current->timestamp;
+#endif
         match_count++;
 
         current = current->forward[0];
@@ -490,6 +502,7 @@ out:
     return ret;
 }
 
+#if USE_TIMESTAMP
 uint64_t
 kvs_skiptable_get_timestamp(kvs_skiptable_t* inst, const char* key)
 {
@@ -512,3 +525,4 @@ kvs_skiptable_get_timestamp(kvs_skiptable_t* inst, const char* key)
     }
     return current->timestamp;
 }
+#endif

@@ -13,6 +13,8 @@
 #define ENABLE_SKIPTABLE_KV_ENGINE 1
 #define ENABLE_NETWORK_SELECT   NETWORK_EPOLL
 
+#define USE_TIMESTAMP	1
+
 #if ENABLE_ARRAY_KV_ENGINE
 #include "kv_store_array.h"
 #endif

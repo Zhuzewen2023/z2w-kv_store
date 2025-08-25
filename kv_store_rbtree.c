@@ -399,11 +399,12 @@ kvs_rbtree_destroy(kvs_rbtree_t* inst)
 int
 kvs_rbtree_set(kvs_rbtree_t* inst, const char* key, const char* value)
 {
+#if USE_TIMESTAMP
 	uint64_t timestamp = 0;
 	timestamp = get_current_timestamp_ms();
 	KV_LOG("kvs_rbtree_set key:%s, value:%s, timestamp:%lu\n", key, value, timestamp);
 	return kvs_rbtree_set_with_timestamp(inst, key, value, timestamp);
-#if 0
+#else
 	if (!inst || !key || !value) {
 		KV_LOG("kvs_rbtree_set failed, inst or key or value is NULL\n");
 		return -1;
@@ -438,6 +439,7 @@ kvs_rbtree_set(kvs_rbtree_t* inst, const char* key, const char* value)
 #endif
 }
 
+#if USE_TIMESTAMP
 int
 kvs_rbtree_set_with_timestamp(kvs_rbtree_t *inst, const char* key, const char* value, uint64_t timestamp)
 {
@@ -474,6 +476,7 @@ kvs_rbtree_set_with_timestamp(kvs_rbtree_t *inst, const char* key, const char* v
 	rbtree_insert(inst, node);
 	return 0;
 }
+#endif
 
 char*
 kvs_rbtree_get(kvs_rbtree_t* inst, const char* key)
@@ -501,11 +504,12 @@ kvs_rbtree_delete(kvs_rbtree_t* inst, char* key)
 int
 kvs_rbtree_modify(kvs_rbtree_t* inst, const char* key, const char* value)
 {
+#if USE_TIMESTAMP
 	uint64_t timestamp = 0;
 	timestamp = get_current_timestamp_ms();
 	KV_LOG("kvs_rbtree_modify key:%s, value:%s, timestamp:%lu\n", key, value, timestamp);
 	return kvs_rbtree_modify_with_timestamp(inst, key, value, timestamp);
-	#if 0
+#else
 	if (!inst || !key || !value) return -1;
 	rbtree_node* node = rbtree_search(inst, key);
 	if (node == NULL || node == inst->nil) return -2;
@@ -515,9 +519,10 @@ kvs_rbtree_modify(kvs_rbtree_t* inst, const char* key, const char* value)
 	memset(node->value, 0, strlen(value) + 1);
 	strcpy(node->value, value);
 	return 0;
-	#endif
+#endif
 }
 
+#if USE_TIMESTAMP
 int
 kvs_rbtree_modify_with_timestamp(kvs_rbtree_t* inst, const char* key, const char* value, uint64_t timestamp)
 {
@@ -532,6 +537,7 @@ kvs_rbtree_modify_with_timestamp(kvs_rbtree_t* inst, const char* key, const char
 	node->timestamp = timestamp;
 	return 0;
 }
+#endif
 
 int
 kvs_rbtree_exist(kvs_rbtree_t* inst, char* key)
@@ -647,7 +653,9 @@ kvs_rbtree_range(kvs_rbtree_t* inst, const char* start_key, const char* end_key,
 		}
 		memset(result_array[index].value, 0, sizeof(result_array[index].value));
 		strcpy(result_array[index].value, current->value);
+#if USE_TIMESTAMP
 		result_array[index].timestamp = current->timestamp;
+#endif
 		index++;
 		current = rbtree_successor(inst, current);
 	}
@@ -717,7 +725,9 @@ kvs_rbtree_get_all(kvs_rbtree_t* inst, kvs_item_t** results, int* count)
 		}
 		memset(result_array[index].value, 0, sizeof(result_array[index].value));
 		strcpy(result_array[index].value, current->value);
+#if USE_TIMESTAMP
 		result_array[index].timestamp = current->timestamp;
+#endif
 		index++;
 		current = rbtree_successor(inst, current);
 	}
@@ -744,6 +754,7 @@ out:
 	return ret;
 }
 
+#if USE_TIMESTAMP
 uint64_t
 kvs_rbtree_get_timestamp(kvs_rbtree_t* inst, const char* key)
 {
@@ -759,3 +770,4 @@ kvs_rbtree_get_timestamp(kvs_rbtree_t* inst, const char* key)
 	}
 	return node->timestamp;
 }
+#endif

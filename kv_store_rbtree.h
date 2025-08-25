@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "kv_range.h"
+#include "kv_store.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,7 +31,9 @@ typedef struct _rbtree_node
     struct _rbtree_node *parent;
     KEY_TYPE key;
     void* value;
+#if USE_TIMESTAMP
     uint64_t timestamp;
+#endif
 } rbtree_node;
 
 typedef struct _rbtree
@@ -52,9 +55,6 @@ kvs_rbtree_destroy(kvs_rbtree_t *inst);
 int 
 kvs_rbtree_set(kvs_rbtree_t *inst, const char *key, const char *value);
 
-int
-kvs_rbtree_set_with_timestamp(kvs_rbtree_t *inst, const char *key, const char *value, uint64_t timestamp);
-
 char*
 kvs_rbtree_get(kvs_rbtree_t *inst, const char *key);
 
@@ -63,9 +63,6 @@ kvs_rbtree_delete(kvs_rbtree_t *inst, char *key);
 
 int
 kvs_rbtree_modify(kvs_rbtree_t *inst, const char *key, const char *value);
-
-int
-kvs_rbtree_modify_with_timestamp(kvs_rbtree_t *inst, const char *key, const char *value, uint64_t timestamp);
 
 int
 kvs_rbtree_exist(kvs_rbtree_t *inst, char *key);
@@ -80,8 +77,20 @@ kvs_rbtree_range(kvs_rbtree_t* inst, const char* start_key, const char* end_key,
 int
 kvs_rbtree_get_all(kvs_rbtree_t* inst, kvs_item_t** results, int* count);
 
+
+
+#if USE_TIMESTAMP
+
+int
+kvs_rbtree_set_with_timestamp(kvs_rbtree_t* inst, const char* key, const char* value, uint64_t timestamp);
+
+int
+kvs_rbtree_modify_with_timestamp(kvs_rbtree_t* inst, const char* key, const char* value, uint64_t timestamp);
+
 uint64_t
 kvs_rbtree_get_timestamp(kvs_rbtree_t* inst, const char* key);
+
+#endif
 
 #ifdef __cplusplus
 }

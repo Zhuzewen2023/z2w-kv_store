@@ -17,6 +17,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/root/z2w-kv_store/kv_time.c" "CMakeFiles/kv.dir/kv_time.c.o" "gcc" "CMakeFiles/kv.dir/kv_time.c.o.d"
   "/root/z2w-kv_store/ntyco_server.c" "CMakeFiles/kv.dir/ntyco_server.c.o" "gcc" "CMakeFiles/kv.dir/ntyco_server.c.o.d"
   "/root/z2w-kv_store/kv_store.cpp" "CMakeFiles/kv.dir/kv_store.cpp.o" "gcc" "CMakeFiles/kv.dir/kv_store.cpp.o.d"
+  "/root/z2w-kv_store/kv_store_epoll.cpp" "CMakeFiles/kv.dir/kv_store_epoll.cpp.o" "gcc" "CMakeFiles/kv.dir/kv_store_epoll.cpp.o.d"
   )
 
 # Targets to which this target links.

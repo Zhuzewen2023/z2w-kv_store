@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/kv_test.dir/kv_save.c.o.d"
   "CMakeFiles/kv_test.dir/kv_store_array.c.o"
   "CMakeFiles/kv_test.dir/kv_store_array.c.o.d"
+  "CMakeFiles/kv_test.dir/kv_store_epoll.cpp.o"
+  "CMakeFiles/kv_test.dir/kv_store_epoll.cpp.o.d"
   "CMakeFiles/kv_test.dir/kv_store_hash.c.o"
   "CMakeFiles/kv_test.dir/kv_store_hash.c.o.d"
   "CMakeFiles/kv_test.dir/kv_store_rbtree.c.o"
@@ -22,6 +24,6 @@ file(REMOVE_RECURSE
 )
 
 # Per-language clean rules from dependency scanning.
-foreach(lang C)
+foreach(lang C CXX)
   include(CMakeFiles/kv_test.dir/cmake_clean_${lang}.cmake OPTIONAL)
 endforeach()

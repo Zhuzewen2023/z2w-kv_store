@@ -56,6 +56,7 @@ _create_node(const char* key, const char* value)
 
 }
 
+#if USE_TIMESTAMP
 static hashnode_t*
 _create_node_with_timestamp(const char* key, const char* value, uint64_t timestamp)
 {
@@ -67,6 +68,7 @@ _create_node_with_timestamp(const char* key, const char* value, uint64_t timesta
     node->timestamp = timestamp;
     return node;
 }
+#endif
 
 int 
 kvs_hash_create(kvs_hash_t *hash)
@@ -108,20 +110,22 @@ kvs_hash_destroy(kvs_hash_t *hash)
     kvs_free(hash->table);
 }
 
+
 int 
 kvs_hash_set(kvs_hash_t *inst, const char *key, const char *value)
 {
+#if USE_TIMESTAMP
     uint64_t timestamp = 0;
     timestamp = get_current_timestamp_ms();
     KV_LOG("kvs_array_set timestamp: %lu\n", timestamp);
     return kvs_hash_set_with_timestamp(inst, key, value, timestamp);
-    #if 0
-    if (!hash || !key || !value) {
+#else
+    if (!inst || !key || !value) {
         KV_LOG("kvs_hash_set failed, invalid param\n");
         return -1;
     }
-    int slot = _hash(key, hash->max_slots);
-    hashnode_t *node = hash->table[slot];
+    int slot = _hash(key, inst->max_slots);
+    hashnode_t *node = inst->table[slot];
     while (node) {
         if (strcmp(node->key, key) == 0) {
             //KV_LOG("kvs_hash_set failed, key already exist\n");
@@ -134,13 +138,14 @@ kvs_hash_set(kvs_hash_t *inst, const char *key, const char *value)
         KV_LOG("kvs_hash_set failed, _create_node failed\n");
         return -3;
     }
-    new_node->next = hash->table[slot];
-    hash->table[slot] = new_node;
-    hash->count++;
+    new_node->next = inst->table[slot];
+    inst->table[slot] = new_node;
+    inst->count++;
     return 0;
-    #endif
+#endif
 }
 
+#if USE_TIMESTAMP
 int
 kvs_hash_set_with_timestamp(kvs_hash_t *hash, const char *key, const char *value, uint64_t timestamp)
 {
@@ -167,6 +172,7 @@ kvs_hash_set_with_timestamp(kvs_hash_t *hash, const char *key, const char *value
     hash->count++;
     return 0;
 }
+#endif
 
 char* 
 kvs_hash_get(kvs_hash_t *hash, const char *key)
@@ -190,18 +196,19 @@ kvs_hash_get(kvs_hash_t *hash, const char *key)
 int 
 kvs_hash_modify(kvs_hash_t *inst, const char *key, const char *value)
 {
+#if USE_TIMESTAMP
     uint64_t timestamp = 0;
     timestamp = get_current_timestamp_ms();
     KV_LOG("kvs_hash_modify timestamp: %lu\n", timestamp);
     return kvs_hash_modify_with_timestamp(inst, key, value, timestamp);
-    #if 0
-    if (!hash || !key || !value) {
+#else
+    if (!inst || !key || !value) {
         KV_LOG("kvs_hash_mod failed, invalid param\n");
         return -1;
     }
 
-    int slot = _hash(key, hash->max_slots);
-    hashnode_t *node = hash->table[slot];
+    int slot = _hash(key, inst->max_slots);
+    hashnode_t *node = inst->table[slot];
     while (node) {
         if (strcmp(node->key, key) == 0) {
             break;
@@ -227,9 +234,10 @@ kvs_hash_modify(kvs_hash_t *inst, const char *key, const char *value)
     strncpy(node->value, value, MAX_VALUE_LEN);
 #endif
     return 0;
-    #endif
+#endif
 }
 
+#if USE_TIMESTAMP
 int
 kvs_hash_modify_with_timestamp(kvs_hash_t *inst, const char* key, const char* value, uint64_t timestamp)
 {
@@ -267,6 +275,7 @@ kvs_hash_modify_with_timestamp(kvs_hash_t *inst, const char* key, const char* va
     node->timestamp = timestamp;
     return 0;
 }
+#endif
 
 int 
 kvs_hash_count(kvs_hash_t *hash)
@@ -410,7 +419,9 @@ kvs_hash_range(kvs_hash_t* inst, const char* start_key, const char* end_key,
         }
         memset(result_array[i].value, 0, sizeof(result_array[i].value));
         strcpy(result_array[i].value, node->value);
+#if USE_TIMESTAMP
         result_array[i].timestamp = node->timestamp;
+#endif
     }
 
     kvs_free(matched_nodes);
@@ -491,7 +502,9 @@ kvs_hash_get_all(kvs_hash_t* inst, kvs_item_t** results, int* count)
             }
             memset(result_array[index].value, 0, sizeof(result_array[i].value));
             strcpy(result_array[index].value, node->value);
+#if USE_TIMESTAMP
             result_array[index].timestamp = node->timestamp;
+#endif
             index++;
             node = node->next;
         }
@@ -519,6 +532,7 @@ out:
     return ret;
 }
 
+#if USE_TIMESTAMP
 uint64_t
 kvs_hash_get_timestamp(kvs_hash_t* inst, const char* key)
 {
@@ -537,3 +551,4 @@ kvs_hash_get_timestamp(kvs_hash_t* inst, const char* key)
     }
     return 0;
 }
+#endif

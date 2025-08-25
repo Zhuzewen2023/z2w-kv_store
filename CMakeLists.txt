@@ -19,6 +19,7 @@ set(COMMON_SOURCES
     kv_store_skiptable.c
     kv_save.c
     kv_time.c
+    kv_store_epoll.cpp
 )
 set(KV_SOURCES kv_store.cpp ${COMMON_SOURCES})
 

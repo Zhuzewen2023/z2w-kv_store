@@ -18,6 +18,14 @@
 
 using namespace std;
 
+// 为每个全局引擎添加互斥锁（关键修复）
+struct KVEngineLocks {
+    static pthread_mutex_t array_lock;    // 数组引擎锁
+    static pthread_mutex_t rbtree_lock;   // 红黑树引擎锁
+    static pthread_mutex_t hash_lock;     // 哈希表引擎锁
+    static pthread_mutex_t skiptable_lock;// 跳表引擎锁
+};
+
 class KVStoreEpollConnection : public IConnection, public std::enable_shared_from_this<KVStoreEpollConnection> 
 {
 public:
@@ -56,7 +64,11 @@ private:
             if (items[i].key && items[i].value) {
                 std::string key = items[i].key;
                 std::string value = items[i].value;
+#if USE_TIMESTAMP
                 result.emplace_back(key, value, items[i].timestamp);
+#else
+                result.emplace_back(key, value);
+#endif
                 if (items[i].key) {
                     KV_LOG("free key: %s\n", items[i].key);
                     kvs_free(items[i].key);
@@ -100,7 +112,11 @@ private:
             if (items[i].key && items[i].value) {
                 std::string key = items[i].key;
                 std::string value = items[i].value;
+#if USE_TIMESTAMP
                 result.emplace_back(key, value, items[i].timestamp);
+#else
+                result.emplace_back(key, value);
+#endif
                 if (items[i].key) {
                     KV_LOG("free key: %s\n", items[i].key);
                     kvs_free(items[i].key);
@@ -144,7 +160,11 @@ private:
             if (items[i].key && items[i].value) {
                 std::string key = items[i].key;
                 std::string value = items[i].value;
+#if USE_TIMESTAMP
                 result.emplace_back(key, value, items[i].timestamp);
+#else
+                result.emplace_back(key, value);
+#endif
                 if (items[i].key) {
                     KV_LOG("free key: %s\n", items[i].key);
                     kvs_free(items[i].key);
@@ -188,7 +208,11 @@ private:
             if (items[i].key && items[i].value) {
                 std::string key = items[i].key;
                 std::string value = items[i].value;
+#if USE_TIMESTAMP
                 result.emplace_back(key, value, items[i].timestamp);
+#else
+                result.emplace_back(key, value);
+#endif
                 if (items[i].key) {
                     KV_LOG("free key: %s\n", items[i].key);
                     kvs_free(items[i].key);
@@ -258,7 +282,9 @@ private:
                     response = "FAILED\n";
                     return response;
                 }
+				//pthread_mutex_lock(&KVEngineLocks::array_lock);
                 res = kvs_array_set(&global_array, tokens[1], tokens[2]);
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 if(res == 0){
                     snprintf(response_buf, sizeof(response_buf), "SUCCESS");
                     // response = "SUCCESS";
@@ -272,7 +298,9 @@ private:
                 break;
             case static_cast<int>(Command::GET):
                 KV_LOG("GET\n");
+                //pthread_mutex_lock(&KVEngineLocks::array_lock);
                 value = kvs_array_get(&global_array, tokens[1]);
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 if(value){
                     KV_LOG("GET success : %s\n", value);
                     snprintf(response_buf, sizeof(response_buf), "%s", value);
@@ -283,7 +311,9 @@ private:
                 break;
             case static_cast<int>(Command::DEL):
                 KV_LOG("DEL\n");
+                //pthread_mutex_lock(&KVEngineLocks::array_lock);
                 res = kvs_array_delete(&global_array, tokens[1]);
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 if (res < 0) {
                     snprintf(response_buf, sizeof(response_buf), "ERROR");
                 } else if (res == 0) {
@@ -294,7 +324,9 @@ private:
                 break;
             case static_cast<int>(Command::MOD):
                 KV_LOG("MOD\n");
+                //pthread_mutex_lock(&KVEngineLocks::array_lock);
                 res = kvs_array_modify(&global_array, tokens[1], tokens[2]);
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 //printf("kvs_array_modify res : %d\n", res);
                 if (res < 0) {
                     snprintf(response_buf, sizeof(response_buf), "ERROR");
@@ -306,7 +338,9 @@ private:
                 break;
             case static_cast<int>(Command::EXIST):
                 KV_LOG("EXIST\n");
+                //pthread_mutex_lock(&KVEngineLocks::array_lock);
                 res = kvs_array_exist(&global_array, tokens[1]);
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 if (res == 0) {
                     snprintf(response_buf, sizeof(response_buf), "EXIST");
                 } else {
@@ -315,7 +349,9 @@ private:
                 break;
             case static_cast<int>(Command::SAVE):
                 KV_LOG("SAVE\n");
+                //pthread_mutex_lock(&KVEngineLocks::array_lock);
                 res = kvs_array_save(tokens[1]);
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 if (res == 0) {
                     snprintf(response_buf, sizeof(response_buf), "SUCCESS");
                 } else {
@@ -324,7 +360,9 @@ private:
                 break;
             case static_cast<int>(Command::LOAD):
                 KV_LOG("LOAD\n");
+                //pthread_mutex_lock(&KVEngineLocks::array_lock);
                 res = kvs_array_load(tokens[1]);
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 if (res == 0) {
                     snprintf(response_buf, sizeof(response_buf), "SUCCESS");
                 } else {
@@ -335,7 +373,9 @@ private:
                 KV_LOG("RANGE\n");
                 kvs_item_t* res_array = NULL;
                 int res_count = 0;
+               // pthread_mutex_lock(&KVEngineLocks::array_lock);
                 res = kvs_array_range(&global_array, tokens[1], tokens[2], &res_array, &res_count);
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 if (res == 0) {
                     KV_LOG("res == 0, res_count: %d\n", res_count);
                     if (res_array == NULL) {
@@ -410,7 +450,7 @@ private:
                     response = "FAILED";
                     return response;
                 }
-
+                //pthread_mutex_lock(&KVEngineLocks::array_lock);
                 if (0 != sync_client.sync_data_to_local_array_engine(remote_data)) {
                     KV_LOG("Error: failed to sync data to local array engine\n");
                     response = "FAILED";
@@ -419,12 +459,15 @@ private:
                     KV_LOG("sync data to local array engine success\n");
                     response = "SUCCESS";
                 }
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 return response;
                 break;
             }
             case static_cast<int>(Command::GETARRAY) : {
                 KV_LOG("GETARRAY\n");
+                //pthread_mutex_lock(&KVEngineLocks::array_lock);
                 std::vector<SyncData> local_data = get_local_array_data();
+                //pthread_mutex_unlock(&KVEngineLocks::array_lock);
                 if (local_data.empty()) {
                     KV_LOG("local_data is empty\n");
                     response = "EMPTY";
@@ -436,7 +479,9 @@ private:
                     response += " ";
                     response += data.value;
                     response += " ";
+#if USE_TIMESTAMP
                     response += std::to_string(data.timestamp);
+#endif
                     response += "\n";
                     KV_LOG("response: %s", response.c_str());
                 }
@@ -624,7 +669,9 @@ private:
                     response += " ";
                     response += data.value;
                     response += " ";
+#if USE_TIMESTAMP
                     response += std::to_string(data.timestamp);
+#endif
                     response += "\n";
                     KV_LOG("response: %s", response.c_str());
                 }
@@ -813,7 +860,9 @@ private:
                     response += " ";
                     response += data.value;
                     response += " ";
+#if USE_TIMESTAMP
                     response += std::to_string(data.timestamp);
+#endif
                     response += "\n";
                     KV_LOG("response: %s", response.c_str());
                 }
@@ -1003,7 +1052,9 @@ private:
                     response += " ";
                     response += data.value;
                     response += " ";
+#if USE_TIMESTAMP
                     response += std::to_string(data.timestamp);
+#endif
                     response += "\n";
                     KV_LOG("response: %s", response.c_str());
                 }
@@ -1072,7 +1123,7 @@ private:
         std::string response;
         while(1) {
             if (send_queue_.empty()) {
-                KV_LOG("send queue empty\n");
+                //KV_LOG("send queue empty\n");
                 Reactor::get_instance().modify_handler(fd_, 
                                                         EPOLLIN | EPOLLET, 
                                                         shared_from_this());
@@ -1082,7 +1133,7 @@ private:
             send_queue_.pop();
         }
         int n = send(fd_, response.data(), response.size(), 0);
-        KV_LOG("send: %s, bytes: %ld, ret = %d\n", response.data(), response.size(), n);
+        //KV_LOG("send: %s, bytes: %ld, ret = %d\n", response.data(), response.size(), n);
         if (n > 0) {
             KV_LOG("send: %s bytes: %ld success\n", response.data(), response.size());
         } else if (n == 0) {

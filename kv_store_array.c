@@ -7,6 +7,17 @@
 
 kvs_array_t global_array = {0};
 
+static int kvs_array_find_index(kvs_array_t* inst, const char* key)
+{
+    if (!inst || !key) return -1;
+    for (int i = 0; i < inst->total; i++) {
+        if (inst->table[i].key && strcmp(inst->table[i].key, key) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 int 
 kvs_array_create(kvs_array_t *inst)
 {
@@ -47,11 +58,13 @@ kvs_array_destroy(kvs_array_t *inst)
 int 
 kvs_array_set(kvs_array_t *inst, const char *key, const char *value) 
 {
+#if USE_TIMESTAMP
     uint64_t timestamp = 0;
     timestamp = get_current_timestamp_ms();
     KV_LOG("kvs_array_set timestamp: %lu\n", timestamp);
     return kvs_array_set_with_timestamp(inst, key, value, timestamp);
-#if 0
+#else
+
     if (inst == NULL || key == NULL || value == NULL) {
         return -1;
     }
@@ -100,6 +113,7 @@ kvs_array_set(kvs_array_t *inst, const char *key, const char *value)
 #endif
 }
 
+#if USE_TIMESTAMP
 int
 kvs_array_set_with_timestamp(kvs_array_t *inst, const char *key, const char *value, uint64_t timestamp)
 {
@@ -156,6 +170,7 @@ kvs_array_set_with_timestamp(kvs_array_t *inst, const char *key, const char *val
 
     return 0;
 }
+#endif
 
 char* 
 kvs_array_get(kvs_array_t *inst, const char *key) 
@@ -183,43 +198,100 @@ kvs_array_delete(kvs_array_t *inst, char *key)
     if (inst == NULL || key == NULL) {
         return -1;
     }
-    int i = 0;
-    for (i = 0; i < inst->total; i++) {
-        if (inst->table[i].key == NULL) {
-            KV_LOG("table[%d].key is NULL,continue..\n", i);
-            continue;
-        }
-        if (strcmp(inst->table[i].key, key) == 0) {
-            if (inst->table[i].key) {
-                kvs_free(inst->table[i].key);
-            }
-            if (inst->table[i].value) {
-                kvs_free(inst->table[i].value);
-            }
-            inst->table[i].key = NULL;
-            inst->table[i].value = NULL;
 
-            if(i == inst->total - 1) {
-                inst->total--;
-            }
-        }
-        return 0;
+    int idx = kvs_array_find_index(inst, key);
+    if (idx == -1) {
+        KV_LOG("kvs_array_delete failed: Key '%s' not exists\n", key);
+        return 1;
     }
 
-    return i; // Return index of first empty slot
+    // 释放键值对
+    kvs_free(inst->table[idx].key);
+    kvs_free(inst->table[idx].value);
+    inst->table[idx].key = NULL;
+    inst->table[idx].value = NULL;
+#if USE_TIMESTAMP
+    inst->table[idx].timestamp = 0;
+#endif
+
+    // 若删除的是最后一个元素，直接减少计数
+    if (idx == inst->total - 1) {
+        inst->total--;
+        return 0;
+    }
+    // 若删除的是中间元素，用最后一个元素填充空槽（保持数组紧凑）
+    inst->table[idx].key = inst->table[inst->total - 1].key;
+    inst->table[idx].value = inst->table[inst->total - 1].value;
+#if USE_TIMESTAMP
+    inst->table[idx].timestamp = inst->table[inst->total - 1].timestamp;
+#endif
+
+    // 清空最后一个元素并减少计数
+    inst->table[inst->total - 1].key = NULL;
+    inst->table[inst->total - 1].value = NULL;
+#if USE_TIMESTAMP
+    inst->table[inst->total - 1].timestamp = 0;
+#endif
+    inst->total--;
+
+    return 0;
 }
 
 int
 kvs_array_modify(kvs_array_t *inst, const char *key, const char *value) 
 {
+#if USE_TIMESTAMP
     uint64_t timestamp = 0;
     timestamp = get_current_timestamp_ms();
     KV_LOG("kvs_array_modify timestamp: %lu\n", timestamp);
     return kvs_array_modify_with_timestamp(inst, key, value, timestamp);
+#else
+    if (inst == NULL || key == NULL || value == NULL) {
+        KV_LOG("kvs_array_modify failed, inst or key or value is NULL\n");
+        return -1;
+    }
 
+    if (inst->total == 0) {
+        KV_LOG("kvs_array_modify failed, Table is empty\n");
+        return -2;
+    }
+
+    int i = 0;
+    char all_null_flag = 1;
+    for (i = 0; i < inst->total; i++) {
+        if (inst->table[i].key == NULL) {
+            continue;
+        }
+
+        if (strcmp(inst->table[i].key, key) == 0) {
+            all_null_flag = 0;
+            KV_LOG("kvs_array_modify get key %s\n", inst->table[i].key);
+            kvs_free(inst->table[i].value);
+            inst->table[i].value = NULL;
+
+            char* vcopy = kvs_malloc(strlen(value) + 1);
+            if (vcopy == NULL) {
+                KV_LOG("kvs_array_modify failed, malloc failed\n");
+                return -3;
+            }
+            else {
+                memset(vcopy, 0, strlen(value) + 1);
+                strncpy(vcopy, value, strlen(value) + 1);
+                inst->table[i].value = vcopy;
+                KV_LOG("kvs_array_modify set value %s\n", vcopy);
+                return 0;
+            }
+        }
+    }
+    if (all_null_flag) {
+        return -4;
+    }
+    return i;
+#endif
 
 }
 
+#if USE_TIMESTAMP
 int 
 kvs_array_modify_with_timestamp(kvs_array_t *inst, const char *key, const char *value, uint64_t timestamp) 
 {
@@ -254,9 +326,11 @@ kvs_array_modify_with_timestamp(kvs_array_t *inst, const char *key, const char *
                 memset(vcopy, 0, strlen(value) + 1);
                 strncpy(vcopy, value, strlen(value) + 1);
                 inst->table[i].value = vcopy;
-                inst->table[i].timestamp = timestamp;
                 KV_LOG("kvs_array_modify set value %s\n", vcopy);
+//#if USE_TIMESTAMP
+                inst->table[i].timestamp = timestamp;
                 KV_LOG("kvs_array_modify set timestamp %ld\n", inst->table[i].timestamp);
+//#endif       
                 return 0;
             }
         }
@@ -308,6 +382,7 @@ kvs_array_modify_with_timestamp(kvs_array_t *inst, const char *key, const char *
     return i;
 #endif
 }
+#endif
 
 int 
 kvs_array_exist(kvs_array_t *inst, char *key) {
@@ -395,8 +470,9 @@ kvs_array_range(kvs_array_t *inst, const char* start_key, const char* end_key,
                 }
                 memset(result_array[index].value, 0, strlen(inst->table[i].value) + 1);
                 strncpy(result_array[index].value, inst->table[i].value, strlen(inst->table[i].value) + 1);
-
+#if USE_TIMESTAMP
                 result_array[index].timestamp = inst->table[i].timestamp;
+#endif
                 index++;
             }
         }
@@ -551,7 +627,9 @@ kvs_array_get_all(kvs_array_t* inst, kvs_item_t** results, int* count)
                 goto out;
             }
             KV_LOG("kvs_array_get_all strdup success, value: %s\n", (*results)[index].value);
+#if USE_TIMESTAMP
             (*results)[index].timestamp = inst->table[i].timestamp;
+#endif
             index++;
         }
     }
@@ -576,6 +654,7 @@ out:
     return ret;
 }
 
+#if USE_TIMESTAMP
 uint64_t
 kvs_array_get_timestamp(kvs_array_t* inst, const char* key)
 {
@@ -593,4 +672,4 @@ kvs_array_get_timestamp(kvs_array_t* inst, const char* key)
     KV_LOG("kvs_array_get_timestamp failed, key not found\n");
     return 0;
 }
-
+#endif
