@@ -85,6 +85,11 @@ Ubuntu 22.04 64位 2核4G
 > 单线程将SET,GET,SET,MOD,EXIST,GET,DEL,GET,MOD,EXIST指令合并为1条指令发送，重复100000次
 <img width="511" height="110" alt="image" src="https://github.com/user-attachments/assets/9c47d66d-430d-4255-a7e9-5367ef21a6fa" />
 
+------------------------------------
+
+> 单线程测试范围查询,先插入KEY：Name_0000001001 ~ Name_0000002001，再查询KEY:Name_0000001500 ~ Name_0000001900
+<img width="550" height="185" alt="image" src="https://github.com/user-attachments/assets/c8c24756-7a1d-414c-9c67-ae23489f6530" />
+
 ----------------------------------
 ------------------------------------
 
@@ -125,6 +130,11 @@ Ubuntu 22.04 64位 2核4G
 
 --------------------------------------------------------------
 
+> 单线程测试范围查询,先插入KEY：Name_0000001001 ~ Name_0000002001，再查询KEY:Name_0000001500 ~ Name_0000001900
+<img width="585" height="190" alt="image" src="https://github.com/user-attachments/assets/468b3e62-14f4-4598-9eb5-3c9ba3e80533" />
+
+----------------------------------------------------------------
+
 --------------------------
 --------------------------
 
@@ -162,6 +172,11 @@ Ubuntu 22.04 64位 2核4G
 
 > 单线程将HSET,HGET,HSET,HMOD,HEXIST,HGET,HDEL,HGET,HMOD,HEXIST指令合并为1条指令发送，重复100000次
 <img width="595" height="114" alt="image" src="https://github.com/user-attachments/assets/cbeefa2a-b605-4123-b6d0-103aef0c4c2a" />
+
+-------------------------------------------------------------------
+
+> 单线程测试范围查询,先插入KEY：Name_0000001001 ~ Name_0000002001，再查询KEY:Name_0000001500 ~ Name_0000001900
+<img width="610" height="180" alt="image" src="https://github.com/user-attachments/assets/9a928a13-ed1b-45ad-b358-b7a57ec0af6b" />
 
 -------------------------------------------
 -------------------------------------------
@@ -201,8 +216,14 @@ Ubuntu 22.04 64位 2核4G
 > 单线程将SSET,SGET,SSET,SMOD,SEXIST,SGET,SDEL,SGET,SMOD,SEXIST指令合并为1条指令发送，重复100000次
 <img width="496" height="104" alt="image" src="https://github.com/user-attachments/assets/46ff3747-9a23-44b8-b8f9-7945295deb9c" />
 
+-----------------------------------------------------------------
+
+> 单线程测试范围查询,先插入KEY：Name_0000001001 ~ Name_0000002001，再查询KEY:Name_0000001500 ~ Name_0000001900
+<img width="750" height="190" alt="image" src="https://github.com/user-attachments/assets/50029a40-d3fa-429b-bd4e-de100effdb52" />
+
 -------------------------------------------------------------------
 --------------------------------------------------------------------
+
 
 
 
