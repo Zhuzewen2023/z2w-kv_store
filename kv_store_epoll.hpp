@@ -35,8 +35,8 @@ public:
                                     send_queue_(),
                                     current_send_offset_(0) 
     {
-        r_buf.reserve(4096); /*预分配接收缓冲区*/
-        w_buf.reserve(4096); /*预分配发送缓冲区*/
+        r_buf.reserve(512000); /*预分配接收缓冲区*/
+        w_buf.reserve(512000); /*预分配发送缓冲区*/
     }
 
 private:

@@ -45,7 +45,7 @@ typedef struct thread_safety_test_s
 	int engine_type; // 0 for array, 1 for rbtree, 2 for hash, 3 for skiptable
 }thread_safety_test_t;
 
-#define TIME_SUB_MS(tv1, tv2) ((tv1.tv_sec - tv2.tv_sec) * 1000 + (tv1.tv_usec - tv2.tv_usec) / 1000)
+#define TIME_SUB_MS(tv1, tv2) ((tv1.tv_sec - tv2.tv_sec) * 1000.0 + (tv1.tv_usec - tv2.tv_usec) / 1000.0)
 
 #define RBUFFER_LENGTH    128
 
@@ -89,7 +89,7 @@ int recv_msg(int connfd, char *msg, int length)
     return res;
 }
 
-#define MAX_MSG_LENGTH  4096
+#define MAX_MSG_LENGTH  512000
 
 void equals(char *pattern, char *result, char *casename)
 {
@@ -260,6 +260,25 @@ void array_save_test(int connfd, int num, char* filename)
     test_kv_case(connfd, cmd, "SUCCESS\n", "SAVECase");
 }
 
+void array_save_test_multithread(int connfd, test_context_t* ctx)
+{
+    struct timeval start, end;
+	int i = 0;
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", key_id, key_id);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
+    }
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "SAVE %s\n", ctx->filename);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SAVECase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+	printf("SAVE TEST : Thread %d: time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(1000.0) / time_used);
+}
+
 void array_load_test(int connfd, int num, char* filename)
 {
     char cmd[128] = {0};
@@ -280,51 +299,88 @@ void array_load_test(int connfd, int num, char* filename)
 
 }
 
-void array_range_test(int connfd, int start_range, int end_range, int num)
+void array_load_test_multithread(int connfd, test_context_t* ctx)
 {
+	struct timeval start, end;
+	int i = 0;
+	//for (i = 0; i < ctx->operations_per_thread; i++) {
+	//	int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+	//	char cmd[512] = { 0 };
+	//	snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+	//	test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase");
+	//}
+	char cmd[512] = { 0 };
+	snprintf(cmd, sizeof(cmd), "LOAD %s\n", ctx->filename);
+	gettimeofday(&start, NULL);
+	test_kv_case(connfd, cmd, "SUCCESS\n", "LOADCase");
+	gettimeofday(&end, NULL);
+	double time_used = TIME_SUB_MS(end, start);
+	printf("LOAD TEST : Thread %d: time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(1000.0) / time_used);
+	for (i = 0; i < ctx->operations_per_thread; i++) {
+		int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+		char cmd[512] = { 0 };
+		snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+		char pattern[512] = { 0 };
+		snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+		test_kv_case(connfd, cmd, pattern, "GETCase");
+	}
+}
+
+void array_range_test(int connfd, int start_range, int end_range, int start_num, int end_num)
+{
+    struct timeval start, end;
     if (start_range > end_range) {
         printf("array range test failed, start_range > end_range\n");
         return;
     }
-    if (num <= 0) {
+    if (start_num <= 0 || end_num <= 0) {
         printf("array range test failed, num <= 0\n");
         return;
     }
     int i = 0;
     char cmd[512] = {0};
-    snprintf(cmd, sizeof(cmd), "RANGE Name_%09d Name_%09d\n", start_range, end_range);
+    snprintf(cmd, sizeof(cmd), "RANGE Name_%09d Name_%09d\n", start_num, end_num);
     test_kv_case(connfd, cmd, "EMPTY\n", "RANGECase with no SET");
-    for (i = 0; i <= num; i++) {
+    for (i = start_range; i <= end_range; i++) {
         memset(cmd, 0, sizeof(cmd));
         snprintf(cmd, sizeof(cmd), "SET Name_%09d ZZW_%09d\n", i, i);
         test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
     }
     memset(cmd, 0, sizeof(cmd));
-    snprintf(cmd, sizeof(cmd), "RANGE Name_%09d Name_%09d\n", start_range, end_range);
-    char pattern[4096] = { 0 };
-    if (end_range > num && start_range < num) {
+    //printf("SET FINISHED\n");
+    snprintf(cmd, sizeof(cmd), "RANGE Name_%09d Name_%09d\n", start_num, end_num);
+    char pattern[512000] = { 0 };
+    if (end_range >= end_num && start_range <= start_num) {
         //printf("end range > num\n");
         int bytes_written = 0;
-        for (int i = start_range; i <= num; i++) {
-            char buffer[128] = { 0 };
+        for (int i = start_num; i <= end_num; i++) {
+			//printf("bytes_written : %d\n", bytes_written);
+            char buffer[512] = { 0 };
             snprintf(buffer, sizeof(buffer),  "Name_%09d ZZW_%09d\n", i, i);
             strncpy(pattern + bytes_written, buffer, strlen(buffer));
             bytes_written += strlen(buffer);
         }
         
-    } else if (start_range > num) {
+    } else if (start_num < start_range) {
         snprintf(pattern, sizeof(pattern), "EMPTY\n");
     } else {
+        /*end_num > end_range*/
         int bytes_written = 0;
-        for (int i = start_range; i <= end_range; i++) {
-            char buffer[128] = { 0 };
+        for (int i = start_num; i <= end_range; i++) {
+            char buffer[512] = { 0 };
             snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
             strncpy(pattern + bytes_written, buffer, strlen(buffer));
             bytes_written += strlen(buffer);
         }
     }
     //printf("pattern : %s\n", pattern);
+    gettimeofday(&start, NULL);
+    
     test_kv_case(connfd, cmd, pattern, "RANGECase");
+
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0) / time_used);
     
 }
 
@@ -510,45 +566,47 @@ void rbtree_load_test(int connfd, int num, char* filename)
     }
 }
 
-void rbtree_range_test(int connfd, int start_range, int end_range, int num)
+void rbtree_range_test(int connfd, int start_range, int end_range, int start_num, int end_num)
 {
+    struct timeval start, end;
     if (start_range > end_range) {
-        printf("array range test failed, start_range > end_range\n");
+        printf("rbtree range test failed, start_range > end_range\n");
         return;
     }
-    if (num <= 0) {
-        printf("array range test failed, num <= 0\n");
+    if (start_num <= 0 || end_num <= 0) {
+        printf("rbtree range test failed, num <= 0\n");
         return;
     }
     int i = 0;
     char cmd[512] = { 0 };
-    snprintf(cmd, sizeof(cmd), "RRANGE Name_%09d Name_%09d\n", start_range, end_range);
+    snprintf(cmd, sizeof(cmd), "RRANGE Name_%09d Name_%09d\n", start_num, end_num);
     test_kv_case(connfd, cmd, "EMPTY\n", "RRANGECase with no SET");
-    for (i = 0; i <= num; i++) {
+    for (i = start_range; i <= end_range; i++) {
         memset(cmd, 0, sizeof(cmd));
         snprintf(cmd, sizeof(cmd), "RSET Name_%09d ZZW_%09d\n", i, i);
         test_kv_case(connfd, cmd, "SUCCESS\n", "RSETCase");
     }
     memset(cmd, 0, sizeof(cmd));
-    snprintf(cmd, sizeof(cmd), "RRANGE Name_%09d Name_%09d\n", start_range, end_range);
-    char pattern[4096] = { 0 };
-    if (end_range > num && start_range < num) {
+    snprintf(cmd, sizeof(cmd), "RRANGE Name_%09d Name_%09d\n", start_num, end_num);
+    char pattern[512000] = { 0 };
+    if (end_range >= end_num && start_range <= start_num) {
         //printf("end range > num\n");
         int bytes_written = 0;
-        for (int i = start_range; i <= num; i++) {
-            char buffer[128] = { 0 };
+        for (int i = start_num; i <= end_num; i++) {
+            char buffer[512] = { 0 };
             snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
             strncpy(pattern + bytes_written, buffer, strlen(buffer));
             bytes_written += strlen(buffer);
         }
 
     }
-    else if (start_range > num) {
+    else if (start_num < start_range) {
         snprintf(pattern, sizeof(pattern), "EMPTY\n");
     }
     else {
+        /*end_num > end_range*/
         int bytes_written = 0;
-        for (int i = start_range; i <= end_range; i++) {
+        for (int i = start_num; i <= end_range; i++) {
             char buffer[128] = { 0 };
             snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
             strncpy(pattern + bytes_written, buffer, strlen(buffer));
@@ -556,8 +614,11 @@ void rbtree_range_test(int connfd, int start_range, int end_range, int num)
         }
     }
     //printf("pattern : %s\n", pattern);
+    gettimeofday(&start, NULL);
     test_kv_case(connfd, cmd, pattern, "RRANGECase");
-
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0) / time_used);
 }
 
 void rbtree_sync_test_source(int connfd, int num)
@@ -743,8 +804,60 @@ void hash_load_test(int connfd, int num, char* filename)
 
 }
 
-void hash_range_test(int connfd, int start_range, int end_range, int num)
+void hash_range_test(int connfd, int start_range, int end_range, int start_num, int end_num)
 {
+    struct timeval start, end;
+    if (start_range > end_range) {
+        printf("hash range test failed, start_range > end_range\n");
+        return;
+    }
+    if (start_num <= 0 || end_num <= 0) {
+        printf("hash range test failed, num <= 0\n");
+        return;
+    }
+    int i = 0;
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "HRANGE Name_%09d Name_%09d\n", start_num, end_num);
+    test_kv_case(connfd, cmd, "EMPTY\n", "HRANGECase with no SET");
+    for (i = start_range; i <= end_range; i++) {
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "HSET Name_%09d ZZW_%09d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "HSETCase");
+    }
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "HRANGE Name_%09d Name_%09d\n", start_num, end_num);
+    char pattern[512000] = { 0 };
+    if (end_range >= end_num && start_range <= start_num) {
+        //printf("end range > num\n");
+        int bytes_written = 0;
+        for (int i = start_num; i <= end_num; i++) {
+            char buffer[512] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+
+    }
+    else if (start_num < start_range) {
+        snprintf(pattern, sizeof(pattern), "EMPTY\n");
+    }
+    else {
+        /*end_num > end_range*/
+        int bytes_written = 0;
+        for (int i = start_num; i <= end_range; i++) {
+            char buffer[128] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+    }
+    //printf("pattern : %s\n", pattern);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, pattern, "HRANGECase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0) / time_used);
+#if 0
     if (start_range > end_range) {
         printf("hash range test failed, start_range > end_range\n");
         return;
@@ -790,7 +903,7 @@ void hash_range_test(int connfd, int start_range, int end_range, int num)
     }
     //printf("pattern : %s\n", pattern);
     test_kv_case(connfd, cmd, pattern, "HRANGECase");
-
+#endif
 }
 
 void hash_sync_test_source(int connfd, int num)
@@ -978,8 +1091,60 @@ void skiptable_load_test(int connfd, int num, char* filename)
 
 }
 
-void skiptable_range_test(int connfd, int start_range, int end_range, int num)
+void skiptable_range_test(int connfd, int start_range, int end_range, int start_num, int end_num)
 {
+    struct timeval start, end;
+    if (start_range > end_range) {
+        printf("skiptable range test failed, start_range > end_range\n");
+        return;
+    }
+    if (start_num <= 0 || end_num <= 0) {
+        printf("skiptable range test failed, num <= 0\n");
+        return;
+    }
+    int i = 0;
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "SRANGE Name_%09d Name_%09d\n", start_num, end_num);
+    test_kv_case(connfd, cmd, "EMPTY\n", "SRANGECase with no SET");
+    for (i = start_range; i <= end_range; i++) {
+        memset(cmd, 0, sizeof(cmd));
+        snprintf(cmd, sizeof(cmd), "SSET Name_%09d ZZW_%09d\n", i, i);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
+    }
+    memset(cmd, 0, sizeof(cmd));
+    snprintf(cmd, sizeof(cmd), "SRANGE Name_%09d Name_%09d\n", start_num, end_num);
+    char pattern[512000] = { 0 };
+    if (end_range >= end_num && start_range <= start_num) {
+        //printf("end range > num\n");
+        int bytes_written = 0;
+        for (int i = start_num; i <= end_num; i++) {
+            char buffer[512] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+
+    }
+    else if (start_num < start_range) {
+        snprintf(pattern, sizeof(pattern), "EMPTY\n");
+    }
+    else {
+        /*end_num > end_range*/
+        int bytes_written = 0;
+        for (int i = start_num; i <= end_range; i++) {
+            char buffer[128] = { 0 };
+            snprintf(buffer, sizeof(buffer), "Name_%09d ZZW_%09d\n", i, i);
+            strncpy(pattern + bytes_written, buffer, strlen(buffer));
+            bytes_written += strlen(buffer);
+        }
+    }
+    //printf("pattern : %s\n", pattern);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, pattern, "SRANGECase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0) / time_used);
+#if 0
     if (start_range > end_range) {
         printf("skiptable range test failed, start_range > end_range\n");
         return;
@@ -1025,7 +1190,7 @@ void skiptable_range_test(int connfd, int start_range, int end_range, int num)
     }
     //printf("pattern : %s\n", pattern);
     test_kv_case(connfd, cmd, pattern, "SRANGECase");
-
+#endif
 }
 
 void skiptable_sync_test_source(int connfd, int num)
@@ -1366,6 +1531,15 @@ static void print_usage(const char* prog_name) {
     printf("  [39] Test Red-Black Tree with Huge Keys multi threads\n");
     printf("  [40] Test Hash Table with Huge Keys multi threads\n");
     printf("  [41] Test SkipTable with Huge Keys multi threads\n");
+	printf("  [42] Test Save Array to Disk multi threads\n");
+	printf("  [43] Test Save Red-Black Tree to Disk multi threads\n");
+	printf("  [44] Test Save Hash Table to Disk multi threads\n");
+	printf("  [45] Test Save SkipTable to Disk multi threads\n");
+	printf("  [46] Test Load Array from Disk multi threads\n");
+	printf("  [47] Test Load Red-Black Tree from Disk multi threads\n");
+	printf("  [48] Test Load Hash Table from Disk multi threads\n");
+	printf("  [49] Test Load SkipTable from Disk multi threads\n");
+
     
     printf("Examples:\n");
     printf("  %s -s 127.0.0.1 -p 8080 -m 1 -n 100\n", prog_name);
@@ -1377,73 +1551,127 @@ void perform_engine_operations(int connfd, test_context_t* ctx)
 {
     int i;
 
-    for (i = 0; i < ctx->operations_per_thread; i++) {
-        // 为每个线程生成唯一的键，避免键冲突
-        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
-
-        switch (ctx->mode) {
-            case 34: // Array 
-            {
-                #if ENABLE_ARRAY_KV_ENGINE
+    switch (ctx->mode) {
+        case 34: // Array 
+        {
+            for (i = 0; i < ctx->operations_per_thread; i++) {
+                // 为每个线程生成唯一的键，避免键冲突
+                int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
                 array_test_case_multithread(connfd, key_id);
-                #endif
-                break;
             }
-            case 35: // Red-Black Tree
-            {
-                #if ENABLE_RBTREE_KV_ENGINE
+            break;
+        }
+        case 35: // Red-Black Tree
+        {
+            for (i = 0; i < ctx->operations_per_thread; i++) {
+                // 为每个线程生成唯一的键，避免键冲突
+                int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
                 rbtree_test_case_multithread(connfd, key_id);
-                #endif
-                break;
             }
-            case 36: // Hash Table
-            {
-                #if ENABLE_HASH_KV_ENGINE
+            break;
+        }
+        case 36: // Hash Table
+        {
+            for (i = 0; i < ctx->operations_per_thread; i++) {
+                // 为每个线程生成唯一的键，避免键冲突
+                int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
                 hash_test_case_multithread(connfd, key_id);
-                #endif
-                break;
             }
-            case 37: // SkipTable
-            {
-                #if ENABLE_SKIPTABLE_KV_ENGINE
+            break;
+        }
+        case 37: // SkipTable
+        {
+            for (i = 0; i < ctx->operations_per_thread; i++) {
+                // 为每个线程生成唯一的键，避免键冲突
+                int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
                 skiptable_test_case_multithread(connfd, key_id);
-                #endif
-                break;
             }
-            case 38:
-            {
-#if ENABLE_ARRAY_KV_ENGINE
+            break;
+        }
+        case 38:
+        {
+            for (i = 0; i < ctx->operations_per_thread; i++) {
+                // 为每个线程生成唯一的键，避免键冲突
+                int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
                 array_test_case_multithread(connfd, key_id);
-#endif
-                break;
             }
-            case 39:
-            {
-#if ENABLE_RBTREE_KV_ENGINE
+            break;
+        }
+        case 39:
+        {
+            for (i = 0; i < ctx->operations_per_thread; i++) {
+                // 为每个线程生成唯一的键，避免键冲突
+                int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
                 rbtree_test_case_multithread(connfd, key_id);
-#endif
-                break;
             }
-            case 40:
-            {
-#if ENABLE_HASH_KV_ENGINE
+            break;
+        }
+        case 40:
+        {
+            for (i = 0; i < ctx->operations_per_thread; i++) {
+                // 为每个线程生成唯一的键，避免键冲突
+                int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
                 hash_test_case_multithread(connfd, key_id);
-#endif
-                break;
             }
-            case 41:
-            {
-#if ENABLE_SKIPTABLE_KV_ENGINE
+            break;
+        }
+        case 41:
+        {
+            for (i = 0; i < ctx->operations_per_thread; i++) {
+                // 为每个线程生成唯一的键，避免键冲突
+                int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
                 skiptable_test_case_multithread(connfd, key_id);
-#endif
-                break;
             }
+            break;
+        }
+        case 42:
+        {
+            /*Test Save Array to Disk multi threads*/
+            array_save_test_multithread(connfd, ctx);
+            break;
+        }
+        case 43:
+        {
+			/*Test Save Red-Black Tree to Disk multi threads*/
+            break;
+        }
+        case 44:
+        {
+            /*Test Save Hash Table to Disk multi threads*/
+            break;
+        }
+        case 45:
+        {
+            /*Test Save SkipTable to Disk multi threads*/
+            break;
+        }
+        case 46:
+        {
+            /*Array Load Test multi threads*/
+			array_load_test_multithread(connfd, ctx);
+            break;
+        }
+		case 47:
+		{
+			/*Red-Black Tree Load Test multi threads*/
+			break;
+		}
+		case 48:
+		{
+			/*Hash Load Test multi threads*/
+			break;
+		}
+		case 49:
+		{
+			/*SkipTable Load Test multi threads*/
+			break;
+		}
 
-            if (ctx->failed) {
-                break;
-            }
+        if (ctx->failed) {
+            break;
         }
     }
+    
 }
 
 // 线程入口函数
@@ -1541,13 +1769,35 @@ int main(int argc, char *argv[])
             return -1;
         }
 
+        switch (ctx.mode) {
+            case 42:
+            case 43:
+            case 44:
+            case 45:
+            case 46:
+            case 47:
+            case 48:
+            case 49: {
+                printf("Please enter filename: ");
+                scanf("%s", ctx.filename);
+                printf("filename: %s\n", ctx.filename);
+                break;
+            }
+
+        }
+
         for (int i = 0; i < num_threads; i++) {
             thread_ctxs[i] = ctx;
             thread_ctxs[i].thread_id = i;
             thread_ctxs[i].start_sem = &start_sem;
             thread_ctxs[i].operations_per_thread = ctx.repeat_num;
             thread_ctxs[i].failed = 0;
+            if (ctx.filename) {
+                strcpy(thread_ctxs[i].filename, ctx.filename);
+            }
         }
+
+
 
         // 创建线程
         for (int i = 0; i < num_threads; i++) {
@@ -1576,21 +1826,21 @@ int main(int argc, char *argv[])
         printf("\nMulti-thread test completed:\n");
         printf("Total time: %dms\n", time_used);
         switch (ctx.mode) {
-        case 34:
-        case 35:
-        case 36:
-        case 37: 
-        case 38:
-        case 39:
-        case 40:
-        case 41:{
-            g_status.total_operations = num_threads * ctx.repeat_num * 10;
-            break;
+            case 34:
+            case 35:
+            case 36:
+            case 37: 
+            case 38:
+            case 39:
+            case 40:
+            case 41:{
+                g_status.total_operations = num_threads * ctx.repeat_num * 10;
+                printf("Total operations: %d\n", g_status.total_operations);
+                printf("QPS: %.2f\n", time_used > 0 ?
+                    (g_status.total_operations * 1000.0 / time_used) : 0);
+                break;
+            }
         }
-        }
-        printf("Total operations: %d\n", g_status.total_operations);
-        printf("QPS: %.2f\n", time_used > 0 ?
-            (g_status.total_operations * 1000.0 / time_used) : 0);
         
 
         // 清理资源
@@ -1799,9 +2049,15 @@ int main(int argc, char *argv[])
         printf("Please Enter end range: ");
         int end_range = 0;
         scanf("%d", &end_range);
-        printf("SET Range[0, %d]\n", ctx.repeat_num);
-        printf("GET Range[%d, %d]\n", start_range, end_range);
-        array_range_test(connfd, start_range, end_range, ctx.repeat_num);
+        int start_num = 0;
+        printf("Please Enter start num: ");
+        scanf("%d", &start_num);
+        int end_num = 0;
+        printf("Please Enter end num: ");
+        scanf("%d", &end_num);
+        printf("SET Range[%d, %d]\n", start_range, end_range);
+        printf("GET Range[%d, %d]\n", start_num, end_num);
+        array_range_test(connfd, start_range, end_range, start_num, end_num);
     }
     if (23 == ctx.mode) {
         printf("Test Red-Black Tree Range Command Test\n");
@@ -1811,9 +2067,15 @@ int main(int argc, char *argv[])
         printf("Please Enter end range: ");
         int end_range = 0;
         scanf("%d", &end_range);
-        printf("RSET Range[0, %d]\n", ctx.repeat_num);
-        printf("RGET Range[%d, %d]\n", start_range, end_range);
-        rbtree_range_test(connfd, start_range, end_range, ctx.repeat_num);
+        int start_num = 0;
+        printf("Please Enter start num: ");
+        scanf("%d", &start_num);
+        int end_num = 0;
+        printf("Please Enter end num: ");
+        scanf("%d", &end_num);
+        printf("RSET Range[%d, %d]\n", start_range, end_range);
+        printf("RGET Range[%d, %d]\n", start_num, end_num);
+        rbtree_range_test(connfd, start_range, end_range, start_num, end_num);
     }
     if (24 == ctx.mode) {
         printf("Test Hash Range Command Test\n");
@@ -1823,9 +2085,15 @@ int main(int argc, char *argv[])
         printf("Please Enter end range: ");
         int end_range = 0;
         scanf("%d", &end_range);
-        printf("HSET Range[0, %d]\n", ctx.repeat_num);
-        printf("HGET Range[%d, %d]\n", start_range, end_range);
-        hash_range_test(connfd, start_range, end_range, ctx.repeat_num);
+        int start_num = 0;
+        printf("Please Enter start num: ");
+        scanf("%d", &start_num);
+        int end_num = 0;
+        printf("Please Enter end num: ");
+        scanf("%d", &end_num);
+        printf("HSET Range[%d, %d]\n", start_range, end_range);
+        printf("HGET Range[%d, %d]\n", start_num, end_num);
+        hash_range_test(connfd, start_range, end_range, start_num, end_num);
     }
     if (25 == ctx.mode) {
         printf("Test Skiptable Range Command Test\n");
@@ -1835,9 +2103,15 @@ int main(int argc, char *argv[])
         printf("Please Enter end range: ");
         int end_range = 0;
         scanf("%d", &end_range);
-        printf("SSET Range[0, %d]\n", ctx.repeat_num);
-        printf("SGET Range[%d, %d]\n", start_range, end_range);
-        skiptable_range_test(connfd, start_range, end_range, ctx.repeat_num);
+        int start_num = 0;
+        printf("Please Enter start num: ");
+        scanf("%d", &start_num);
+        int end_num = 0;
+        printf("Please Enter end num: ");
+        scanf("%d", &end_num);
+        printf("SSET Range[%d, %d]\n", start_range, end_range);
+        printf("SGET Range[%d, %d]\n", start_num, end_num);
+        skiptable_range_test(connfd, start_range, end_range, start_num, end_num);
     }
     if (26 == ctx.mode) {
         printf("Test Array Sync Command[Source]\n");
