@@ -145,8 +145,9 @@ Ubuntu 22.04 64位 2核4G
 ----------------------------------------------------------------
 
 > 开启4个线程，每个线程插入10000个不同的KEY（根据线程id * 线程操作次数编号）并分别执行RSAVE指令，随后重启KV存储服务端，每个线程再执行RLOAD指令进行读盘
->
-> 
+<img width="639" height="460" alt="image" src="https://github.com/user-attachments/assets/927d6c3a-b273-4af9-a9b6-cc8e2ee91c85" />
+<img width="714" height="460" alt="image" src="https://github.com/user-attachments/assets/d94ac7d4-ecce-48e0-8aa4-eabb207f6e9a" />
+
 ----------------------------------------------------------------
 
 --------------------------
@@ -195,6 +196,8 @@ Ubuntu 22.04 64位 2核4G
 -------------------------------------------------------------------
 
 > 开启4个线程，每个线程插入10000个不同的KEY（根据线程id * 线程操作次数编号）并分别执行HSAVE指令，随后重启KV存储服务端，每个线程再执行HLOAD指令进行读盘
+<img width="716" height="465" alt="image" src="https://github.com/user-attachments/assets/6fd1ae77-4c4c-456c-8f1a-f79a0742d044" />
+<img width="709" height="475" alt="image" src="https://github.com/user-attachments/assets/1c29d126-ffd8-4bfa-99f2-fbf1a532cb15" />
 
 -----------------------------------------------------------------------
 
@@ -245,11 +248,14 @@ Ubuntu 22.04 64位 2核4G
 -------------------------------------------------------------------
 
 > 开启4个线程，每个线程插入10000个不同的KEY（根据线程id * 线程操作次数编号）并分别执行SSAVE指令，随后重启KV存储服务端，每个线程再执行SLOAD指令进行读盘
+<img width="745" height="461" alt="image" src="https://github.com/user-attachments/assets/021872e3-522c-4c8c-b137-58b4a1bc72ef" />
+<img width="811" height="465" alt="image" src="https://github.com/user-attachments/assets/c972c269-a338-462a-b937-1501603fbb2a" />
 
 -----------------------------------------------------------------------
 
 -------------------------------------------------------------------
 --------------------------------------------------------------------
+
 
 
 
