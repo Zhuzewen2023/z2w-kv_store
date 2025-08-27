@@ -1083,7 +1083,7 @@ private:
             std::string command(r_buf.begin(), it);
             r_buf.erase(r_buf.begin(), it + 1); /*连带换行符删除*/
             std::string response = process_command(command);
-            KV_LOG("response: %s", response.c_str());
+            KV_LOG("command: %s, response: %s", command.c_str(), response.c_str());
             send_queue_.push(response + '\n');
             // send_queue_.push(response);
             it = std::find(r_buf.begin(), r_buf.end(), '\n');

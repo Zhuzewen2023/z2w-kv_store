@@ -298,7 +298,7 @@ kvs_rbtree_load(const char* filename)
         
     }
 
-    // ret = 0;
+     ret = 0;
 out:
     if (fp) {
         fclose(fp);
@@ -457,7 +457,7 @@ kvs_hash_load(const char* filename)
         
     }
 
-    // ret = 0;
+     ret = 0;
 out:
     if (fp) {
         fclose(fp);
@@ -607,7 +607,7 @@ kvs_skiptable_load(const char* filename)
         
     }
 
-    // ret = 0;
+     ret = 0;
 out:
     if (fp) {
         fclose(fp);

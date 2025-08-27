@@ -547,6 +547,25 @@ void rbtree_save_test(int connfd, int num, char* filename)
     test_kv_case(connfd, cmd, "SUCCESS\n", "RSAVECase");
 }
 
+void rbtree_save_test_multithread(int connfd, test_context_t* ctx)
+{
+    struct timeval start, end;
+    int i = 0;
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n", key_id, key_id);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "RSETCase");
+    }
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "RSAVE %s\n", ctx->filename);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "RSAVECase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("SAVE TEST : Thread %d: time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(1000.0) / time_used);
+}
+
 void rbtree_load_test(int connfd, int num, char* filename)
 {
     char cmd[128] = {0};
@@ -562,6 +581,27 @@ void rbtree_load_test(int connfd, int num, char* filename)
         snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
         char pattern[128] = {0};
         snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
+        test_kv_case(connfd, cmd, pattern, "RGETCase");
+    }
+}
+
+void rbtree_load_test_multithread(int connfd, test_context_t* ctx)
+{
+    struct timeval start, end;
+    int i = 0;
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "RLOAD %s\n", ctx->filename);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "RLOADCase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("RLOAD TEST : Thread %d: time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(1000.0) / time_used);
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", key_id);
+        char pattern[512] = { 0 };
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
         test_kv_case(connfd, cmd, pattern, "RGETCase");
     }
 }
@@ -784,6 +824,25 @@ void hash_save_test(int connfd, int num, char* filename)
     test_kv_case(connfd, cmd, "SUCCESS\n", "HSAVECase");
 }
 
+void hash_save_test_multithread(int connfd, test_context_t* ctx)
+{
+    struct timeval start, end;
+    int i = 0;
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n", key_id, key_id);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "HSETCase");
+    }
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "HSAVE %s\n", ctx->filename);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "HSAVECase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("SAVE TEST : Thread %d: time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(1000.0) / time_used);
+}
+
 void hash_load_test(int connfd, int num, char* filename)
 {
     char cmd[128] = {0};
@@ -801,7 +860,27 @@ void hash_load_test(int connfd, int num, char* filename)
         snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "HGETCase");
     }
+}
 
+void hash_load_test_multithread(int connfd, test_context_t* ctx)
+{
+    struct timeval start, end;
+    int i = 0;
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "HLOAD %s\n", ctx->filename);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "HLOADCase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("HLOAD TEST : Thread %d: time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(1000.0) / time_used);
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", key_id);
+        char pattern[512] = { 0 };
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+        test_kv_case(connfd, cmd, pattern, "HGETCase");
+    }
 }
 
 void hash_range_test(int connfd, int start_range, int end_range, int start_num, int end_num)
@@ -1071,6 +1150,25 @@ void skiptable_save_test(int connfd, int num, char* filename)
     test_kv_case(connfd, cmd, "SUCCESS\n", "SSAVECase");
 }
 
+void skiptable_save_test_multithread(int connfd, test_context_t* ctx)
+{
+    struct timeval start, end;
+    int i = 0;
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n", key_id, key_id);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
+    }
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "SSAVE %s\n", ctx->filename);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SSAVECase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("SAVE TEST : Thread %d: time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(1000.0) / time_used);
+}
+
 void skiptable_load_test(int connfd, int num, char* filename)
 {
     char cmd[128] = {0};
@@ -1089,6 +1187,27 @@ void skiptable_load_test(int connfd, int num, char* filename)
         test_kv_case(connfd, cmd, pattern, "SGETCase");
     }
 
+}
+
+void skiptable_load_test_multithread(int connfd, test_context_t* ctx)
+{
+    struct timeval start, end;
+    int i = 0;
+    char cmd[512] = { 0 };
+    snprintf(cmd, sizeof(cmd), "SLOAD %s\n", ctx->filename);
+    gettimeofday(&start, NULL);
+    test_kv_case(connfd, cmd, "SUCCESS\n", "SLOADCase");
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("SLOAD TEST : Thread %d: time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(1000.0) / time_used);
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id * ctx->operations_per_thread);
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", key_id);
+        char pattern[512] = { 0 };
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+        test_kv_case(connfd, cmd, pattern, "SGETCase");
+    }
 }
 
 void skiptable_range_test(int connfd, int start_range, int end_range, int start_num, int end_num)
@@ -1633,16 +1752,19 @@ void perform_engine_operations(int connfd, test_context_t* ctx)
         case 43:
         {
 			/*Test Save Red-Black Tree to Disk multi threads*/
+            rbtree_save_test_multithread(connfd, ctx);
             break;
         }
         case 44:
         {
             /*Test Save Hash Table to Disk multi threads*/
+            hash_save_test_multithread(connfd, ctx);
             break;
         }
         case 45:
         {
             /*Test Save SkipTable to Disk multi threads*/
+            skiptable_save_test_multithread(connfd, ctx);
             break;
         }
         case 46:
@@ -1654,16 +1776,19 @@ void perform_engine_operations(int connfd, test_context_t* ctx)
 		case 47:
 		{
 			/*Red-Black Tree Load Test multi threads*/
+            rbtree_load_test_multithread(connfd, ctx);
 			break;
 		}
 		case 48:
 		{
 			/*Hash Load Test multi threads*/
+            hash_load_test_multithread(connfd, ctx);
 			break;
 		}
 		case 49:
 		{
 			/*SkipTable Load Test multi threads*/
+            skiptable_load_test_multithread(connfd, ctx);
 			break;
 		}
 
