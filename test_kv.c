@@ -34,6 +34,10 @@ typedef struct test_context_s{
     sem_t* start_sem; //用于同步线程开始
     int engine_type;
     int operations_per_thread;
+    int start_range;
+    int end_range;
+    int start_num;
+    int end_num;
 } test_context_t;
 
 typedef struct thread_safety_test_s
@@ -384,6 +388,16 @@ void array_range_test(int connfd, int start_range, int end_range, int start_num,
     
 }
 
+void array_range_test_multithread(int connfd, test_context_t* ctx)
+{
+    int interval = (ctx->end_range - ctx->start_range + 1) * 10;
+    int sr = (ctx->thread_id + 1) * (ctx->start_range + interval);
+    int er = (ctx->thread_id + 1) * (ctx->end_range + interval);
+    int sn = (ctx->thread_id + 1) * (ctx->start_num + interval);
+    int en = (ctx->thread_id + 1) * (ctx->end_num + interval);
+    array_range_test(connfd, sr, er, sn, en);
+}
+
 void array_sync_test_source(int connfd, int num)
 {
     int i = 0;
@@ -392,6 +406,11 @@ void array_sync_test_source(int connfd, int num)
         snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", i, i);
         test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
     }
+}
+
+void array_sync_test_source_multithread(int connfd, test_context_t* ctx)
+{
+
 }
 
 void array_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
@@ -419,7 +438,11 @@ void array_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
         snprintf(pattern, sizeof(pattern), "ZZW_%d\n", i);
         test_kv_case(connfd, cmd, pattern, "GETCase2");
     }
-    
+}
+
+void array_sync_test_dest_multithread(int connfd, test_context_t* ctx)
+{
+
 }
 
 void rbtree_test_case(int connfd)
@@ -661,6 +684,16 @@ void rbtree_range_test(int connfd, int start_range, int end_range, int start_num
     printf("time: %fms, qps: %f\n", time_used, (double)(1000.0) / time_used);
 }
 
+void rbtree_range_test_multithread(int connfd, test_context_t* ctx)
+{
+    int interval = (ctx->end_range - ctx->start_range + 1) * 10;
+    int sr = (ctx->thread_id + 1) * (ctx->start_range + interval);
+    int er = (ctx->thread_id + 1) * (ctx->end_range + interval);
+    int sn = (ctx->thread_id + 1) * (ctx->start_num + interval);
+    int en = (ctx->thread_id + 1) * (ctx->end_num + interval);
+    rbtree_range_test(connfd, sr, er, sn, en);
+}
+
 void rbtree_sync_test_source(int connfd, int num)
 {
     int i = 0;
@@ -669,6 +702,11 @@ void rbtree_sync_test_source(int connfd, int num)
         snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n", i, i);
         test_kv_case(connfd, cmd, "SUCCESS\n", "RSETCase");
     }
+}
+
+void rbtree_sync_test_source_multithread(int connfd, test_context_t* ctx)
+{
+
 }
 
 void rbtree_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
@@ -697,6 +735,11 @@ void rbtree_sync_test_dest(int connfd, int num, char* source_ip, int source_port
         test_kv_case(connfd, cmd, pattern, "RGETCase2");
     }
     
+}
+
+void rbtree_sync_test_dest_multithread(int connfd, test_context_t* ctx)
+{
+
 }
 
 void hash_test_case(int connfd)
@@ -985,6 +1028,16 @@ void hash_range_test(int connfd, int start_range, int end_range, int start_num, 
 #endif
 }
 
+void hash_range_test_multithread(int connfd, test_context_t* ctx)
+{
+    int interval = (ctx->end_range - ctx->start_range + 1) * 10;
+    int sr = (ctx->thread_id + 1) * (ctx->start_range + interval);
+    int er = (ctx->thread_id + 1) * (ctx->end_range + interval);
+    int sn = (ctx->thread_id + 1) * (ctx->start_num + interval);
+    int en = (ctx->thread_id + 1) * (ctx->end_num + interval);
+    hash_range_test(connfd, sr, er, sn, en);
+}
+
 void hash_sync_test_source(int connfd, int num)
 {
     int i = 0;
@@ -993,6 +1046,11 @@ void hash_sync_test_source(int connfd, int num)
         snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n", i, i);
         test_kv_case(connfd, cmd, "SUCCESS\n", "HSETCase");
     }
+}
+
+void hash_sync_test_source_multithread(int connfd, test_context_t* ctx)
+{
+
 }
 
 void hash_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
@@ -1021,6 +1079,11 @@ void hash_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
         test_kv_case(connfd, cmd, pattern, "HGETCase2");
     }
     
+}
+
+void hash_sync_test_dest_multithread(int connfd, test_context_t* ctx)
+{
+
 }
 
 void skiptable_test_case(int connfd)
@@ -1312,6 +1375,16 @@ void skiptable_range_test(int connfd, int start_range, int end_range, int start_
 #endif
 }
 
+void skiptable_range_test_multithread(int connfd, test_context_t* ctx)
+{
+    int interval = (ctx->end_range - ctx->start_range + 1) * 10;
+    int sr = (ctx->thread_id + 1) * (ctx->start_range + interval);
+    int er = (ctx->thread_id + 1) * (ctx->end_range + interval);
+    int sn = (ctx->thread_id + 1) * (ctx->start_num + interval);
+    int en = (ctx->thread_id + 1) * (ctx->end_num + interval);
+    skiptable_range_test(connfd, sr, er, sn, en);
+}
+
 void skiptable_sync_test_source(int connfd, int num)
 {
     int i = 0;
@@ -1320,6 +1393,11 @@ void skiptable_sync_test_source(int connfd, int num)
         snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n", i, i);
         test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
     }
+}
+
+void skiptable_sync_test_source_multithread(int connfd, test_context_t* ctx)
+{
+
 }
 
 void skiptable_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
@@ -1348,6 +1426,11 @@ void skiptable_sync_test_dest(int connfd, int num, char* source_ip, int source_p
         test_kv_case(connfd, cmd, pattern, "SGETCase2");
     }
     
+}
+
+void skiptable_sync_test_dest_multithread(int connfd, test_context_t* ctx)
+{
+
 }
 
 void array_multiple_commands_test(int connfd, int num)
@@ -1379,6 +1462,43 @@ EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
     }
 }
 
+void array_multiple_commands_test_multithread(int connfd, test_context_t* ctx)
+{
+    if (!ENABLE_ARRAY_KV_ENGINE) {
+        printf("Error: Array engine is not enabled.\n");
+        return;
+    }
+    struct timeval start, end;
+	int start_num = ctx->thread_id * ctx->operations_per_thread;
+    int end_num = start_num + ctx->operations_per_thread;
+    gettimeofday(&start, NULL);
+    for (int i = start_num; i < end_num; i++) {
+        char cmd[1024] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n\
+                                    GET Name_%d\n\
+                                    SET Name_%d Linus_%d\n\
+                                    MOD Name_%d Linus_%d\n\
+                                    EXIST Name_%d\n\
+                                    GET Name_%d\n\
+                                    DEL Name_%d\n\
+                                    GET Name_%d\n\
+                                    MOD Name_%d Linus_%d\n\
+                                    EXIST Name_%d\n",
+            i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+
+        char pattern[1024] = { 0 };
+        snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
+EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
+i, i);
+		
+        test_kv_case(connfd, cmd, pattern, "ArrayMultipleCommandsCase");
+        
+    }
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("ArrayMultipleCommandsCase : Thread %d, time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(ctx->operations_per_thread * 10 * 1000.0) / time_used);
+}
+
 void rbtree_multiple_commands_test(int connfd, int num)
 {
     if (!ENABLE_RBTREE_KV_ENGINE) {
@@ -1406,6 +1526,43 @@ EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
         test_kv_case(connfd, cmd, pattern, "RbTreeMultipleCommandsCase");
 
     }
+}
+
+void rbtree_multiple_commands_test_multithread(int connfd, test_context_t* ctx)
+{
+    if (!ENABLE_RBTREE_KV_ENGINE) {
+        printf("Error: Rbtree engine is not enabled.\n");
+        return;
+    }
+    struct timeval start, end;
+    int start_num = ctx->thread_id * ctx->operations_per_thread;
+    int end_num = start_num + ctx->operations_per_thread;
+    gettimeofday(&start, NULL);
+    for (int i = start_num; i < end_num; i++) {
+        char cmd[1024] = { 0 };
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n\
+                                    RGET Name_%d\n\
+                                    RSET Name_%d Linus_%d\n\
+                                    RMOD Name_%d Linus_%d\n\
+                                    REXIST Name_%d\n\
+                                    RGET Name_%d\n\
+                                    RDEL Name_%d\n\
+                                    RGET Name_%d\n\
+                                    RMOD Name_%d Linus_%d\n\
+                                    REXIST Name_%d\n",
+            i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+
+        char pattern[1024] = { 0 };
+        snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
+EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
+i, i);
+
+        test_kv_case(connfd, cmd, pattern, "RbTreeMultipleCommandsCase");
+
+    }
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("RbTreeMultipleCommandsCase : Thread %d, time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(ctx->operations_per_thread * 10 * 1000.0) / time_used);
 }
 
 void hash_multiple_commands_test(int connfd, int num)
@@ -1437,6 +1594,43 @@ EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
     }
 }
 
+void hash_multiple_commands_test_multithread(int connfd, test_context_t* ctx)
+{
+    if (!ENABLE_HASH_KV_ENGINE) {
+        printf("Error: Hash engine is not enabled.\n");
+        return;
+    }
+    struct timeval start, end;
+    int start_num = ctx->thread_id * ctx->operations_per_thread;
+    int end_num = start_num + ctx->operations_per_thread;
+    gettimeofday(&start, NULL);
+    for (int i = start_num; i < end_num; i++) {
+        char cmd[1024] = { 0 };
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n\
+                                    HGET Name_%d\n\
+                                    HSET Name_%d Linus_%d\n\
+                                    HMOD Name_%d Linus_%d\n\
+                                    HEXIST Name_%d\n\
+                                    HGET Name_%d\n\
+                                    HDEL Name_%d\n\
+                                    HGET Name_%d\n\
+                                    HMOD Name_%d Linus_%d\n\
+                                    HEXIST Name_%d\n",
+            i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+
+        char pattern[1024] = { 0 };
+        snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
+EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
+i, i);
+
+        test_kv_case(connfd, cmd, pattern, "HashMultipleCommandsCase");
+
+    }
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("HashMultipleCommandsCase : Thread %d, time: %fms, qps: %f\n", ctx->thread_id, time_used, (double)(ctx->operations_per_thread * 10 * 1000.0) / time_used);
+}
+
 void skiptable_multiple_commands_test(int connfd, int num)
 {
     if (!ENABLE_SKIPTABLE_KV_ENGINE) {
@@ -1463,6 +1657,43 @@ void skiptable_multiple_commands_test(int connfd, int num)
         test_kv_case(connfd, cmd, pattern, "SkipTableMultipleCommandsCase");
 
     }
+}
+
+void skiptable_multiple_commands_test_multithread(int connfd, test_context_t* ctx)
+{
+    if (!ENABLE_SKIPTABLE_KV_ENGINE) {
+        printf("Error: Skiptable engine is not enabled.\n");
+        return;
+    }
+    struct timeval start, end;
+    int start_num = ctx->thread_id * ctx->operations_per_thread;
+    int end_num = start_num + ctx->operations_per_thread;
+    gettimeofday(&start, NULL);
+    for (int i = start_num; i < end_num; i++) {
+        char cmd[1024] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n\
+                                    SGET Name_%d\n\
+                                    SSET Name_%d Linus_%d\n\
+                                    SMOD Name_%d Linus_%d\n\
+                                    SEXIST Name_%d\n\
+                                    SGET Name_%d\n\
+                                    SDEL Name_%d\n\
+                                    SGET Name_%d\n\
+                                    SMOD Name_%d Linus_%d\n\
+                                    SEXIST Name_%d\n",
+            i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+
+        char pattern[1024] = { 0 };
+        snprintf(pattern, sizeof(pattern), "SUCCESS\nZZW_%d\nEXIST\nSUCCESS\n\
+EXIST\nLinus_%d\nSUCCESS\nNO EXIST\nERROR\nNO EXIST\n",
+i, i);
+
+        test_kv_case(connfd, cmd, pattern, "SkiptableMultipleCommandsCase");
+
+    }
+    gettimeofday(&end, NULL);
+    double time_used = TIME_SUB_MS(end, start);
+    printf("SkiptableMultipleCommandsCase : Thread % d, time : % fms, qps : % f\n", ctx->thread_id, time_used, (double)(ctx->operations_per_thread * 10 * 1000.0) / time_used);
 }
 
 void all_engine_multiple_commands_test(int connfd, int num)
@@ -1658,6 +1889,22 @@ static void print_usage(const char* prog_name) {
 	printf("  [47] Test Load Red-Black Tree from Disk multi threads\n");
 	printf("  [48] Test Load Hash Table from Disk multi threads\n");
 	printf("  [49] Test Load SkipTable from Disk multi threads\n");
+    printf("  [50] Test Array KV Engine Multiple Commands Test multi threads\n");
+    printf("  [51] Test Red-Black Tree KV Engine Multiple Commands Test multi threads\n");
+    printf("  [52] Test Hash Table KV Engine Multiple Commands Test multi threads\n");
+    printf("  [53] Test SkipTable KV Engine Multiple Commands Test multi threads\n");
+    printf("  [54] Test Array Range Command Test multi threads\n");
+    printf("  [55] Test Red-Black Tree Range Command Test multi threads\n");
+    printf("  [56] Test Hash Range Command Test multi threads\n");
+    printf("  [57] Test Skiptable Range Command Test multi threads\n");
+    printf("  [58] Test Array Sync Command[Source] multi threads\n");
+    printf("  [59] Test Array Sync Command[Dest] multi threads\n");
+    printf("  [60] Test Red-Black Tree Sync Command[Source] multi threads\n");
+    printf("  [61] Test Red-Block Tree Sync Command[Dest] multi threads\n");
+    printf("  [62] Test Hash Sync Command[Source] multi threads\n");
+    printf("  [63] Test Hash Sync Command[Dest] multi threads\n");
+    printf("  [64] Test Skiptable Sync Command[Source] multi threads\n");
+    printf("  [65] Test Skiptable Sync Command[Dest] multi threads\n");
 
     
     printf("Examples:\n");
@@ -1791,6 +2038,87 @@ void perform_engine_operations(int connfd, test_context_t* ctx)
             skiptable_load_test_multithread(connfd, ctx);
 			break;
 		}
+        case 50:
+        {
+            array_multiple_commands_test_multithread(connfd, ctx);
+            break;
+        }
+        case 51:
+        {
+            rbtree_multiple_commands_test_multithread(connfd, ctx);
+            break;
+        }
+        case 52:
+        {
+            hash_multiple_commands_test_multithread(connfd, ctx);
+            break;
+        }
+        case 53:
+        {
+            skiptable_multiple_commands_test_multithread(connfd, ctx);
+            break;
+        }
+        case 54:
+        {
+            array_range_test_multithread(connfd, ctx);
+            break;
+        }
+        case 55:
+        {
+            rbtree_range_test_multithread(connfd, ctx);
+            break;
+        }
+        case 56:
+        {
+            hash_range_test_multithread(connfd, ctx);
+            break;
+        }
+        case 57:
+        {
+            skiptable_range_test_multithread(connfd, ctx);
+            break;
+        }
+        case 58:
+        {
+			array_sync_test_source_multithread(connfd, ctx);
+			break;
+        }
+        case 59:
+        {
+			array_sync_test_dest_multithread(connfd, ctx);
+            break;
+        }
+        case 60:
+        {
+			rbtree_sync_test_source_multithread(connfd, ctx);
+            break;
+        }
+        case 61:
+        {
+			rbtree_sync_test_dest_multithread(connfd, ctx);
+			break;
+        }
+        case 62:
+        {
+			hash_sync_test_source_multithread(connfd, ctx);
+            break;
+        }
+        case 63:
+        {
+			hash_sync_test_dest_multithread(connfd, ctx);
+			break;
+        }
+        case 64:
+        {
+			skiptable_sync_test_source_multithread(connfd, ctx);
+			break;
+        }
+        case 65:
+        {
+			skiptable_sync_test_dest_multithread(connfd, ctx);
+            break;
+        }
+
 
         if (ctx->failed) {
             break;
@@ -1908,7 +2236,24 @@ int main(int argc, char *argv[])
                 printf("filename: %s\n", ctx.filename);
                 break;
             }
-
+            case 54:
+            case 55:
+            case 56:
+            case 57: {
+                printf("Please enter start range: ");
+                scanf("%d", &ctx.start_range);
+				printf("start range: %d\n", ctx.start_range);
+				printf("Please enter end range: ");
+				scanf("%d", &ctx.end_range);
+				printf("end range: %d\n", ctx.end_range);
+                printf("Please enter start num: ");
+				scanf("%d", &ctx.start_num);
+				printf("start num: %d\n", ctx.start_num);
+				printf("Please enter end num: ");
+				scanf("%d", &ctx.end_num);
+				printf("end num: %d\n", ctx.end_num);
+                break;
+            }
         }
 
         for (int i = 0; i < num_threads; i++) {
