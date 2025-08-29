@@ -112,6 +112,10 @@ Ubuntu 22.04 64位 2核4G
 <img width="704" height="576" alt="image" src="https://github.com/user-attachments/assets/fe57647d-e50e-47f5-9f2a-5fe7ce000145" />
 
 ----------------------------------
+
+> 先开启4个线程，每个线程分别向主服务器插入10000个KEY，从服务器再开启4个线程，分别向主服务器发送SYNC命令并且分别GET对应的10000个KEY，KEY按照i + (ctx->thread_id + 1) * ctx->operations_per_thread进行区分
+<img width="785" height="618" alt="image" src="https://github.com/user-attachments/assets/380eba39-2865-49d7-9757-a234d42e3075" />
+
 ------------------------------------
 
 ### 红黑树存储引擎
@@ -174,6 +178,11 @@ Ubuntu 22.04 64位 2核4G
 
 > 开启4个线程，每个线程先插入KEY：thread_id * 100 ~ thread_id * 1100, 在查询KEY：thread_id * 500 ~ thread_id * 900
 <img width="720" height="570" alt="image" src="https://github.com/user-attachments/assets/30e7b8c0-f429-49c7-9e35-4c77549f4231" />
+
+----------------------------------
+
+> 先开启4个线程，每个线程分别向主服务器插入10000个KEY，从服务器再开启4个线程，分别向主服务器发送SYNC命令并且分别GET对应的10000个KEY，KEY按照i + (ctx->thread_id + 1) * ctx->operations_per_thread进行区分
+<img width="676" height="614" alt="image" src="https://github.com/user-attachments/assets/14f220ad-b38c-4408-a0a9-c2ddc45773ee" />
 
 --------------------------
 
@@ -238,6 +247,11 @@ Ubuntu 22.04 64位 2核4G
 > 开启4个线程，每个线程先插入KEY：thread_id * 100 ~ thread_id * 1100, 在查询KEY：thread_id * 500 ~ thread_id * 900
 <img width="699" height="576" alt="image" src="https://github.com/user-attachments/assets/d90394eb-9ad9-40b7-8a8c-6e42d5dfd0ed" />
 
+----------------------------------
+
+> 先开启4个线程，每个线程分别向主服务器插入10000个KEY，从服务器再开启4个线程，分别向主服务器发送SYNC命令并且分别GET对应的10000个KEY，KEY按照i + (ctx->thread_id + 1) * ctx->operations_per_thread进行区分
+<img width="755" height="621" alt="image" src="https://github.com/user-attachments/assets/b1eeaef6-6016-450f-9a73-910f8bc41e90" />
+
 -------------------------------------------
 
 ### 跳表存储引擎
@@ -300,8 +314,13 @@ Ubuntu 22.04 64位 2核4G
 
 > 开启4个线程，每个线程先插入KEY：thread_id * 100 ~ thread_id * 1100, 在查询KEY：thread_id * 500 ~ thread_id * 900
 <img width="841" height="570" alt="image" src="https://github.com/user-attachments/assets/e6de28c5-59cd-4946-86e4-63610cadd252" />
+----------------------------------
+
+> 先开启4个线程，每个线程分别向主服务器插入10000个KEY，从服务器再开启4个线程，分别向主服务器发送SYNC命令并且分别GET对应的10000个KEY，KEY按照i + (ctx->thread_id + 1) * ctx->operations_per_thread进行区分
+<img width="1001" height="639" alt="image" src="https://github.com/user-attachments/assets/b332b979-7676-47e1-bfab-4daf0eead6a1" />
 
 --------------------------------------------------------------------
+
 
 
 
