@@ -25,7 +25,9 @@ test_status_t g_status = {0, 0, 0, 0, PTHREAD_MUTEX_INITIALIZER};
 
 typedef struct test_context_s{
     char serverip[16];
+    char syncip[16];
     int port;
+    int syncport;
     int mode;
     int repeat_num;
     char filename[128];
@@ -410,7 +412,13 @@ void array_sync_test_source(int connfd, int num)
 
 void array_sync_test_source_multithread(int connfd, test_context_t* ctx)
 {
-
+    int i = 0;
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SET Name_%d ZZW_%d\n", key_id, key_id);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SETCase");
+    }
 }
 
 void array_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
@@ -426,11 +434,17 @@ void array_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
         snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
         test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase1");
     }
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     {
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SYNC %s %d\n", source_ip, source_port);
         test_kv_case(connfd, cmd, "SUCCESS\n", "SYNCCase");
     }
+    gettimeofday(&end, NULL);
+    int time_used = TIME_SUB_MS(end, start);
+    printf("time: %dms, qps: %d\n", time_used, 1000 * num / time_used);
+    
     for (i = 0; i < num; i++) {
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "GET Name_%d\n", i);
@@ -442,7 +456,34 @@ void array_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
 
 void array_sync_test_dest_multithread(int connfd, test_context_t* ctx)
 {
-
+    struct timeval start_time, end_time;
+    printf("server ip = %s, server_port = %d\n", ctx->serverip, ctx->port);
+    printf("sync ip = %s, sync port = %d\n", ctx->syncip, ctx->syncport);
+    int i = 0;
+    //for (i = 0; i < ctx->operations_per_thread; i++) {
+    //    int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+    //    char cmd[512] = { 0 };
+    //    snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+    //    test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase1");
+    //}
+    gettimeofday(&start_time, NULL);
+    {
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SYNC %s %d\n", ctx->syncip, ctx->syncport);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SYNCCase");
+    }
+    //printf("Thread:%d, sync over\n", ctx->thread_id);
+    gettimeofday(&end_time, NULL);
+    double time_used = TIME_SUB_MS(end_time, start_time);
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0) / time_used);
+    /*for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+        char pattern[512] = { 0 };
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+        test_kv_case(connfd, cmd, pattern, "GETCase2");
+    }*/
 }
 
 void rbtree_test_case(int connfd)
@@ -706,7 +747,10 @@ void rbtree_sync_test_source(int connfd, int num)
 
 void rbtree_sync_test_source_multithread(int connfd, test_context_t* ctx)
 {
+    int i = 0;
+    for (i = 0; i < ctx->operations_per_thread; i++) {
 
+    }
 }
 
 void rbtree_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
@@ -722,11 +766,17 @@ void rbtree_sync_test_dest(int connfd, int num, char* source_ip, int source_port
         snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
         test_kv_case(connfd, cmd, "NO EXIST\n", "RGETCase1");
     }
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     {
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RSYNC %s %d\n", source_ip, source_port);
         test_kv_case(connfd, cmd, "SUCCESS\n", "RSYNCCase");
     }
+    gettimeofday(&end, NULL);
+    int time_used = TIME_SUB_MS(end, start);
+    printf("time: %dms, qps: %d\n", time_used, 1000 * num / time_used);
+
     for (i = 0; i < num; i++) {
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", i);
@@ -1066,11 +1116,17 @@ void hash_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
         snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
         test_kv_case(connfd, cmd, "NO EXIST\n", "HGETCase1");
     }
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     {
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HSYNC %s %d\n", source_ip, source_port);
         test_kv_case(connfd, cmd, "SUCCESS\n", "HSYNCCase");
     }
+    gettimeofday(&end, NULL);
+    int time_used = TIME_SUB_MS(end, start);
+    printf("time: %dms, qps: %d\n", time_used, 1000 * num / time_used);
+
     for (i = 0; i < num; i++) {
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", i);
@@ -1413,11 +1469,17 @@ void skiptable_sync_test_dest(int connfd, int num, char* source_ip, int source_p
         snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
         test_kv_case(connfd, cmd, "NO EXIST\n", "SGETCase1");
     }
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     {
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SSYNC %s %d\n", source_ip, source_port);
         test_kv_case(connfd, cmd, "SUCCESS\n", "SSYNCCase");
     }
+    gettimeofday(&end, NULL);
+    int time_used = TIME_SUB_MS(end, start);
+    printf("time: %dms, qps: %d\n", time_used, 1000 * num / time_used);
+
     for (i = 0; i < num; i++) {
         char cmd[128] = {0};
         snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", i);
@@ -2252,6 +2314,16 @@ int main(int argc, char *argv[])
 				printf("Please enter end num: ");
 				scanf("%d", &ctx.end_num);
 				printf("end num: %d\n", ctx.end_num);
+                break;
+            }
+            case 59:
+            case 61:
+            case 63:
+            case 65: {
+                printf("Please Enter Sync IP: ");
+                scanf("%s", ctx.syncip);
+                printf("Please Enter Sync Port: ");
+                scanf("%d", &ctx.syncport);
                 break;
             }
         }

@@ -114,37 +114,93 @@ public:
 
 		char buffer[4096] = { 0 };
 		std::string response;
+		fd_set read_fds;
+		struct timeval timeout;
+
+		timeout.tv_sec = 5;
+		timeout.tv_usec = 0;
 
 		while (true) {
-			memset(buffer, 0, sizeof(buffer));
-			ssize_t n = recv(sockfd_, buffer, sizeof(buffer), 0);
-			KV_LOG("recv: %s, %ld bytes\n", buffer, n);
-			if (n > 0) {
-				KV_LOG("recv: %s, %ld bytes\n",buffer, n);
-				// buffer[n] = '\0';
-				response += buffer;
+			FD_ZERO(&read_fds);
+			FD_SET(sockfd_, &read_fds);
 
-				if (response.find('\n') != std::string::npos) {
-					KV_LOG("get response : %s\n", response.c_str());
-					break;
-				}
-			}
-			else if (n == 0) {
-				KV_LOG("server closed\n");
+			int select_ret = select(sockfd_ + 1, &read_fds, NULL, NULL, &timeout);
+			if (select_ret < 0) {
+				KV_LOG("select error: %s\n", strerror(errno));
 				close(sockfd_);
 				sockfd_ = -1;
 				break;
 			}
-			else {
-				if (errno != EAGAIN && errno != EWOULDBLOCK) {
-					KV_LOG("receive response failed: %s\n", strerror(errno));
+			else if (select_ret == 0) {
+				// 超时，检查是否已经接收到数据
+				if (!response.empty()) {
+					KV_LOG("partial response received but timeout waiting for more data\n");
+					break;
+				}
+				continue; // 继续等待
+			}
+			memset(buffer, 0, sizeof(buffer));
+			if (FD_ISSET(sockfd_, &read_fds)) {
+				ssize_t n = recv(sockfd_, buffer, sizeof(buffer) - 1, 0);
+				if (n > 0) {
+			//		buffer[n] = '\0';
+					response.append(buffer, n);
+
+					//if (response.find('\n') != std::string::npos) {
+					//	KV_LOG("get response: %s, size:%d\n", response.c_str(), response.size());
+					//	break;
+					//}
+				}
+				else if (n == 0) {
+					KV_LOG("server closed connection\n");
 					close(sockfd_);
 					sockfd_ = -1;
 					break;
 				}
-				/*无数据可读，跳出循环*/
-				//break;
+				else {
+					if (errno != EAGAIN && errno != EWOULDBLOCK) {
+						KV_LOG("receive error: %s\n", strerror(errno));
+						close(sockfd_);
+						sockfd_ = -1;
+						break;
+					}
+					KV_LOG("get response: %s, size:%d\n", response.c_str(), response.size());
+					break;
+					// 如果是EAGAIN或EWOULDBLOCK，继续等待
+				}
 			}
+			//memset(buffer, 0, sizeof(buffer));
+			//ssize_t n = recv(sockfd_, buffer, sizeof(buffer), 0);
+			//KV_LOG("recv: %s, %ld bytes\n", buffer, n);
+			//if (n > 0) {
+			//		KV_LOG("recv: %s, %ld bytes\n",buffer, n);
+			//		 //buffer[n] = '\0';
+			//		response += buffer;
+
+			//		if (response.find('\n') != std::string::npos) {
+			//			KV_LOG("get response : %s\n", response.c_str());
+			//			break;
+			//		}
+			//	}
+			//	else if (n == 0) {
+			//		KV_LOG("server closed\n");
+			//		close(sockfd_);
+			//		sockfd_ = -1;
+			//		break;
+			//	}
+			//	else {
+			//		if (errno != EAGAIN && errno != EWOULDBLOCK) {
+			//			KV_LOG("receive response failed: %s\n", strerror(errno));
+			//			close(sockfd_);
+			//			sockfd_ = -1;
+			//			break;
+			//		}
+			//		//usleep(500000);
+			//		/*无数据可读，跳出循环*/
+			//		//break;
+				//}
+		
+	
 		}
 		KV_LOG("receive response: %s\n", response.c_str());
 		return response;

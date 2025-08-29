@@ -416,6 +416,7 @@ private:
                 if (count < 3) {
                     KV_LOG("invalid sync command\n");
                     // snprintf(response_buf, sizeof(response_buf), "FAILED");
+                    KV_LOG("Error: invalid sync command\n");
                     response = "FAILED";
                     return response;
                 }
@@ -483,7 +484,7 @@ private:
                     response += std::to_string(data.timestamp);
 #endif
                     response += "\n";
-                    KV_LOG("response: %s", response.c_str());
+                    //KV_LOG("response: %s", response.c_str());
                 }
                 return response;
                 break;
