@@ -98,6 +98,8 @@ Ubuntu 22.04 64位 2核4G
 
 -------------------------------------
 
+> 开启5个线程，将SET,GET,SET,MOD,EXIST,GET,DEL,GET,MOD,EXIST指令合并为1条指令发送，每个线程重复20000次，共计执行100W条指令
+<img width="745" height="485" alt="image" src="https://github.com/user-attachments/assets/7fce7ad7-8aae-45a3-82a5-cfe3c32c137f" />
 
 ----------------------------------
 ------------------------------------
@@ -150,6 +152,9 @@ Ubuntu 22.04 64位 2核4G
 
 ----------------------------------------------------------------
 
+> 开启5个线程，将RSET,RGET,RSET,RMOD,REXIST,RGET,RDEL,RGET,RMOD,REXIST指令合并为1条指令发送，每个线程重复20000次，共计执行100W条指令
+<img width="810" height="480" alt="image" src="https://github.com/user-attachments/assets/1057cf75-2ec8-466a-b9e8-65a7faf2cbde" />
+
 --------------------------
 --------------------------
 
@@ -201,6 +206,8 @@ Ubuntu 22.04 64位 2核4G
 
 -----------------------------------------------------------------------
 
+> 开启5个线程，将HSET,HGET,HSET,HMOD,HEXIST,HGET,HDEL,HGET,HMOD,HEXIST指令合并为1条指令发送，每个线程重复20000次，共计执行100W条指令
+<img width="825" height="479" alt="image" src="https://github.com/user-attachments/assets/f9c68077-7e77-4dac-a7f9-90aa1fe596e3" />
 
 -------------------------------------------
 -------------------------------------------
@@ -253,8 +260,12 @@ Ubuntu 22.04 64位 2核4G
 
 -----------------------------------------------------------------------
 
+> 开启5个线程，将SSET,SGET,SSET,SMOD,SEXIST,SGET,SDEL,SGET,SMOD,SEXIST指令合并为1条指令发送，每个线程重复20000次，共计执行100W条指令
+<img width="970" height="489" alt="image" src="https://github.com/user-attachments/assets/85ef43ef-154c-4698-a40b-5e9fff282fc5" />
+
 -------------------------------------------------------------------
 --------------------------------------------------------------------
+
 
 
 
