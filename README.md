@@ -101,6 +101,11 @@ Ubuntu 22.04 64位 2核4G
 > 开启5个线程，将SET,GET,SET,MOD,EXIST,GET,DEL,GET,MOD,EXIST指令合并为1条指令发送，每个线程重复20000次，共计执行100W条指令
 <img width="745" height="485" alt="image" src="https://github.com/user-attachments/assets/7fce7ad7-8aae-45a3-82a5-cfe3c32c137f" />
 
+--------------------------------------
+
+> 开启4个线程，每个线程先插入KEY：thread_id * 100 ~ thread_id * 1100, 在查询KEY：thread_id * 500 ~ thread_id * 900
+<img width="704" height="576" alt="image" src="https://github.com/user-attachments/assets/fe57647d-e50e-47f5-9f2a-5fe7ce000145" />
+
 ----------------------------------
 ------------------------------------
 
@@ -156,6 +161,10 @@ Ubuntu 22.04 64位 2核4G
 <img width="810" height="480" alt="image" src="https://github.com/user-attachments/assets/1057cf75-2ec8-466a-b9e8-65a7faf2cbde" />
 
 --------------------------
+
+> 开启4个线程，每个线程先插入KEY：thread_id * 100 ~ thread_id * 1100, 在查询KEY：thread_id * 500 ~ thread_id * 900
+<img width="720" height="570" alt="image" src="https://github.com/user-attachments/assets/30e7b8c0-f429-49c7-9e35-4c77549f4231" />
+
 --------------------------
 
 ### 哈希表存储引擎
@@ -210,6 +219,10 @@ Ubuntu 22.04 64位 2核4G
 <img width="825" height="479" alt="image" src="https://github.com/user-attachments/assets/f9c68077-7e77-4dac-a7f9-90aa1fe596e3" />
 
 -------------------------------------------
+
+> 开启4个线程，每个线程先插入KEY：thread_id * 100 ~ thread_id * 1100, 在查询KEY：thread_id * 500 ~ thread_id * 900
+<img width="699" height="576" alt="image" src="https://github.com/user-attachments/assets/d90394eb-9ad9-40b7-8a8c-6e42d5dfd0ed" />
+
 -------------------------------------------
 
 ### 跳表存储引擎
@@ -264,7 +277,12 @@ Ubuntu 22.04 64位 2核4G
 <img width="970" height="489" alt="image" src="https://github.com/user-attachments/assets/85ef43ef-154c-4698-a40b-5e9fff282fc5" />
 
 -------------------------------------------------------------------
+
+> 开启4个线程，每个线程先插入KEY：thread_id * 100 ~ thread_id * 1100, 在查询KEY：thread_id * 500 ~ thread_id * 900
+<img width="841" height="570" alt="image" src="https://github.com/user-attachments/assets/e6de28c5-59cd-4946-86e4-63610cadd252" />
+
 --------------------------------------------------------------------
+
 
 
 
