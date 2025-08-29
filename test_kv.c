@@ -475,15 +475,15 @@ void array_sync_test_dest_multithread(int connfd, test_context_t* ctx)
     //printf("Thread:%d, sync over\n", ctx->thread_id);
     gettimeofday(&end_time, NULL);
     double time_used = TIME_SUB_MS(end_time, start_time);
-    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0) / time_used);
-    /*for (i = 0; i < ctx->operations_per_thread; i++) {
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0 * ctx->operations_per_thread) / time_used);
+    for (i = 0; i < ctx->operations_per_thread; i++) {
         int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
         char cmd[512] = { 0 };
         snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
         char pattern[512] = { 0 };
         snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
         test_kv_case(connfd, cmd, pattern, "GETCase2");
-    }*/
+    }
 }
 
 void rbtree_test_case(int connfd)
@@ -749,7 +749,10 @@ void rbtree_sync_test_source_multithread(int connfd, test_context_t* ctx)
 {
     int i = 0;
     for (i = 0; i < ctx->operations_per_thread; i++) {
-
+        int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "RSET Name_%d ZZW_%d\n", key_id, key_id);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "RSETCase");
     }
 }
 
@@ -789,7 +792,34 @@ void rbtree_sync_test_dest(int connfd, int num, char* source_ip, int source_port
 
 void rbtree_sync_test_dest_multithread(int connfd, test_context_t* ctx)
 {
-
+    struct timeval start_time, end_time;
+    printf("server ip = %s, server_port = %d\n", ctx->serverip, ctx->port);
+    printf("sync ip = %s, sync port = %d\n", ctx->syncip, ctx->syncport);
+    int i = 0;
+    //for (i = 0; i < ctx->operations_per_thread; i++) {
+    //    int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+    //    char cmd[512] = { 0 };
+    //    snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+    //    test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase1");
+    //}
+    gettimeofday(&start_time, NULL);
+    {
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "RSYNC %s %d\n", ctx->syncip, ctx->syncport);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "RSYNCCase");
+    }
+    //printf("Thread:%d, sync over\n", ctx->thread_id);
+    gettimeofday(&end_time, NULL);
+    double time_used = TIME_SUB_MS(end_time, start_time);
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0 * ctx->operations_per_thread) / time_used);
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "RGET Name_%d\n", key_id);
+        char pattern[512] = { 0 };
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+        test_kv_case(connfd, cmd, pattern, "RGETCase2");
+    }
 }
 
 void hash_test_case(int connfd)
@@ -1100,7 +1130,13 @@ void hash_sync_test_source(int connfd, int num)
 
 void hash_sync_test_source_multithread(int connfd, test_context_t* ctx)
 {
-
+    int i = 0;
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "HSET Name_%d ZZW_%d\n", key_id, key_id);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "HSETCase");
+    }
 }
 
 void hash_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
@@ -1139,7 +1175,34 @@ void hash_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
 
 void hash_sync_test_dest_multithread(int connfd, test_context_t* ctx)
 {
-
+    struct timeval start_time, end_time;
+    printf("server ip = %s, server_port = %d\n", ctx->serverip, ctx->port);
+    printf("sync ip = %s, sync port = %d\n", ctx->syncip, ctx->syncport);
+    int i = 0;
+    //for (i = 0; i < ctx->operations_per_thread; i++) {
+    //    int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+    //    char cmd[512] = { 0 };
+    //    snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+    //    test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase1");
+    //}
+    gettimeofday(&start_time, NULL);
+    {
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "HSYNC %s %d\n", ctx->syncip, ctx->syncport);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "HSYNCCase");
+    }
+    //printf("Thread:%d, sync over\n", ctx->thread_id);
+    gettimeofday(&end_time, NULL);
+    double time_used = TIME_SUB_MS(end_time, start_time);
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0 * ctx->operations_per_thread) / time_used);
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "HGET Name_%d\n", key_id);
+        char pattern[512] = { 0 };
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+        test_kv_case(connfd, cmd, pattern, "HGETCase2");
+    }
 }
 
 void skiptable_test_case(int connfd)
@@ -1453,7 +1516,13 @@ void skiptable_sync_test_source(int connfd, int num)
 
 void skiptable_sync_test_source_multithread(int connfd, test_context_t* ctx)
 {
-
+    int i = 0;
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SSET Name_%d ZZW_%d\n", key_id, key_id);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSETCase");
+    }
 }
 
 void skiptable_sync_test_dest(int connfd, int num, char* source_ip, int source_port)
@@ -1492,7 +1561,34 @@ void skiptable_sync_test_dest(int connfd, int num, char* source_ip, int source_p
 
 void skiptable_sync_test_dest_multithread(int connfd, test_context_t* ctx)
 {
-
+    struct timeval start_time, end_time;
+    printf("server ip = %s, server_port = %d\n", ctx->serverip, ctx->port);
+    printf("sync ip = %s, sync port = %d\n", ctx->syncip, ctx->syncport);
+    int i = 0;
+    //for (i = 0; i < ctx->operations_per_thread; i++) {
+    //    int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+    //    char cmd[512] = { 0 };
+    //    snprintf(cmd, sizeof(cmd), "GET Name_%d\n", key_id);
+    //    test_kv_case(connfd, cmd, "NO EXIST\n", "GETCase1");
+    //}
+    gettimeofday(&start_time, NULL);
+    {
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SSYNC %s %d\n", ctx->syncip, ctx->syncport);
+        test_kv_case(connfd, cmd, "SUCCESS\n", "SSYNCCase");
+    }
+    //printf("Thread:%d, sync over\n", ctx->thread_id);
+    gettimeofday(&end_time, NULL);
+    double time_used = TIME_SUB_MS(end_time, start_time);
+    printf("time: %fms, qps: %f\n", time_used, (double)(1000.0 * ctx->operations_per_thread) / time_used);
+    for (i = 0; i < ctx->operations_per_thread; i++) {
+        int key_id = i + (ctx->thread_id + 1) * ctx->operations_per_thread;
+        char cmd[512] = { 0 };
+        snprintf(cmd, sizeof(cmd), "SGET Name_%d\n", key_id);
+        char pattern[512] = { 0 };
+        snprintf(pattern, sizeof(pattern), "ZZW_%d\n", key_id);
+        test_kv_case(connfd, cmd, pattern, "SGETCase2");
+    }
 }
 
 void array_multiple_commands_test(int connfd, int num)
