@@ -92,6 +92,11 @@ Ubuntu 22.04 64位 2核4G
 
 -------------------------------------
 
+> 单线程测试同步命令，先向主服务器插入10000个KEY，从服务器向主服务器发送SYNC命令并GET这10000个KEY
+<img width="510" height="179" alt="image" src="https://github.com/user-attachments/assets/458b1677-9ab7-45c7-80aa-d23c16255de3" />
+
+-------------------------------------
+
 > 开启4个线程，每个线程插入10000个不同的KEY（根据线程id * 线程操作次数编号）并分别执行SAVE指令，随后重启KV存储服务端，每个线程再执行LOAD指令进行读盘
 <img width="610" height="363" alt="image" src="https://github.com/user-attachments/assets/c87dcb59-3a08-495d-802a-ec540866c746" />
 <img width="550" height="368" alt="image" src="https://github.com/user-attachments/assets/e33046df-edcb-4957-959b-3b9a076804da" />
@@ -148,6 +153,11 @@ Ubuntu 22.04 64位 2核4G
 
 > 单线程测试范围查询,先插入KEY：Name_0000001001 ~ Name_0000002001，再查询KEY:Name_0000001500 ~ Name_0000001900
 <img width="585" height="190" alt="image" src="https://github.com/user-attachments/assets/468b3e62-14f4-4598-9eb5-3c9ba3e80533" />
+
+-------------------------------------
+
+> 单线程测试同步命令，先向主服务器插入10000个KEY，从服务器向主服务器发送SYNC命令并GET这10000个KEY
+<img width="528" height="186" alt="image" src="https://github.com/user-attachments/assets/864f470f-d0d3-46a6-97df-fa49774b7c18" />
 
 ----------------------------------------------------------------
 
@@ -207,6 +217,11 @@ Ubuntu 22.04 64位 2核4G
 > 单线程测试范围查询,先插入KEY：Name_0000001001 ~ Name_0000002001，再查询KEY:Name_0000001500 ~ Name_0000001900
 <img width="610" height="180" alt="image" src="https://github.com/user-attachments/assets/9a928a13-ed1b-45ad-b358-b7a57ec0af6b" />
 
+-------------------------------------
+
+> 单线程测试同步命令，先向主服务器插入10000个KEY，从服务器向主服务器发送SYNC命令并GET这10000个KEY
+<img width="568" height="181" alt="image" src="https://github.com/user-attachments/assets/f5cae26e-43cb-4526-bc93-b7163e32e04d" />
+
 -------------------------------------------------------------------
 
 > 开启4个线程，每个线程插入10000个不同的KEY（根据线程id * 线程操作次数编号）并分别执行HSAVE指令，随后重启KV存储服务端，每个线程再执行HLOAD指令进行读盘
@@ -265,6 +280,11 @@ Ubuntu 22.04 64位 2核4G
 > 单线程测试范围查询,先插入KEY：Name_0000001001 ~ Name_0000002001，再查询KEY:Name_0000001500 ~ Name_0000001900
 <img width="750" height="190" alt="image" src="https://github.com/user-attachments/assets/50029a40-d3fa-429b-bd4e-de100effdb52" />
 
+-------------------------------------
+
+> 单线程测试同步命令，先向主服务器插入10000个KEY，从服务器向主服务器发送SYNC命令并GET这10000个KEY
+<img width="565" height="183" alt="image" src="https://github.com/user-attachments/assets/da1f61a9-9b73-4804-964f-564640c18768" />
+
 -------------------------------------------------------------------
 
 > 开启4个线程，每个线程插入10000个不同的KEY（根据线程id * 线程操作次数编号）并分别执行SSAVE指令，随后重启KV存储服务端，每个线程再执行SLOAD指令进行读盘
@@ -282,6 +302,7 @@ Ubuntu 22.04 64位 2核4G
 <img width="841" height="570" alt="image" src="https://github.com/user-attachments/assets/e6de28c5-59cd-4946-86e4-63610cadd252" />
 
 --------------------------------------------------------------------
+
 
 
 
